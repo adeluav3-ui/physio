@@ -123,10 +123,13 @@ export class BookingService {
             return { appointment, payment };
         });
 
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
         const init = await this.payments.initializeCharge({
             email: user.email,
             amountKobo,
+            currency: "NGN",
             reference,
+            callbackUrl: `${appUrl}/app/payments/callback`,
             metadata: { appointmentId: appointment.id },
         });
 
