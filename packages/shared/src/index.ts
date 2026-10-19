@@ -9,4 +9,3 @@ export * from "./programs.js";
 export * from "./messaging.js";
 export * from "./visits.js";
 export * from "./common.js";
-export * from "./schemas.js";
