@@ -9,6 +9,7 @@ import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { VideoService } from "../video/video.service.js";
 import { AuditService } from "../audit/audit.service.js";
+import { Prisma } from "@physio/db";
 
 const JOIN_WINDOW_MIN = 15; // join allowed 15 min before/after start
 const SESSION_HARD_END_MIN = 90;
@@ -142,7 +143,10 @@ export class SessionsService {
             if (appt.videoSession) {
                 await tx.videoSession.update({
                     where: { appointmentId: appt.id },
-                    data: { endedAt: new Date(), quality: quality ?? {} },
+                    data: {
+                        endedAt: new Date(),
+                        quality: (quality ?? {}) as Prisma.InputJsonValue,
+                    },
                 });
             }
         });

@@ -107,7 +107,7 @@ export class BookingService {
                     startsAt,
                     endsAt,
                     status: "PENDING_PAYMENT",
-                    intakeId: input.type === "ASSESSMENT" ? input.intakeId : undefined,
+                    intakeId: input.type === "ASSESSMENT" ? (input.intakeId ?? null) : null,
                 },
             });
 
