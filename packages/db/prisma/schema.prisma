@@ -8,18 +8,91 @@ datasource db {
 }
 
 // ── Enums ────────────────────────────────
-enum Role { PATIENT PHYSIO ADMIN }
-enum UserStatus { PENDING ACTIVE SUSPENDED }
-enum LicenceStatus { UNVERIFIED VERIFIED REJECTED EXPIRED }
-enum TriageLevel { GREEN AMBER RED }
-enum AppointmentType { ASSESSMENT FOLLOW_UP REASSESSMENT HOME_VISIT }
-enum AppointmentStatus { PENDING_PAYMENT CONFIRMED IN_PROGRESS COMPLETED CANCELLED NO_SHOW REFUNDED }
-enum SessionMode { VIDEO HOME }
-enum PaymentStatus { PENDING HELD RELEASED REFUNDED FAILED }
-enum LedgerEntryType { CHARGE HOLD RELEASE PLATFORM_FEE PHYSIO_PAYOUT REFUND }
-enum VideoProviderName { DAILY IN_HOUSE }
-enum HomeVisitStatus { REQUESTED MATCHING SCHEDULED EN_ROUTE IN_PROGRESS COMPLETED CANCELLED }
-enum NotificationChannel { EMAIL PUSH IN_APP SMS }
+enum Role {
+  PATIENT
+  PHYSIO
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum LicenceStatus {
+  UNVERIFIED
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum TriageLevel {
+  GREEN
+  AMBER
+  RED
+}
+
+enum AppointmentType {
+  ASSESSMENT
+  FOLLOW_UP
+  REASSESSMENT
+  HOME_VISIT
+}
+
+enum AppointmentStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  REFUNDED
+}
+
+enum SessionMode {
+  VIDEO
+  HOME
+}
+
+enum PaymentStatus {
+  PENDING
+  HELD
+  RELEASED
+  REFUNDED
+  FAILED
+}
+
+enum LedgerEntryType {
+  CHARGE
+  HOLD
+  RELEASE
+  PLATFORM_FEE
+  PHYSIO_PAYOUT
+  REFUND
+}
+
+enum VideoProviderName {
+  DAILY
+  IN_HOUSE
+}
+
+enum HomeVisitStatus {
+  REQUESTED
+  MATCHING
+  SCHEDULED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationChannel {
+  EMAIL
+  PUSH
+  IN_APP
+  SMS
+}
 
 // ── Identity ─────────────────────────────
 model User {
