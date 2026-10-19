@@ -20,7 +20,7 @@ export class PaystackWebhookController {
 
         const raw = (req as any).rawBody as Buffer | undefined;
         if (!raw) throw new BadRequestException({ code: "NO_RAW_BODY", message: "Raw body missing" });
-        const expected = crypto.createHmac("sha512", secret).update(raw).digest("hex"); fcpm
+        const expected = crypto.createHmac("sha512", secret).update(raw).digest("hex");
         if (expected !== signature) {
             this.logger.warn("Paystack webhook signature mismatch");
             throw new BadRequestException({ code: "BAD_SIGNATURE", message: "Invalid signature" });
