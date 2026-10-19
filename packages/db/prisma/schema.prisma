@@ -1,0 +1,377 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────
+enum Role { PATIENT PHYSIO ADMIN }
+enum UserStatus { PENDING ACTIVE SUSPENDED }
+enum LicenceStatus { UNVERIFIED VERIFIED REJECTED EXPIRED }
+enum TriageLevel { GREEN AMBER RED }
+enum AppointmentType { ASSESSMENT FOLLOW_UP REASSESSMENT HOME_VISIT }
+enum AppointmentStatus { PENDING_PAYMENT CONFIRMED IN_PROGRESS COMPLETED CANCELLED NO_SHOW REFUNDED }
+enum SessionMode { VIDEO HOME }
+enum PaymentStatus { PENDING HELD RELEASED REFUNDED FAILED }
+enum LedgerEntryType { CHARGE HOLD RELEASE PLATFORM_FEE PHYSIO_PAYOUT REFUND }
+enum VideoProviderName { DAILY IN_HOUSE }
+enum HomeVisitStatus { REQUESTED MATCHING SCHEDULED EN_ROUTE IN_PROGRESS COMPLETED CANCELLED }
+enum NotificationChannel { EMAIL PUSH IN_APP SMS }
+
+// ── Identity ─────────────────────────────
+model User {
+  id              String     @id @default(uuid())
+  role            Role
+  email           String     @unique
+  emailVerifiedAt DateTime?
+  passwordHash    String
+  name            String
+  phone           String?
+  status          UserStatus @default(PENDING)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  physioProfile   PhysioProfile?
+  patientProfile  PatientProfile?
+  emailTokens     EmailToken[]
+  auditLogs       AuditLog[]
+
+  sentMessages    Message[]  @relation("sender")
+  patientThreads  Thread[]   @relation("patient")
+  physioThreads   Thread[]   @relation("physio")
+
+  @@index([role, status])
+}
+
+model EmailToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  purpose   String   // "verify_email" | "reset_password"
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, purpose])
+}
+
+model PhysioProfile {
+  userId         String        @id
+  licenceNo      String
+  licenceStatus  LicenceStatus @default(UNVERIFIED)
+  specialties    String[]
+  bio            String
+  rateKobo       Int
+  serviceArea    String
+  verifiedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability   Availability[]
+  appointments   Appointment[] @relation("physio_appointments")
+  programs       Program[]
+
+  @@index([licenceStatus])
+}
+
+model PatientProfile {
+  userId            String   @id
+  dob               DateTime?
+  sex               String?
+  location          String?
+  emergencyContact  String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intakes           Intake[]
+  appointments      Appointment[] @relation("patient_appointments")
+  programs          Program[]
+}
+
+// ── Intake & triage ──────────────────────
+model Intake {
+  id             String   @id @default(uuid())
+  patientId      String
+  complaint      String
+  bodyRegion     String
+  onset          String
+  painScore      Int
+  history        String?
+  medications    String?
+  redFlagAnswers Json     // [{questionId, answer}]
+  createdAt      DateTime @default(now())
+
+  patient        PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+  triage         TriageResult?
+  appointment    Appointment?
+
+  @@index([patientId])
+}
+
+model TriageResult {
+  id            String      @id @default(uuid())
+  intakeId      String      @unique
+  level         TriageLevel
+  reasons       String[]
+  ruleIds       String[]
+  overriddenBy  String?
+  createdAt     DateTime    @default(now())
+
+  intake        Intake      @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  @@index([level])
+}
+
+// ── Booking ──────────────────────────────
+model Availability {
+  id           String      @id @default(uuid())
+  physioId     String
+  weekday      Int
+  startMinute  Int
+  endMinute    Int
+  mode         SessionMode
+  createdAt    DateTime    @default(now())
+
+  physio       PhysioProfile @relation(fields: [physioId], references: [userId], onDelete: Cascade)
+  @@index([physioId, weekday])
+}
+
+model Appointment {
+  id           String            @id @default(uuid())
+  patientId    String
+  physioId     String
+  intakeId     String?           @unique
+  type         AppointmentType
+  mode         SessionMode
+  startsAt     DateTime
+  endsAt       DateTime
+  status       AppointmentStatus @default(PENDING_PAYMENT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  patient      PatientProfile @relation("patient_appointments", fields: [patientId], references: [userId])
+  physio       PhysioProfile   @relation("physio_appointments", fields: [physioId], references: [userId])
+  intake       Intake?         @relation(fields: [intakeId], references: [id])
+  payment      Payment?
+  videoSession VideoSession?
+  notes        SessionNote?
+  homeVisit    HomeVisit?
+  review       Review?
+  ledger       LedgerEntry[]
+
+  @@index([patientId, startsAt])
+  @@index([physioId, startsAt])
+  @@index([status])
+}
+
+// ── Payments ─────────────────────────────
+model Payment {
+  id            String        @id @default(uuid())
+  appointmentId String        @unique
+  amountKobo    Int
+  currency      String        @default("NGN")
+  status        PaymentStatus @default(PENDING)
+  providerRef   String?
+  payoutRef     String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  entries       LedgerEntry[]
+
+  @@index([status])
+}
+
+model LedgerEntry {
+  id               String          @id @default(uuid())
+  paymentId        String
+  appointmentId    String
+  type             LedgerEntryType
+  amountKobo       Int
+  balanceAfterKobo Int
+  note             String?
+  createdAt        DateTime        @default(now())
+
+  payment          Payment         @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  appointment      Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, createdAt])
+  @@index([appointmentId])
+}
+
+// ── Sessions ─────────────────────────────
+model VideoSession {
+  id            String             @id @default(uuid())
+  appointmentId String             @unique
+  provider      VideoProviderName
+  roomId        String
+  startedAt     DateTime?
+  endedAt       DateTime?
+  quality       Json?
+
+  appointment   Appointment        @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model SessionNote {
+  id              String   @id @default(uuid())
+  appointmentId   String   @unique
+  subjective      String
+  objective       String
+  assessment      String
+  plan            String
+  outcomeMeasures Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointment     Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+// ── Exercise library & programs ──────────
+model Exercise {
+  id              String        @id @default(uuid())
+  name            String
+  region          String
+  videoUrl        String
+  cues            String
+  contraindications String?
+  difficulty      Int           @default(1)
+  createdAt       DateTime      @default(now())
+
+  programItems    ProgramItem[]
+  @@index([region, difficulty])
+}
+
+model Program {
+  id         String   @id @default(uuid())
+  patientId  String
+  physioId   String
+  startsAt   DateTime
+  endsAt     DateTime?
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+
+  patient    PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+  physio     PhysioProfile   @relation(fields: [physioId], references: [userId])
+  items      ProgramItem[]
+
+  @@index([patientId, status])
+}
+
+model ProgramItem {
+  id          String       @id @default(uuid())
+  programId   String
+  exerciseId  String
+  sets        Int
+  reps        Int
+  holdSeconds Int          @default(0)
+  frequency   String
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  program     Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
+  exercise    Exercise     @relation(fields: [exerciseId], references: [id])
+  logs        ExerciseLog[]
+
+  @@index([programId])
+}
+
+model ExerciseLog {
+  id            String   @id @default(uuid())
+  programItemId String
+  date          DateTime @db.Date
+  completed     Boolean
+  painAfter     Int?
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  programItem   ProgramItem @relation(fields: [programItemId], references: [id], onDelete: Cascade)
+  @@unique([programItemId, date])
+}
+
+// ── Messaging ────────────────────────────
+model Thread {
+  id         String    @id @default(uuid())
+  patientId  String
+  physioId   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  patient    User      @relation("patient", fields: [patientId], references: [id], onDelete: Cascade)
+  physio     User      @relation("physio", fields: [physioId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@unique([patientId, physioId])
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  threadId   String
+  senderId   String
+  body       String
+  attachments Json    @default("[]")
+  sentAt     DateTime @default(now())
+
+  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender     User     @relation("sender", fields: [senderId], references: [id])
+
+  @@index([threadId, sentAt])
+}
+
+// ── Home visits ──────────────────────────
+model HomeVisit {
+  id            String          @id @default(uuid())
+  appointmentId String          @unique
+  address       String
+  lat           Float
+  lng           Float
+  status        HomeVisitStatus @default(REQUESTED)
+  checkInAt     DateTime?
+  checkOutAt    DateTime?
+  createdAt     DateTime        @default(now())
+
+  appointment   Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+// ── Reviews & audit ──────────────────────
+model Review {
+  id            String   @id @default(uuid())
+  appointmentId String   @unique
+  rating        Int
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String
+  at        DateTime @default(now())
+
+  actor     User?    @relation(fields: [actorId], references: [id])
+  @@index([entity, entityId])
+  @@index([actorId, at])
+}
+
+// ── Notifications ────────────────────────
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String
+  channel   NotificationChannel
+  subject   String
+  body      String
+  sentAt    DateTime?
+  openedAt  DateTime?
+  clickedAt DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId, createdAt])
+}

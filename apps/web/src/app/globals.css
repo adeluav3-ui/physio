@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --color-primary-50: #f0f9f8;
+    --color-primary-100: #d9f0ee;
+    --color-primary-200: #b3e1dd;
+    --color-primary-300: #80cbc5;
+    --color-primary-400: #4db0a8;
+    --color-primary-500: #2a938b;
+    --color-primary-600: #1f7670;
+    --color-primary-700: #1a5e59;
+    --color-primary-800: #174a46;
+    --color-primary-900: #143d3a;
+
+    --color-neutral-0: #ffffff;
+    --color-neutral-50: #f8f9fa;
+    --color-neutral-100: #f1f3f5;
+    --color-neutral-200: #e5e8eb;
+    --color-neutral-300: #d1d6db;
+    --color-neutral-400: #9aa3ab;
+    --color-neutral-500: #6b7480;
+    --color-neutral-600: #4a525c;
+    --color-neutral-700: #343a42;
+    --color-neutral-800: #21262c;
+    --color-neutral-900: #13171b;
+
+    --color-success-50: #ecfdf5;
+    --color-success-500: #10b981;
+    --color-success-700: #047857;
+
+    --color-warning-50: #fffbeb;
+    --color-warning-500: #f59e0b;
+    --color-warning-700: #b45309;
+
+    --color-danger-50: #fef2f2;
+    --color-danger-500: #ef4444;
+    --color-danger-700: #b91c1c;
+
+    --color-bg: var(--color-neutral-50);
+    --color-surface: var(--color-neutral-0);
+    --color-border: var(--color-neutral-200);
+    --color-text: var(--color-neutral-900);
+    --color-text-muted: var(--color-neutral-500);
+    --color-text-inverse: var(--color-neutral-0);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+
+    --shadow-sm: 0 1px 2px rgba(19, 23, 27, 0.06);
+    --shadow-md: 0 4px 12px rgba(19, 23, 27, 0.08);
+    --shadow-lg: 0 12px 32px rgba(19, 23, 27, 0.12);
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    min-height: 100vh;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Focus ring — visible on every focusable element */
+:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
