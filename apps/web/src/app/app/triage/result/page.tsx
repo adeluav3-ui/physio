@@ -25,30 +25,24 @@ export default async function TriageResultPage({
         <TriageResultCard
             level={level}
             reasons={reasons}
-            primaryAction={
-                level === "RED"
-                    ? undefined
-                    : {
-                        label: "Find a physio",
-                        onClick: () => {
-                            window.location.href = "/app/physios";
-                        },
-                    }
-            }
+            {...(level !== "RED" && {
+                primaryAction: {
+                    label: "Find a physio",
+                    onClick: () => { window.location.href = "/app/physios"; },
+                },
+            })}
             secondaryAction={{
                 label: level === "RED" ? "I understand" : "Back to home",
-                onClick: () => {
-                    window.location.href = "/app";
-                },
+                onClick: () => { window.location.href = "/app"; },
             }}
-            emergencyContacts={
-                level === "RED"
-                    ? [
+            {...(level === "RED"
+                ? {
+                    emergencyContacts: [
                         { label: "Emergency", phone: "112" },
                         { label: "Nearest hospital", phone: "+2348000000000" },
-                    ]
-                    : undefined
-            }
+                    ],
+                }
+                : {})}
         />
     );
 }
