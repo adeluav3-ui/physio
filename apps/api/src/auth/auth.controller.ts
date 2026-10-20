@@ -45,6 +45,11 @@ export class AuthController {
         return this.auth.resetPassword(body.token, body.password);
     }
 
+    @Post("dev-verify")
+    devVerify(@Body() body: { email: string }) {
+        return this.auth.devVerify(body.email);
+    }
+
     @UseGuards(JwtAuthGuard)
     @Get("me")
     me(@CurrentUser() user: SessionUser) {

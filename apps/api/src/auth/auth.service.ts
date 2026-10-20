@@ -2,6 +2,8 @@ import {
     ConflictException,
     Injectable,
     UnauthorizedException,
+    ForbiddenException,
+    NotFoundException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "bcryptjs";
@@ -92,6 +94,26 @@ export class AuthService {
                 phone: user.phone ?? undefined,
             },
         };
+    }
+
+    async devVerify(email: string) {
+        const key = process.env.RESEND_API_KEY ?? "";
+        if (!key.startsWith("placeholder")) {
+            throw new ForbiddenException({
+                code: "DEV_ONLY",
+                message: "Dev verification is disabled in this environment",
+            });
+        }
+
+        const user = await this.prisma.client.user.findUnique({ where: { email } });
+        if (!user) throw new NotFoundException({ code: "NOT_FOUND", message: "User not found" });
+
+        await this.prisma.client.user.update({
+            where: { id: user.id },
+            data: { emailVerifiedAt: new Date(), status: "ACTIVE" },
+        });
+
+        return { ok: true };
     }
 
     async verifyEmail(rawToken: string) {

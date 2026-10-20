@@ -33,22 +33,33 @@ export class PhysioService {
     }
 
     async apply(user: SessionUser, input: PhysioApplyInput) {
-        if (user.role !== "PATIENT") {
-            throw new ForbiddenException({ code: "FORBIDDEN", message: "Apply from a patient account" });
+        if (user.role !== "PATIENT" && user.role !== "PHYSIO") {
+            throw new ForbiddenException({
+                code: "FORBIDDEN",
+                message: "Only patients or physios can apply",
+            });
         }
 
         const existing = await this.prisma.client.physioProfile.findUnique({
             where: { userId: user.id },
         });
         if (existing) {
-            throw new BadRequestException({ code: "ALREADY_APPLIED", message: "You already have an application" });
+            throw new BadRequestException({
+                code: "ALREADY_APPLIED",
+                message: "You already have an application",
+            });
         }
 
         const profile = await this.prisma.client.$transaction(async (tx) => {
-            await tx.user.update({
-                where: { id: user.id },
-                data: { role: "PHYSIO" },
-            });
+            // If a patient is applying (legacy path), upgrade their role.
+            // A physio signing up already has role PHYSIO, so no update needed.
+            if (user.role === "PATIENT") {
+                await tx.user.update({
+                    where: { id: user.id },
+                    data: { role: "PHYSIO" },
+                });
+            }
+
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
@@ -64,7 +75,7 @@ export class PhysioService {
 
         await this.audit.record({
             actorId: user.id,
-            action: "physio.verify", // will refine to "physio.apply" in a later schema change
+            action: "physio.verify",
             entity: "PhysioProfile",
             entityId: profile.userId,
         });
