@@ -9,6 +9,13 @@ const nextConfig = {
             { protocol: "https", hostname: "**.r2.cloudflarestorage.com" },
         ],
     },
+    webpack: (config) => {
+        config.resolve.extensionAlias = {
+            ".js": [".ts", ".tsx", ".js"],
+            ".mjs": [".mts", ".mjs"],
+        };
+        return config;
+    },
     async rewrites() {
         return [
             {
