@@ -1,5 +1,0 @@
-{
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @physio/shared build && pnpm --filter @physio/ui build && pnpm --filter @physio/web build",
-  "outputDirectory": "apps/web/.next"
-}
