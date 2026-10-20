@@ -1,7 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { Button, Card } from "@physio/ui";
+import { Card } from "@physio/ui";
 
 export default function Home() {
     return (
@@ -15,12 +13,18 @@ export default function Home() {
 
             <Card className="w-full max-w-md">
                 <div className="flex flex-col gap-3">
-                    <Button asChild fullWidth>
-                        <Link href="/auth/signup">Create an account</Link>
-                    </Button>
-                    <Button asChild variant="secondary" fullWidth>
-                        <Link href="/auth/login">Sign in</Link>
-                    </Button>
+                    <Link
+                        href="/auth/signup"
+                        className="inline-flex h-12 w-full items-center justify-center rounded-md bg-primary-500 px-4 text-base font-medium text-text-inverse transition-colors hover:bg-primary-600"
+                    >
+                        Create an account
+                    </Link>
+                    <Link
+                        href="/auth/login"
+                        className="inline-flex h-12 w-full items-center justify-center rounded-md border border-border bg-surface px-4 text-base font-medium text-text transition-colors hover:bg-neutral-50"
+                    >
+                        Sign in
+                    </Link>
                 </div>
             </Card>
         </main>
