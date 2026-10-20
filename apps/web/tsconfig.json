@@ -19,6 +19,12 @@
             }
         ],
         "paths": {
+            "@physio/shared": [
+                "../../packages/shared/src/index.ts"
+            ],
+            "@physio/ui": [
+                "../../packages/ui/src/index.ts"
+            ],
             "@/*": [
                 "./src/*"
             ]
