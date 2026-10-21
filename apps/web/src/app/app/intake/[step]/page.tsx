@@ -3,6 +3,7 @@
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 import { Button, Input, Stepper } from "@physio/ui";
+import { useIntake } from "../intake-store";
 
 const STEPS = [
   { id: "complaint", label: "Your concern" },
@@ -20,20 +21,13 @@ export default function IntakeStepPage() {
   const params = useParams<{ step: string }>();
   const stepId = params.step;
 
-  const [complaint, setComplaint] = useState("");
-  const [bodyRegion, setBodyRegion] = useState("");
-  const [onset, setOnset] = useState("");
-  const [painScore, setPainScore] = useState(5);
-  const [history, setHistory] = useState("");
-  const [medications, setMedications] = useState("");
-  const [redFlags, setRedFlags] = useState<Record<string, boolean>>({});
+  const { draft, update } = useIntake();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const currentIndex = STEPS.findIndex((s) => s.id === stepId);
   const nextStep = STEPS[currentIndex + 1];
   const prevStep = STEPS[currentIndex - 1];
-
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit() {
     setSubmitting(true);
@@ -43,13 +37,16 @@ export default function IntakeStepPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          complaint,
-          bodyRegion,
-          onset,
-          painScore,
-          history: history || undefined,
-          medications: medications || undefined,
-          redFlagAnswers: Object.entries(redFlags).map(([questionId, answer]) => ({ questionId, answer })),
+          complaint: draft.complaint,
+          bodyRegion: draft.bodyRegion,
+          onset: draft.onset,
+          painScore: draft.painScore,
+          history: draft.history || undefined,
+          medications: draft.medications || undefined,
+          redFlagAnswers: Object.entries(draft.redFlags).map(([questionId, answer]) => ({
+            questionId,
+            answer,
+          })),
         }),
       });
       if (!res.ok) {
@@ -77,8 +74,8 @@ export default function IntakeStepPage() {
         {stepId === "complaint" && (
           <Input
             label="Describe your main concern"
-            value={complaint}
-            onChange={(e) => setComplaint(e.target.value)}
+            value={draft.complaint}
+            onChange={(e) => update({ complaint: e.target.value })}
             hint="What's bothering you most?"
           />
         )}
@@ -88,8 +85,10 @@ export default function IntakeStepPage() {
               <button
                 key={r}
                 type="button"
-                onClick={() => setBodyRegion(r)}
-                className={`h-12 rounded-md border text-sm font-medium ${bodyRegion === r ? "border-primary-500 bg-primary-50 text-primary-700" : "border-border bg-surface"
+                onClick={() => update({ bodyRegion: r })}
+                className={`h-12 rounded-md border text-sm font-medium ${draft.bodyRegion === r
+                    ? "border-primary-500 bg-primary-50 text-primary-700"
+                    : "border-border bg-surface"
                   }`}
               >
                 {r.replace(/_/g, " ")}
@@ -98,31 +97,46 @@ export default function IntakeStepPage() {
           </div>
         )}
         {stepId === "onset" && (
-          <Input label="When did it start?" value={onset} onChange={(e) => setOnset(e.target.value)} hint="e.g. '3 days ago after a run'" />
+          <Input
+            label="When did it start?"
+            value={draft.onset}
+            onChange={(e) => update({ onset: e.target.value })}
+            hint="e.g. '3 days ago after a run'"
+          />
         )}
         {stepId === "painScore" && (
           <div>
             <label className="text-sm font-medium">Pain level (0–10)</label>
-            <p className="mt-2 text-5xl font-semibold text-primary-600">{painScore}</p>
+            <p className="mt-2 text-5xl font-semibold text-primary-600">{draft.painScore}</p>
             <input
               type="range"
               min={0}
               max={10}
-              value={painScore}
-              onChange={(e) => setPainScore(Number(e.target.value))}
+              value={draft.painScore}
+              onChange={(e) => update({ painScore: Number(e.target.value) })}
               className="mt-4 w-full"
             />
           </div>
         )}
         {stepId === "history" && (
-          <Input label="Relevant medical history (optional)" value={history} onChange={(e) => setHistory(e.target.value)} />
+          <Input
+            label="Relevant medical history (optional)"
+            value={draft.history}
+            onChange={(e) => update({ history: e.target.value })}
+          />
         )}
         {stepId === "medications" && (
-          <Input label="Current medications (optional)" value={medications} onChange={(e) => setMedications(e.target.value)} />
+          <Input
+            label="Current medications (optional)"
+            value={draft.medications}
+            onChange={(e) => update({ medications: e.target.value })}
+          />
         )}
         {stepId === "redFlags" && (
           <div className="flex flex-col gap-3">
-            <p className="text-sm text-text-muted">These questions help us keep you safe. Answer honestly.</p>
+            <p className="text-sm text-text-muted">
+              These questions help us keep you safe. Answer honestly.
+            </p>
             {[
               { id: "major_trauma", label: "Major injury, fall, or suspected fracture in the last 2 weeks?" },
               { id: "neuro_progressive_weakness", label: "Weakness in arms or legs getting worse?" },
@@ -135,20 +149,25 @@ export default function IntakeStepPage() {
               { id: "post_op_planned", label: "Recovering from surgery in the last 6 weeks?" },
               { id: "mobility_limited", label: "Mobility significantly limited?" },
             ].map((q) => (
-              <div key={q.id} className="flex items-center justify-between rounded-md border border-border bg-surface p-3">
+              <div
+                key={q.id}
+                className="flex items-center justify-between rounded-md border border-border bg-surface p-3"
+              >
                 <span className="text-sm">{q.label}</span>
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setRedFlags((p) => ({ ...p, [q.id]: false }))}
-                    className={`h-9 rounded-md px-3 text-sm ${redFlags[q.id] === false ? "bg-success-500 text-white" : "bg-neutral-100"}`}
+                    onClick={() => update({ redFlags: { ...draft.redFlags, [q.id]: false } })}
+                    className={`h-9 rounded-md px-3 text-sm ${draft.redFlags[q.id] === false ? "bg-success-500 text-white" : "bg-neutral-100"
+                      }`}
                   >
                     No
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRedFlags((p) => ({ ...p, [q.id]: true }))}
-                    className={`h-9 rounded-md px-3 text-sm ${redFlags[q.id] === true ? "bg-danger-500 text-white" : "bg-neutral-100"}`}
+                    onClick={() => update({ redFlags: { ...draft.redFlags, [q.id]: true } })}
+                    className={`h-9 rounded-md px-3 text-sm ${draft.redFlags[q.id] === true ? "bg-danger-500 text-white" : "bg-neutral-100"
+                      }`}
                   >
                     Yes
                   </button>
@@ -159,10 +178,21 @@ export default function IntakeStepPage() {
         )}
         {stepId === "review" && (
           <div className="flex flex-col gap-2 text-sm">
-            <p><strong>Concern:</strong> {complaint}</p>
-            <p><strong>Body area:</strong> {bodyRegion}</p>
-            <p><strong>Onset:</strong> {onset}</p>
-            <p><strong>Pain:</strong> {painScore}/10</p>
+            <p>
+              <strong>Concern:</strong>{" "}
+              {draft.complaint || <em className="text-danger-700">Not provided</em>}
+            </p>
+            <p>
+              <strong>Body area:</strong>{" "}
+              {draft.bodyRegion || <em className="text-danger-700">Not provided</em>}
+            </p>
+            <p>
+              <strong>Onset:</strong>{" "}
+              {draft.onset || <em className="text-danger-700">Not provided</em>}
+            </p>
+            <p>
+              <strong>Pain:</strong> {draft.painScore}/10
+            </p>
             {error && <p className="text-danger-700">{error}</p>}
           </div>
         )}
@@ -180,7 +210,10 @@ export default function IntakeStepPage() {
               Submit intake
             </Button>
           ) : (
-            <Button onClick={() => nextStep && router.push(`/app/intake/${nextStep.id}`)} fullWidth>
+            <Button
+              onClick={() => nextStep && router.push(`/app/intake/${nextStep.id}`)}
+              fullWidth
+            >
               Next
             </Button>
           )}
