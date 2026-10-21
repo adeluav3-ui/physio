@@ -39,11 +39,11 @@ export class AuthService {
                 email: input.email,
                 passwordHash,
                 name: input.name,
-                role: "PATIENT",
+                role: input.role,
                 status: "PENDING",
-                patientProfile: { create: {} },
+                ...(input.role === "PATIENT" && { patientProfile: { create: {} } }),
             },
-            select: { id: true, email: true, name: true },
+            select: { id: true, email: true, name: true, role: true },
         });
 
         const verifyToken = await this.tokens.create(user.id, "verify_email", 24);
