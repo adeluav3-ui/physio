@@ -11,6 +11,7 @@ import { PaymentsService } from "../payments/payments.service.js";
 import { SlotService } from "./slot.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
+import { PatientsService } from "../patients/patients.service.js";
 
 @Injectable()
 export class BookingService {
@@ -20,6 +21,7 @@ export class BookingService {
         private readonly payments: PaymentsService,
         private readonly audit: AuditService,
         private readonly notifications: NotificationsService,
+        private readonly patients: PatientsService,
     ) { }
 
     async listForPatient(user: SessionUser) {
@@ -80,6 +82,14 @@ export class BookingService {
         if (!physio) throw new NotFoundException({ code: "PHYSIO_NOT_FOUND", message: "Physio not found" });
         if (physio.licenceStatus !== "VERIFIED") {
             throw new BadRequestException({ code: "PHYSIO_NOT_VERIFIED", message: "This physio is not yet verified" });
+        }
+
+        const complete = await this.patients.isComplete(user.id);
+        if (!complete) {
+            throw new BadRequestException({
+                code: "PROFILE_INCOMPLETE",
+                message: "Please complete your profile details before booking",
+            });
         }
 
         const bookable = await this.slots.isSlotBookable(

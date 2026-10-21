@@ -25,6 +25,12 @@ export default async function PatientDashboard() {
         // No appointments yet or API not reachable; show empty state.
     }
 
+    let profileComplete = true;
+    try {
+        const profile = await apiFetch<{ dob?: string; sex?: string; location?: string; emergencyContact?: string }>("/patients/me");
+        profileComplete = Boolean(profile?.dob && profile?.sex && profile?.location && profile?.emergencyContact);
+    } catch { }
+
     return (
         <div className="mx-auto max-w-2xl p-4">
             <div className="mb-6 flex items-center justify-between">
@@ -33,6 +39,21 @@ export default async function PatientDashboard() {
             </div>
 
             <div className="flex flex-col gap-3">
+
+                {!profileComplete && (
+                    <Card>
+                        <p className="text-sm font-semibold">Complete your profile</p>
+                        <p className="mt-1 text-sm text-text-muted">
+                            We need a few details before your first booking.
+                        </p>
+                        <Link
+                            href="/app/profile"
+                            className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
+                        >
+                            Complete profile
+                        </Link>
+                    </Card>
+                )}
                 {nextAppointment ? (
                     <Card>
                         <p className="text-xs uppercase tracking-wide text-text-muted">Next appointment</p>
