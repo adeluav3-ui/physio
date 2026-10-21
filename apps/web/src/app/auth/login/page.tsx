@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Input } from "@physio/ui";
 import { loginSchema } from "@physio/shared";
+import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -56,6 +57,11 @@ export default function LoginPage() {
                     <Button type="submit" loading={loading} fullWidth>
                         Sign in
                     </Button>
+                    <div className="text-right">
+                        <Link href="/auth/forgot" className="text-sm text-primary-600 underline">
+                            Forgot password?
+                        </Link>
+                    </div>
                 </form>
             </Card>
         </div>

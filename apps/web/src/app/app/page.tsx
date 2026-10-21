@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
+import { SignOutButton } from "@/components/sign-out-button";
 
 type Appointment = {
     id: string;
@@ -26,9 +27,12 @@ export default async function PatientDashboard() {
 
     return (
         <div className="mx-auto max-w-2xl p-4">
-            <h1 className="text-2xl font-semibold">Welcome, {user.name.split(" ")[0]}</h1>
+            <div className="mb-6 flex items-center justify-between">
+                <h1 className="text-2xl font-semibold">Welcome, {user.name.split(" ")[0]}</h1>
+                <SignOutButton />
+            </div>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
                 {nextAppointment ? (
                     <Card>
                         <p className="text-xs uppercase tracking-wide text-text-muted">Next appointment</p>

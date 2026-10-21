@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
+import { SignOutButton } from "@/components/sign-out-button";
 
 const nav = [
   { href: "/admin", label: "Overview" },
@@ -23,8 +24,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-screen bg-bg">
       <aside className="hidden w-64 flex-col border-r border-border bg-surface lg:flex">
-        <div className="border-b border-border p-4">
+        <div className="flex items-center justify-between border-b border-border p-4">
           <span className="text-lg font-semibold">Physio Admin</span>
+          <SignOutButton />
         </div>
         <nav className="flex-1 p-2">
           <ul className="flex flex-col gap-1">
