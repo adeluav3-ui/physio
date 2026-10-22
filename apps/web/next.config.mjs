@@ -16,14 +16,6 @@ const nextConfig = {
         };
         return config;
     },
-    async rewrites() {
-        return [
-            {
-                source: "/api/proxy/:path*",
-                destination: `${process.env.API_URL ?? "http://localhost:4000"}/api/:path*`,
-            },
-        ];
-    },
 };
 
 export default nextConfig;
