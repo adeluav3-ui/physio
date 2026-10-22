@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
+import { SignOutButton } from "@/components/sign-out-button";
 
 type Appointment = {
     id: string;
@@ -13,6 +15,21 @@ type Appointment = {
 export default async function PhysioDashboard() {
     const user = await requireSession(["PHYSIO"]);
 
+    try {
+        const profile = await apiFetch<{ licenceStatus: string }>(`/physios/${user.id}`);
+        if (profile.licenceStatus !== "VERIFIED") {
+            redirect(
+                profile.licenceStatus === "REJECTED" || profile.licenceStatus === "EXPIRED"
+                    ? "/pro/onboarding/apply"
+                    : "/pro/onboarding/pending",
+            );
+        }
+    } catch (err) {
+        if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+            throw err;
+        }
+    }
+
     let today: Appointment[] = [];
     try {
         const appointments = await apiFetch<Appointment[]>("/booking/appointments");
@@ -23,14 +40,17 @@ export default async function PhysioDashboard() {
                 new Date(a.startsAt).toDateString() === now.toDateString(),
         );
     } catch {
-        // No appointments yet; empty state.
+        // Empty state.
     }
 
     return (
         <div className="mx-auto max-w-2xl p-4">
-            <h1 className="text-2xl font-semibold">Today, {user.name.split(" ")[0]}</h1>
+            <div className="mb-6 flex items-center justify-between">
+                <h1 className="text-2xl font-semibold">Today, {user.name.split(" ")[0]}</h1>
+                <SignOutButton />
+            </div>
 
-            <div className="mt-6 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
                 {today.length === 0 ? (
                     <Card>
                         <p className="text-sm text-text-muted">

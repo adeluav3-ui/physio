@@ -1,8 +1,34 @@
-import { Card } from "@physio/ui";
-import { requireSession } from "@/lib/session";
+"use client";
 
-export default async function PhysioPendingPage() {
-    await requireSession(["PHYSIO"]);
+import { useEffect, useState } from "react";
+import { Card } from "@physio/ui";
+
+export default function PhysioPendingPage() {
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+        fetch("/api/proxy/auth/me")
+            .then((r) => {
+                if (!r.ok) throw new Error("Not signed in");
+                return r.json();
+            })
+            .then((user) => {
+                if (user.role !== "PHYSIO") throw new Error("Wrong role");
+                setChecking(false);
+            })
+            .catch(() => {
+                window.location.href = "/auth/login?next=/pro/onboarding/pending";
+            });
+    }, []);
+
+    if (checking) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <p className="text-sm text-text-muted">Loading…</p>
+            </div>
+        );
+    }
+
     return (
         <div className="mx-auto max-w-md p-4">
             <Card className="p-8 text-center">
