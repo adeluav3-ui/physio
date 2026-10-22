@@ -145,7 +145,7 @@ export class BookingService {
 
         await this.audit.record({
             actorId: user.id,
-            action: "auth.login", // placeholder; booking creation is audited via payment ledger
+            action: "booking.create",
             entity: "Appointment",
             entityId: appointment.id,
         });
