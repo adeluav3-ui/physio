@@ -435,6 +435,23 @@ model AuditLog {
   @@index([actorId, at])
 }
 
+model WaitlistEntry {
+  id          String   @id @default(uuid())
+  kind        String   // "PATIENT" | "PROFESSIONAL"
+  specialty   String?  // only for professionals: PHYSIO | SPEECH | OT | PROSTHETIST | ORTHOTIST
+  name        String
+  email       String
+  phone       String
+  city        String
+  concern     String?  // patient's primary concern
+  licenceNo   String?  // professional's licence (optional)
+  experience  String?  // professional's years of experience
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
 // ── Notifications ────────────────────────
 model Notification {
   id        String              @id @default(uuid())
