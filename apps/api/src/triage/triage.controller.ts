@@ -25,6 +25,12 @@ export class TriageController {
         return this.triage.submitIntake(user, body);
     }
 
+    @Get("latest")
+    @Roles("PATIENT")
+    getLatest(@CurrentUser() user: SessionUser) {
+        return this.triage.getLatestIntake(user);
+    }
+
     @Get(":intakeId")
     getResult(@CurrentUser() user: SessionUser, @Param("intakeId") intakeId: string) {
         return this.triage.getByIntake(user, intakeId);

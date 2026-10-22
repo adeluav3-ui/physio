@@ -104,6 +104,25 @@ export class TriageService {
         return updated;
     }
 
+    async getLatestIntake(patient: SessionUser) {
+        const intake = await this.prisma.client.intake.findFirst({
+            where: { patientId: patient.id },
+            orderBy: { createdAt: "desc" },
+            include: { triage: true },
+        });
+
+        if (intake) {
+            await this.audit.record({
+                actorId: patient.id,
+                action: "record.view",
+                entity: "Intake",
+                entityId: intake.id,
+            });
+        }
+
+        return intake ?? null;
+    }
+
     async getByIntake(actor: SessionUser, intakeId: string) {
         const intake = await this.prisma.client.intake.findUnique({
             where: { id: intakeId },
