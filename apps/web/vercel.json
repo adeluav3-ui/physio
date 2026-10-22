@@ -1,4 +1,4 @@
 {
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "cd ../.. && pnpm --filter @physio/shared build && pnpm --filter @physio/ui build && pnpm --filter @physio/web build"
+  "buildCommand": "cd ../.. && pnpm db:generate && pnpm --filter @physio/shared build && pnpm --filter @physio/ui build && pnpm --filter @physio/web build"
 }
