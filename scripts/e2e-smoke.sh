@@ -75,7 +75,7 @@ SIGNUP=$(api POST /auth/signup -d "{
   \"name\":\"E2E Patient\",
   \"role\":\"PATIENT\"
 }")
-if echo "$SIGNUP" | grep -q '"ok":true'; then
+if echo "$SIGNUP" | grep -q '"userId"'; then
   log "Patient signup OK"
 else
   fail "Patient signup: $SIGNUP"; exit 1
@@ -94,7 +94,7 @@ LOGIN=$(api POST /auth/login -d "{
   \"email\":\"${PATIENT_EMAIL}\",
   \"password\":\"${PASSWORD}\"
 }")
-PATIENT_TOKEN=$(echo "$LOGIN" | grep -o '"token":"[^"]*"' | cut -d'"' -f4 || true)
+PATIENT_TOKEN=$(echo "$LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
 if [ -n "$PATIENT_TOKEN" ]; then
   log "Patient login OK"
 else
@@ -153,7 +153,7 @@ PROFILE=$(api_auth PUT /patients/me "$PATIENT_TOKEN" -d '{
   "dob": "1990-06-15",
   "sex": "Male",
   "location": "Lagos, Nigeria",
-  "emergencyContact": "Jane Doe — 08012345678"
+  "emergencyContact": "Jane Doe - 08012345678"
 }')
 if echo "$PROFILE" | grep -q '"userId":'; then
   log "Profile update OK"
@@ -164,7 +164,7 @@ fi
 info "── Patient: list physios ──"
 PHYSIOS=$(api GET /physios)
 if echo "$PHYSIOS" | grep -q '\['; then
-  PHYSIO_COUNT=$(echo "$PHYSIOS" | grep -o '"userId"' | wc -l | tr -d ' ')
+  PHYSIO_COUNT=$(echo "$PHYSIOS" | grep -o '"userId"' | wc -l | tr -d ' \n' || echo 0)
   log "List physios OK (${PHYSIO_COUNT} verified physios)"
 else
   fail "List physios: $PHYSIOS"
@@ -215,7 +215,7 @@ PHY_SIGNUP=$(api POST /auth/signup -d "{
   \"name\":\"E2E Physio\",
   \"role\":\"PHYSIO\"
 }")
-if echo "$PHY_SIGNUP" | grep -q '"ok":true'; then
+if echo "$PHY_SIGNUP" | grep -q '"userId"'; then
   log "Physio signup OK"
 else
   fail "Physio signup: $PHY_SIGNUP"; exit 1
@@ -228,7 +228,7 @@ PHY_LOGIN=$(api POST /auth/login -d "{
   \"email\":\"${PHYSIO_EMAIL}\",
   \"password\":\"${PASSWORD}\"
 }")
-PHYSIO_TOKEN=$(echo "$PHY_LOGIN" | grep -o '"token":"[^"]*"' | cut -d'"' -f4 || true)
+PHYSIO_TOKEN=$(echo "$PHY_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
 if [ -n "$PHYSIO_TOKEN" ]; then
   log "Physio login OK"
 else
@@ -240,7 +240,7 @@ PHY_APPLY=$(api_auth POST /physios/apply "$PHYSIO_TOKEN" -d '{
   "licenceNo": "PHYSIO-NG-E2E-001",
   "specialties": ["Musculoskeletal", "Sports"],
   "bio": "E2E test physiotherapist. Experienced in musculoskeletal conditions, sports injuries, and post-operative rehabilitation. This is at least fifty characters long.",
-  "rate": 1500000,
+  "rate": 1000000,
   "serviceArea": "Lagos"
 }')
 PHY_USER_ID=$(echo "$PHY_APPLY" | grep -o '"userId":"[^"]*"' | cut -d'"' -f4 || true)
