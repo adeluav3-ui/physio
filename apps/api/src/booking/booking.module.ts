@@ -5,9 +5,10 @@ import { AvailabilityService } from "./availability.service.js";
 import { SlotService } from "./slot.service.js";
 import { BookingConfirmListener } from "./booking-confirm.listener.js";
 import { PaymentsModule } from "../payments/payments.module.js";
+import { PatientsModule } from "../patients/patients.module.js";
 
 @Module({
-    imports: [PaymentsModule],           // one-way: booking depends on payments
+    imports: [PaymentsModule, PatientsModule],
     controllers: [BookingController],
     providers: [BookingService, AvailabilityService, SlotService, BookingConfirmListener],
     exports: [BookingService],
