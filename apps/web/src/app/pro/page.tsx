@@ -57,10 +57,10 @@ export default async function PhysioDashboard() {
                             Nothing scheduled today. Check your availability to open more slots.
                         </p>
                         <Link
-                            href="/pro/availability"
+                            href="/pro/appointments"
                             className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
                         >
-                            Edit availability
+                            View all appointments
                         </Link>
                     </Card>
                 ) : (
@@ -74,10 +74,10 @@ export default async function PhysioDashboard() {
                             </p>
                             <p className="mt-1 text-lg font-semibold">{a.patient.user.name}</p>
                             <Link
-                                href={`/pro/appointments/${a.id}/prep`}
+                                href={`/pro/session/${a.id}`}
                                 className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
                             >
-                                Open prep
+                                Open session
                             </Link>
                         </Card>
                     ))

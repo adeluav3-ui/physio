@@ -30,6 +30,7 @@ export class BookingController {
 
     @Get("appointments")
     listMine(@CurrentUser() user: SessionUser) {
+        if (user.role === "ADMIN") return this.booking.listAll();
         return user.role === "PATIENT" ? this.booking.listForPatient(user) : this.booking.listForPhysio(user);
     }
 

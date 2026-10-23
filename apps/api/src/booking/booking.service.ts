@@ -184,6 +184,18 @@ export class BookingService {
         return appt;
     }
 
+    async listAll(limit = 200) {
+        return this.prisma.client.appointment.findMany({
+            orderBy: { startsAt: "desc" },
+            take: limit,
+            include: {
+                patient: { include: { user: true } },
+                physio: { include: { user: true } },
+                payment: true,
+            },
+        });
+    }
+
     /**
      * Called by the payments webhook after a successful charge.
      * Confirms the appointment, holds funds, sends notifications.
