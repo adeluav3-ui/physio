@@ -369,13 +369,16 @@ DUPE_CODE=$(echo "$DUPE_BOOKING" | grep -o '"code":"[^"]*"' | cut -d'"' -f4 || t
   || fail "Expected SLOT_UNAVAILABLE: $DUPE_BOOKING"
 
 info "── Session join window ──"
-# Use now()-relative times so the join window is always aligned with the API clock.
-# Call psql directly (no -t) so command tags like "UPDATE 1" appear in output.
-PSQL_UPDATE=$(psql "${PG_CONN}" -c "UPDATE \"Appointment\" SET \"startsAt\" = now() - interval '30 minutes', \"endsAt\" = now() + interval '60 minutes' WHERE id = '${APPT_ID}';" 2>&1)
+# Shift start 60 min in the past so we are well inside the 15-min early window.
+# The session end is set 30 min in the future so it has not yet hard-expired.
+# Use psql without -t so "UPDATE 1" appears in the output for verification.
+PSQL_UPDATE=$(psql "${PG_CONN}" -c "UPDATE \"Appointment\" SET \"startsAt\" = now() - interval '60 minutes', \"endsAt\" = now() + interval '30 minutes' WHERE id = '${APPT_ID}';" 2>&1)
 if echo "$PSQL_UPDATE" | grep -qiE "^ERROR|^FATAL"; then
-  fail "psql time-shift failed: $PSQL_UPDATE"; exit 1
+  fail "psql time-shift ERROR: $PSQL_UPDATE"; exit 1
+elif ! echo "$PSQL_UPDATE" | grep -q "UPDATE 1"; then
+  fail "psql time-shift matched 0 rows — APPT_ID=${APPT_ID} psql output=${PSQL_UPDATE}"; exit 1
 else
-  log "Appointment time shifted into join window (start=now-30min, end=now+60min)"
+  log "Appointment time shifted into join window (start=now-60min, end=now+30min)"
 fi
 
 JOIN_RESP=$(api_auth POST "/sessions/${APPT_ID}/join" "$PATIENT_TOKEN")
@@ -481,7 +484,7 @@ info "══ Part 8: Cross-user authorization ══"
 
 # Seed a test exercise (safe to run multiple times)
 psql_exec "INSERT INTO \"Exercise\" (id, name, region, \"videoUrl\", cues, difficulty) \
-  VALUES ('ex-e2e-001','E2E Squat','LOWER_BACK','https://placeholder.test/ex1','Keep back straight',1) \
+  VALUES ('e2e00000-e2e0-4000-8000-e2e000000001','E2E Squat','LOWER_BACK','https://placeholder.test/ex1','Keep back straight',1) \
   ON CONFLICT (id) DO NOTHING;" >/dev/null 2>&1 \
   && log "Test exercise seeded" || warn "Exercise seed failed (may be fine if it already exists)"
 
@@ -502,7 +505,7 @@ echo "$NOTES_SETUP" | grep -q '"appointmentId"' \
 PROGRAM_SETUP=$(api_auth POST /programs "$PHYSIO_TOKEN2" -d "{
   \"patientId\":\"${PATIENT_USER_ID}\",
   \"startsAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-  \"items\":[{\"exerciseId\":\"ex-e2e-001\",\"sets\":3,\"reps\":10,\"holdSeconds\":0,\"frequency\":\"daily\"}]
+  \"items\":[{\"exerciseId\":\"e2e00000-e2e0-4000-8000-e2e000000001\",\"sets\":3,\"reps\":10,\"holdSeconds\":0,\"frequency\":\"daily\"}]
 }")
 PROGRAM_ID=$(echo "$PROGRAM_SETUP" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
 [ -n "$PROGRAM_ID" ] \
@@ -594,7 +597,7 @@ assert_forbidden "Y writes notes on X's appointment" "$Y_NOTES"
 Y_PROGRAM=$(api_auth POST /programs "$PHYSIO_Y_TOKEN2" -d "{
   \"patientId\":\"${PATIENT_USER_ID}\",
   \"startsAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-  \"items\":[{\"exerciseId\":\"ex-e2e-001\",\"sets\":2,\"reps\":8,\"holdSeconds\":0,\"frequency\":\"daily\"}]
+  \"items\":[{\"exerciseId\":\"e2e00000-e2e0-4000-8000-e2e000000001\",\"sets\":2,\"reps\":8,\"holdSeconds\":0,\"frequency\":\"daily\"}]
 }")
 assert_forbidden "Y creates program for A (no appointment with A)" "$Y_PROGRAM"
 
