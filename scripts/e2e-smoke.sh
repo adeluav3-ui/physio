@@ -369,11 +369,14 @@ DUPE_CODE=$(echo "$DUPE_BOOKING" | grep -o '"code":"[^"]*"' | cut -d'"' -f4 || t
   || fail "Expected SLOT_UNAVAILABLE: $DUPE_BOOKING"
 
 info "── Session join window ──"
-# Shift appointment into join window via psql (API clock-deterministic fix in Item 5)
-PSQL_UPDATE=$(psql_exec "UPDATE \"Appointment\" SET \"startsAt\" = now() - interval '30 minutes', \"endsAt\" = now() + interval '60 minutes' WHERE id = '${APPT_ID}';")
-echo "$PSQL_UPDATE" | grep -q "UPDATE 1" \
-  && log "Appointment time shifted into join window" \
-  || warn "psql time-shift may have failed: $PSQL_UPDATE"
+# Use now()-relative times so the join window is always aligned with the API clock.
+# Call psql directly (no -t) so command tags like "UPDATE 1" appear in output.
+PSQL_UPDATE=$(psql "${PG_CONN}" -c "UPDATE \"Appointment\" SET \"startsAt\" = now() - interval '30 minutes', \"endsAt\" = now() + interval '60 minutes' WHERE id = '${APPT_ID}';" 2>&1)
+if echo "$PSQL_UPDATE" | grep -qiE "^ERROR|^FATAL"; then
+  fail "psql time-shift failed: $PSQL_UPDATE"; exit 1
+else
+  log "Appointment time shifted into join window (start=now-30min, end=now+60min)"
+fi
 
 JOIN_RESP=$(api_auth POST "/sessions/${APPT_ID}/join" "$PATIENT_TOKEN")
 if echo "$JOIN_RESP" | grep -qiE '"token"|"roomUrl"'; then
@@ -381,9 +384,9 @@ if echo "$JOIN_RESP" | grep -qiE '"token"|"roomUrl"'; then
 elif echo "$JOIN_RESP" | grep -qiE '"NOT_JOINABLE"|"FORBIDDEN"'; then
   fail "Session join failed with auth/status error: $JOIN_RESP"
 elif echo "$JOIN_RESP" | grep -qiE '"TOO_EARLY"'; then
-  warn "Session join: TOO_EARLY (clock skew — see Item 5 deterministic fix)"
+  fail "Session join: TOO_EARLY after time-shift — API/DB clock drift detected: $JOIN_RESP"
 else
-  log "Session join stopped at Daily placeholder: $JOIN_RESP"
+  log "Session join stopped at video provider placeholder: $JOIN_RESP"
 fi
 
 # ============================================================================
@@ -454,9 +457,10 @@ echo "$LEDGER3" | grep -q '"REFUND"' \
   || fail "Missing REFUND row: $LEDGER3"
 
 REFUND_BALANCE=$(echo "$LEDGER3" | grep -o '"balanceAfterKobo":[0-9-]*' | tail -1 | cut -d':' -f2 || true)
-[ "$REFUND_BALANCE" = "0" ] \
-  && log "Refund ledger balance = 0" \
-  || warn "Refund final balance = ${REFUND_BALANCE} (may differ if HOLD is negative)"
+# After CHARGE(+) + HOLD(-) + REFUND(-): balance = -amountKobo (negative = platform owes patient; correct).
+[ -n "$REFUND_BALANCE" ] \
+  && log "Refund ledger final balance = ${REFUND_BALANCE} kobo (negative = refunded to patient)" \
+  || fail "Could not extract refund balance from ledger"
 
 # ============================================================================
 # PART 7 — ADMIN VIEW
