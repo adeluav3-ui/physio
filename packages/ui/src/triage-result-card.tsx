@@ -39,7 +39,7 @@ export function TriageResultCard({
     secondaryAction?: { label: string; onClick: () => void };
     emergencyContacts?: { label: string; phone: string }[];
 }) {
-    const c = config[level];
+    const c = config[level]!;
     return (
         <div className="flex min-h-[70vh] items-center justify-center p-4">
             <Card className={`w-full max-w-xl border-t-4 ${c.border} p-8`}>

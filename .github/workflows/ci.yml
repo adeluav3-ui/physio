@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Install / Generate / Typecheck / Lint / Build
+    name: Install / Generate / Typecheck / Lint / Test / Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,11 +25,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build workspace packages
+        run: pnpm --filter @physio/shared --filter @physio/payments --filter @physio/video build
+
       - name: Prisma generate
         run: pnpm db:generate
 
       - name: Test (API unit)
-        run: pnpm --filter @physio/api test --passWithNoTests
+        run: pnpm --filter @physio/api test
 
       - name: Typecheck
         run: pnpm typecheck
