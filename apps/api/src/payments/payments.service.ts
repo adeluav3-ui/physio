@@ -85,7 +85,7 @@ export class PaymentsService {
         await this.recordLedger({
             appointmentId,
             type: "PHYSIO_PAYOUT",
-            amountKobo: -physioPayout,
+            amountKobo: physioPayout,
             note: "Physio earnings recorded",
         });
 
