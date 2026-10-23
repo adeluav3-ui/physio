@@ -57,6 +57,7 @@ function makePrisma(opts: {
                         ? {
                             userId: PHYSIO_USER_ID,
                             rateKobo: 1_000_000,
+                            licenceStatus: "VERIFIED",
                             user: { id: PHYSIO_USER_ID, email: "physio@test.com", name: "Dr Test" },
                           }
                         : null,
@@ -88,11 +89,11 @@ function makePrisma(opts: {
 
 describe("BookingService booking guards", () => {
     function buildService(prisma: any) {
-        const slots = { isAvailable: jest.fn().mockResolvedValue(true) };
+        const slots = { isSlotBookable: jest.fn().mockResolvedValue(true) };
         const payments = { initializeCharge: jest.fn().mockResolvedValue({ reference: "ref-1", authorizationUrl: "https://pay.test", accessCode: "ac" }) };
         const audit = { record: jest.fn().mockResolvedValue(undefined) };
         const notifications = { sendAppointmentConfirmed: jest.fn().mockResolvedValue(undefined) };
-        const patients = { ensureProfileComplete: jest.fn().mockResolvedValue(undefined) };
+        const patients = { isComplete: jest.fn().mockResolvedValue(true) };
         return new BookingService(prisma, slots as any, payments as any, audit as any, notifications as any, patients as any);
     }
 
@@ -125,11 +126,11 @@ describe("BookingService booking guards", () => {
 
     it("throws SLOT_UNAVAILABLE when slot is already taken", async () => {
         const prisma = makePrisma({ intakeTriage: "GREEN", slotTaken: true });
-        const slots = { isAvailable: jest.fn().mockResolvedValue(false) };
+        const slots = { isSlotBookable: jest.fn().mockResolvedValue(false) };
         const payments = { initializeCharge: jest.fn() };
         const audit = { record: jest.fn() };
         const notifications = { sendAppointmentConfirmed: jest.fn() };
-        const patients = { ensureProfileComplete: jest.fn().mockResolvedValue(undefined) };
+        const patients = { isComplete: jest.fn().mockResolvedValue(true) };
         const svc = new BookingService(prisma as any, slots as any, payments as any, audit as any, notifications as any, patients as any);
         await expect(svc.book(patientUser, makeInput())).rejects.toMatchObject({
             response: expect.objectContaining({ code: "SLOT_UNAVAILABLE" }),
