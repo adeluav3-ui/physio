@@ -13,7 +13,6 @@ export const signUpSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
     name: z.string().min(2).max(120),
-    role: z.enum(["PATIENT", "PHYSIO"]),
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
 
