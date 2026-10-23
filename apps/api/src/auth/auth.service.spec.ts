@@ -1,4 +1,4 @@
-import { ConflictException } from "@nestjs/common";
+import { ConflictException, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service.js";
 
 function makeMailService() {
@@ -85,5 +85,68 @@ describe("AuthService.signUp role hardening", () => {
         const svc = new AuthService(prisma as any, jwt as any, tokens as any, mail as any);
         await svc.signUp({ email: "a@test.com", password: "Password1!", name: "Alice" });
         expect(mail.sendEmailVerification).toHaveBeenCalledWith("a@test.com", "Alice", "tok-abc");
+    });
+});
+
+describe("AuthService.getSession status guard", () => {
+    function makeSessionPrisma(user: object | null) {
+        return {
+            client: {
+                user: { findUnique: jest.fn().mockResolvedValue(user) },
+            },
+        };
+    }
+
+    it("throws 401 for a SUSPENDED user", async () => {
+        const prisma = makeSessionPrisma({
+            id: "u1", email: "a@test.com", name: "Alice",
+            role: "PATIENT", status: "SUSPENDED",
+            emailVerifiedAt: new Date(), phone: null,
+        });
+        const svc = buildService(prisma);
+        await expect(svc.getSession("u1")).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it("throws 401 for a PENDING user (not yet verified)", async () => {
+        const prisma = makeSessionPrisma({
+            id: "u1", email: "a@test.com", name: "Alice",
+            role: "PATIENT", status: "PENDING",
+            emailVerifiedAt: null, phone: null,
+        });
+        const svc = buildService(prisma);
+        await expect(svc.getSession("u1")).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it("returns the user when status is ACTIVE", async () => {
+        const prisma = makeSessionPrisma({
+            id: "u1", email: "a@test.com", name: "Alice",
+            role: "PATIENT", status: "ACTIVE",
+            emailVerifiedAt: new Date(), phone: null,
+        });
+        const svc = buildService(prisma);
+        const result = await svc.getSession("u1");
+        expect(result.status).toBe("ACTIVE");
+    });
+
+    it("reflects a DB role change on the next call with the same userId", async () => {
+        const findUnique = jest.fn()
+            .mockResolvedValueOnce({
+                id: "u1", email: "p@test.com", name: "Physio",
+                role: "PATIENT", status: "ACTIVE",
+                emailVerifiedAt: new Date(), phone: null,
+            })
+            .mockResolvedValueOnce({
+                id: "u1", email: "p@test.com", name: "Physio",
+                role: "PHYSIO", status: "ACTIVE",
+                emailVerifiedAt: new Date(), phone: null,
+            });
+        const prisma = { client: { user: { findUnique } } };
+        const svc = buildService(prisma as any);
+
+        const before = await svc.getSession("u1");
+        expect(before.role).toBe("PATIENT");
+
+        const after = await svc.getSession("u1");
+        expect(after.role).toBe("PHYSIO");
     });
 });

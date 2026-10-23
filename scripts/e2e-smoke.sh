@@ -211,6 +211,16 @@ echo "$VERIFY_RESP" | grep -q '"licenceStatus":"VERIFIED"' \
   && log "Admin verified physio X OK" \
   || { fail "Admin verify X: $VERIFY_RESP"; exit 1; }
 
+# Same-token role promotion: PHYSIO_TOKEN was issued when the user had role=PATIENT in the DB.
+# After admin verification updates DB role to PHYSIO, JwtStrategy.validate calls getSession
+# (DB hit on every request), so the SAME token must immediately succeed on a PHYSIO-only route.
+SAME_TOKEN_AVAIL=$(api_auth POST /booking/availability "$PHYSIO_TOKEN" -d '{
+  "slots": [{"weekday":1,"startMinute":540,"endMinute":1020,"mode":"VIDEO"}]
+}')
+echo "$SAME_TOKEN_AVAIL" | grep -q '"id"' \
+  && log "Same-token PHYSIO route succeeds after DB role change (role read from DB, not JWT)" \
+  || fail "Same-token PHYSIO route rejected after admin verify — role not DB-backed: $SAME_TOKEN_AVAIL"
+
 PHY_LOGIN2=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_EMAIL}\",\"password\":\"${PASSWORD}\"}")
 PHYSIO_TOKEN2=$(echo "$PHY_LOGIN2" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
 [ -n "$PHYSIO_TOKEN2" ] && log "Physio X re-login (fresh PHYSIO token) OK" \

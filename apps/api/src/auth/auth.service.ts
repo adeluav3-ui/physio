@@ -167,6 +167,9 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException({ code: "USER_NOT_FOUND", message: "User not found" });
         }
+        if (user.status !== "ACTIVE") {
+            throw new UnauthorizedException({ code: "ACCOUNT_INACTIVE", message: "Account is not active" });
+        }
         return {
             id: user.id,
             email: user.email,
