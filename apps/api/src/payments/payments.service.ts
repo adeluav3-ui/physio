@@ -5,7 +5,8 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { OnEvent } from "@nestjs/event-emitter";
 
-const PLATFORM_FEE_BPS = 1500; // 15%
+// Basis points (1 bps = 0.01%). Env var PLATFORM_FEE_BPS overrides; default 1500 (15%).
+const PLATFORM_FEE_BPS = Number(process.env["PLATFORM_FEE_BPS"] ?? 1500);
 
 @Injectable()
 export class PaymentsService {
