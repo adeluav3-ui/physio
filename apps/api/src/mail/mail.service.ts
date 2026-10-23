@@ -11,14 +11,18 @@ export class MailService {
 
     constructor(config: ConfigService) {
         const key = config.get<string>("RESEND_API_KEY");
-        this.resend = key ? new Resend(key) : null;
+        const isPlaceholder = !key || key.startsWith("placeholder");
+        if (isPlaceholder) {
+            this.logger.warn("RESEND_API_KEY is a placeholder — email delivery disabled");
+        }
+        this.resend = isPlaceholder ? null : new Resend(key!);
         this.from = config.get<string>("EMAIL_FROM") ?? "Physio <no-reply@physio.local>";
         this.appUrl = config.get<string>("APP_URL") ?? "http://localhost:3000";
     }
 
     private async send(to: string, subject: string, html: string, text: string) {
         if (!this.resend) {
-            this.logger.warn(`RESEND_API_KEY missing — skipping email to ${to}: ${subject}`);
+            this.logger.warn(`Email delivery disabled — skipping to ${to}: ${subject}`);
             return;
         }
         try {
