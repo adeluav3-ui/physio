@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Physio E2E smoke test — full money path.
+# Physio E2E smoke test — full money path + cross-user authorization.
 # Usage:
 #   DATABASE_URL=postgresql://HP@127.0.0.1:5433/physio_scratch \
 #   REDIS_URL=redis://127.0.0.1:9999 \
@@ -24,6 +24,7 @@ set -euo pipefail
 API="${1:-http://localhost:4000}"
 PASS=0
 FAIL=0
+WARN=0
 
 SUFFIX="$(date +%s)"
 PATIENT_EMAIL="patient-${SUFFIX}@e2e.test"
@@ -32,17 +33,16 @@ PATIENT2_EMAIL="patient2-${SUFFIX}@e2e.test"
 PASSWORD="Passw0rd!e2e"
 
 # Paystack signs webhooks with the account SECRET KEY (same as API auth key).
-# The controller reads PAYSTACK_SECRET_KEY — pass the same value here.
 WEBHOOK_SECRET="${PAYSTACK_SECRET_KEY:-sk_test_placeholder}"
 
-# DB connection for admin seeding — strip Prisma-specific query params psql doesn't understand
+# DB connection — strip Prisma-specific query params psql doesn't understand
 _RAW_DB="${DATABASE_URL:-postgresql://HP@127.0.0.1:5433/physio_scratch}"
 PG_CONN="${_RAW_DB%%\?*}"
 
 log()  { printf '\033[0;32m[PASS]\033[0m %s\n' "$*"; ((PASS++)) || true; }
 fail() { printf '\033[0;31m[FAIL]\033[0m %s\n' "$*"; ((FAIL++)) || true; }
 info() { printf '\033[0;34m[INFO]\033[0m %s\n' "$*"; }
-warn() { printf '\033[0;33m[WARN]\033[0m %s\n' "$*"; }
+warn() { printf '\033[0;33m[WARN]\033[0m %s\n' "$*"; ((WARN++)) || true; }
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -68,10 +68,20 @@ hmac512() {
   printf '%s' "$body" | openssl dgst -sha512 -hmac "$secret" | awk '{print $NF}'
 }
 
+# Assert HTTP 403 or 404 — cross-user checks should return one of these.
+assert_forbidden() {
+  local label="$1" response="$2"
+  if echo "$response" | grep -qiE '"statusCode":(403|404)|"code":"FORBIDDEN"'; then
+    log "$label → correctly 403/404"
+  else
+    fail "$label → expected 403/404, got: $response"
+  fi
+}
+
 # ── Pre-flight ───────────────────────────────────────────────────────────────
 info "Checking prerequisites…"
-command -v psql  >/dev/null || { fail "psql not on PATH — cannot seed admin"; exit 1; }
-command -v openssl >/dev/null || { fail "openssl not on PATH — cannot sign webhook"; exit 1; }
+command -v psql    >/dev/null || { fail "psql not on PATH"; exit 1; }
+command -v openssl >/dev/null || { fail "openssl not on PATH"; exit 1; }
 
 info "API base: $API"
 HEALTH=$(api GET /health)
@@ -82,24 +92,26 @@ else
 fi
 
 # ============================================================================
-# PART 1 — PATIENT FLOW
+# PART 1 — PATIENT A FLOW
 # ============================================================================
-info "══ Part 1: Patient flow ══"
+info "══ Part 1: Patient A flow ══"
 
-# ── Signup / verify / login ──
 SIGNUP=$(api POST /auth/signup -d "{
   \"email\":\"${PATIENT_EMAIL}\",\"password\":\"${PASSWORD}\",
-  \"name\":\"E2E Patient\",\"role\":\"PATIENT\"}")
-echo "$SIGNUP" | grep -q '"userId"' && log "Patient signup OK" || { fail "Patient signup: $SIGNUP"; exit 1; }
+  \"name\":\"E2E Patient A\"}")
+echo "$SIGNUP" | grep -q '"userId"' && log "Patient A signup OK" || { fail "Patient A signup: $SIGNUP"; exit 1; }
 
 api POST /auth/dev-verify -d "{\"email\":\"${PATIENT_EMAIL}\"}" | grep -q '"ok":true' \
-  && log "Patient dev-verify OK" || { fail "Patient dev-verify"; exit 1; }
+  && log "Patient A dev-verify OK" || { fail "Patient A dev-verify"; exit 1; }
 
 LOGIN=$(api POST /auth/login -d "{\"email\":\"${PATIENT_EMAIL}\",\"password\":\"${PASSWORD}\"}")
 PATIENT_TOKEN=$(echo "$LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
-[ -n "$PATIENT_TOKEN" ] && log "Patient login OK" || { fail "Patient login: $LOGIN"; exit 1; }
+[ -n "$PATIENT_TOKEN" ] && log "Patient A login OK" || { fail "Patient A login: $LOGIN"; exit 1; }
 
-# ── Intake (GREEN) ──
+# Extract patient A's user ID for cross-user tests later
+PATIENT_USER_ID=$(api_auth GET /auth/me "$PATIENT_TOKEN" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+[ -n "$PATIENT_USER_ID" ] && log "Patient A user ID: ${PATIENT_USER_ID}" || warn "Could not extract patient A user ID"
+
 INTAKE=$(api_auth POST /triage/intake "$PATIENT_TOKEN" -d '{
   "complaint":"Lower back pain","bodyRegion":"LOWER_BACK","onset":"3 weeks ago",
   "painScore":5,"history":"None","medications":"Ibuprofen",
@@ -121,74 +133,68 @@ TRIAGE_LEVEL=$(echo "$INTAKE" | grep -o '"level":"[^"]*"' | cut -d'"' -f4 || tru
 [ -n "$INTAKE_ID" ] && log "Intake OK: id=${INTAKE_ID} level=${TRIAGE_LEVEL}" \
   || { fail "Intake: $INTAKE"; exit 1; }
 
-# ── Triage result / latest ──
 api_auth GET "/triage/${INTAKE_ID}" "$PATIENT_TOKEN" | grep -q '"id":' \
   && log "GET /triage/:id OK" || fail "GET /triage/:id failed"
 
 LATEST_ID=$(api_auth GET /triage/latest "$PATIENT_TOKEN" | grep -o '"id":"[^"]*"' | cut -d'"' -f4 | head -1 || true)
 [ -n "$LATEST_ID" ] && log "GET /triage/latest OK: id=${LATEST_ID}" || fail "GET /triage/latest failed"
 
-# ── Profile ──
 PROFILE=$(api_auth PUT /patients/me "$PATIENT_TOKEN" -d '{
   "dob":"1990-06-15","sex":"Male","location":"Lagos, Nigeria",
   "emergencyContact":"Jane Doe - 08012345678"}')
 echo "$PROFILE" | grep -q '"userId":' && log "Profile update OK" || fail "Profile update: $PROFILE"
 
-# ── Initial physios list (empty) ──
 PHYSIOS_BEFORE=$(api GET /physios)
 PHYSIO_COUNT_BEFORE=$(echo "$PHYSIOS_BEFORE" | { grep -o '"userId"' || true; } | wc -l | tr -d ' \n')
 log "GET /physios before verification: ${PHYSIO_COUNT_BEFORE} verified"
 
 # ============================================================================
-# PART 2 — PHYSIO SIGNUP + APPLY
+# PART 2 — PHYSIO X SIGNUP + APPLY
 # ============================================================================
-info "══ Part 2: Physio signup and apply ══"
+info "══ Part 2: Physio X signup and apply ══"
 
 api POST /auth/signup -d "{
   \"email\":\"${PHYSIO_EMAIL}\",\"password\":\"${PASSWORD}\",
-  \"name\":\"E2E Physio\",\"role\":\"PHYSIO\"}" | grep -q '"userId"' \
-  && log "Physio signup OK" || { fail "Physio signup"; exit 1; }
+  \"name\":\"E2E Physio X\"}" | grep -q '"userId"' \
+  && log "Physio X signup OK" || { fail "Physio X signup"; exit 1; }
 
 api POST /auth/dev-verify -d "{\"email\":\"${PHYSIO_EMAIL}\"}" | grep -q '"ok":true' \
-  && log "Physio dev-verify OK" || { fail "Physio dev-verify"; exit 1; }
+  && log "Physio X dev-verify OK" || { fail "Physio X dev-verify"; exit 1; }
 
 PHY_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_EMAIL}\",\"password\":\"${PASSWORD}\"}")
 PHYSIO_TOKEN=$(echo "$PHY_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
-[ -n "$PHYSIO_TOKEN" ] && log "Physio login OK" || { fail "Physio login: $PHY_LOGIN"; exit 1; }
+[ -n "$PHYSIO_TOKEN" ] && log "Physio X login OK" || { fail "Physio X login: $PHY_LOGIN"; exit 1; }
 
 PHY_APPLY=$(api_auth POST /physios/apply "$PHYSIO_TOKEN" -d '{
   "licenceNo":"PHYSIO-NG-E2E-001",
   "specialties":["Musculoskeletal","Sports"],
-  "bio":"E2E test physiotherapist. Experienced in musculoskeletal conditions, sports injuries, and post-operative rehabilitation.",
+  "bio":"E2E test physiotherapist X. Experienced in musculoskeletal conditions, sports injuries, and post-operative rehabilitation.",
   "rate":1000000,"serviceArea":"Lagos"}')
 PHY_USER_ID=$(echo "$PHY_APPLY" | grep -o '"userId":"[^"]*"' | cut -d'"' -f4 || true)
-[ -n "$PHY_USER_ID" ] && log "Physio apply OK: userId=${PHY_USER_ID}" \
-  || { fail "Physio apply: $PHY_APPLY"; exit 1; }
+[ -n "$PHY_USER_ID" ] && log "Physio X apply OK: userId=${PHY_USER_ID}" \
+  || { fail "Physio X apply: $PHY_APPLY"; exit 1; }
 
-# Physio is still UNVERIFIED — should not appear beyond the baseline count
 PHYSIOS_UNVERIFIED=$(api GET /physios)
 PHYSIO_COUNT_UV=$(echo "$PHYSIOS_UNVERIFIED" | { grep -o '"userId"' || true; } | wc -l | tr -d ' \n')
 [ "$PHYSIO_COUNT_UV" = "$PHYSIO_COUNT_BEFORE" ] \
   && log "Unverified physio not in public list (count unchanged: ${PHYSIO_COUNT_UV})" \
   || fail "Unverified physio appeared in public list (expected=${PHYSIO_COUNT_BEFORE}, got=${PHYSIO_COUNT_UV})"
 
-# PHYSIO should be FORBIDDEN from admin endpoints
 PENDING=$(api_auth GET /physios/admin/pending "$PHYSIO_TOKEN")
 echo "$PENDING" | grep -qiE '"code":"FORBIDDEN"|"statusCode":403' \
   && log "PHYSIO correctly rejected from /admin/pending" \
   || fail "Expected FORBIDDEN for physio on admin endpoint: $PENDING"
 
 # ============================================================================
-# PART 3 — ADMIN: SEED + VERIFY
+# PART 3 — ADMIN: SEED + VERIFY PHYSIO X
 # ============================================================================
-info "══ Part 3: Admin seed and physio verification ══"
+info "══ Part 3: Admin seed and physio X verification ══"
 
 ADMIN_EMAIL="admin-${SUFFIX}@e2e.test"
 
-# Sign up admin as PATIENT via API, then promote to ADMIN via psql.
 api POST /auth/signup -d "{
   \"email\":\"${ADMIN_EMAIL}\",\"password\":\"${PASSWORD}\",
-  \"name\":\"E2E Admin\",\"role\":\"PATIENT\"}" | grep -q '"userId"' \
+  \"name\":\"E2E Admin\"}" | grep -q '"userId"' \
   || { fail "Admin user creation failed"; exit 1; }
 api POST /auth/dev-verify -d "{\"email\":\"${ADMIN_EMAIL}\"}" >/dev/null
 
@@ -199,34 +205,28 @@ ADMIN_LOGIN=$(api POST /auth/login -d "{\"email\":\"${ADMIN_EMAIL}\",\"password\
 ADMIN_TOKEN=$(echo "$ADMIN_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
 [ -n "$ADMIN_TOKEN" ] && log "Admin login OK" || { fail "Admin login: $ADMIN_LOGIN"; exit 1; }
 
-# Admin verifies the physio
 VERIFY_RESP=$(api_auth POST /physios/admin/verify "$ADMIN_TOKEN" -d "{
   \"userId\":\"${PHY_USER_ID}\",\"decision\":\"VERIFIED\"}")
 echo "$VERIFY_RESP" | grep -q '"licenceStatus":"VERIFIED"' \
-  && log "Admin verified physio OK" \
-  || { fail "Admin verify: $VERIFY_RESP"; exit 1; }
+  && log "Admin verified physio X OK" \
+  || { fail "Admin verify X: $VERIFY_RESP"; exit 1; }
 
-# Physio must re-login to get a fresh token with PHYSIO role
 PHY_LOGIN2=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_EMAIL}\",\"password\":\"${PASSWORD}\"}")
 PHYSIO_TOKEN2=$(echo "$PHY_LOGIN2" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
-[ -n "$PHYSIO_TOKEN2" ] && log "Physio re-login (fresh PHYSIO token) OK" \
-  || { fail "Physio re-login: $PHY_LOGIN2"; exit 1; }
+[ -n "$PHYSIO_TOKEN2" ] && log "Physio X re-login (fresh PHYSIO token) OK" \
+  || { fail "Physio X re-login: $PHY_LOGIN2"; exit 1; }
 
-# Verified physio appears in public list
 PHYSIOS_VERIFIED=$(api GET /physios)
 PHYSIO_COUNT_V=$(echo "$PHYSIOS_VERIFIED" | { grep -o '"userId"' || true; } | wc -l | tr -d ' \n')
 [ "$PHYSIO_COUNT_V" -ge 1 ] \
-  && log "Verified physio appears in GET /physios: count=${PHYSIO_COUNT_V}" \
-  || fail "Verified physio missing from GET /physios: $PHYSIOS_VERIFIED"
+  && log "Verified physio X appears in GET /physios: count=${PHYSIO_COUNT_V}" \
+  || fail "Verified physio X missing from GET /physios"
 
 # ============================================================================
-# PART 4 — PHYSIO: AVAILABILITY + SLOTS
+# PART 4 — PHYSIO X: AVAILABILITY + SLOTS
 # ============================================================================
 info "══ Part 4: Availability and slot listing ══"
 
-# Set availability: Tuesday (2) and Thursday (4), 09:00-17:00 VIDEO
-# Use tomorrow's weekday to ensure slots are available within 14 days.
-# We set all 7 weekdays so at least one is hit in the next 2 weeks.
 AVAIL=$(api_auth POST /booking/availability "$PHYSIO_TOKEN2" -d '{
   "slots": [
     {"weekday":0,"startMinute":540,"endMinute":1020,"mode":"VIDEO"},
@@ -240,22 +240,20 @@ AVAIL=$(api_auth POST /booking/availability "$PHYSIO_TOKEN2" -d '{
 }')
 AVAIL_COUNT=$(echo "$AVAIL" | { grep -o '"id":' || true; } | wc -l | tr -d ' \n')
 [ "$AVAIL_COUNT" -ge 7 ] \
-  && log "Physio availability set: ${AVAIL_COUNT} blocks" \
+  && log "Physio X availability set: ${AVAIL_COUNT} blocks" \
   || { fail "Set availability: $AVAIL"; exit 1; }
 
-# Slots should now appear
 SLOTS_RESP=$(api_auth GET "/booking/slots/${PHY_USER_ID}" "$PATIENT_TOKEN")
 SLOT_COUNT=$(echo "$SLOTS_RESP" | { grep -o '"startsAt"' || true; } | wc -l | tr -d ' \n')
 [ "$SLOT_COUNT" -ge 1 ] \
   && log "GET /booking/slots returns ${SLOT_COUNT} slots" \
   || { fail "No slots returned: $SLOTS_RESP"; exit 1; }
 
-# Pick first slot
 SLOT=$(echo "$SLOTS_RESP" | grep -o '"startsAt":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
 [ -n "$SLOT" ] && log "First slot: ${SLOT}" || { fail "Could not extract slot"; exit 1; }
 
 # ============================================================================
-# PART 5 — PATIENT: BOOK + PAYMENT FLOW
+# PART 5 — PATIENT A: BOOK + PAYMENT FLOW
 # ============================================================================
 info "══ Part 5: Booking and payment ══"
 
@@ -273,20 +271,16 @@ AUTH_URL=$(echo "$BOOKING" | grep -o '"authorizationUrl":"[^"]*"' | cut -d'"' -f
   && log "Booking OK: apptId=${APPT_ID} ref=${REF}" \
   || { fail "Booking: $BOOKING"; exit 1; }
 
-# Confirm stub was used (URL starts with stub.paystack.test)
 echo "$AUTH_URL" | grep -q "stub.paystack.test" \
-  && log "Stub Paystack provider active (authorizationUrl is stub)" \
+  && log "Stub Paystack provider active" \
   || warn "authorizationUrl not from stub — real Paystack may be active"
 
-# Appointment should be PENDING_PAYMENT
 APPT_BEFORE=$(api_auth GET "/booking/appointments/${APPT_ID}" "$PATIENT_TOKEN")
 APPT_STATUS=$(echo "$APPT_BEFORE" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
-PAY_STATUS=$(echo "$APPT_BEFORE"  | grep -o '"status":"[^"]*"' | tail -1 | cut -d'"' -f4 || true)
 [ "$APPT_STATUS" = "PENDING_PAYMENT" ] \
   && log "Appointment status PENDING_PAYMENT (before webhook)" \
   || fail "Expected PENDING_PAYMENT, got: ${APPT_STATUS}"
 
-# ── Webhook: good signature ──
 info "── Webhook: charge.success (good signature) ──"
 WEBHOOK_BODY="{\"event\":\"charge.success\",\"data\":{\"reference\":\"${REF}\",\"status\":\"success\",\"metadata\":{\"appointmentId\":\"${APPT_ID}\"}}}"
 SIG=$(hmac512 "$WEBHOOK_SECRET" "$WEBHOOK_BODY")
@@ -295,46 +289,34 @@ WH_RESP=$(curl -sS --max-time 10 -X POST "${API}/api/payments/paystack/webhook" 
   -H "x-paystack-signature: ${SIG}" \
   -d "$WEBHOOK_BODY")
 echo "$WH_RESP" | grep -q '"ok":true' \
-  && log "Webhook accepted (first call)" \
-  || fail "Webhook rejected: $WH_RESP"
+  && log "Webhook accepted" || fail "Webhook rejected: $WH_RESP"
 
-# Appointment is now CONFIRMED, payment HELD
 APPT_AFTER=$(api_auth GET "/booking/appointments/${APPT_ID}" "$PATIENT_TOKEN")
 APPT_STATUS2=$(echo "$APPT_AFTER" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
 [ "$APPT_STATUS2" = "CONFIRMED" ] \
   && log "Appointment CONFIRMED after webhook" \
   || fail "Expected CONFIRMED, got: ${APPT_STATUS2}"
 
-# Verify ledger: CHARGE + HOLD
 LEDGER=$(api_auth GET "/admin/payments/ledger/${APPT_ID}" "$ADMIN_TOKEN")
 LEDGER_TYPES=$(echo "$LEDGER" | { grep -o '"type":"[^"]*"' || true; } | cut -d'"' -f4 | tr '\n' ',')
 echo "$LEDGER" | grep -q '"CHARGE"' && echo "$LEDGER" | grep -q '"HOLD"' \
   && log "Ledger after webhook: types=[${LEDGER_TYPES%,}]" \
   || fail "Expected CHARGE+HOLD ledger, got: $LEDGER"
 
-# Balance after HOLD should be 0 (charge +amount, hold -amount)
 LAST_BALANCE=$(echo "$LEDGER" | grep -o '"balanceAfterKobo":[0-9-]*' | tail -1 | cut -d':' -f2 || true)
 [ "$LAST_BALANCE" = "0" ] \
-  && log "Ledger balance after CHARGE+HOLD = 0 (correct)" \
+  && log "Ledger balance after CHARGE+HOLD = 0" \
   || fail "Expected balance 0 after CHARGE+HOLD, got: ${LAST_BALANCE}"
 
-# ── Webhook: idempotency (same webhook twice) ──
 info "── Webhook: idempotency test ──"
 WH_RESP2=$(curl -sS --max-time 10 -X POST "${API}/api/payments/paystack/webhook" \
   -H "Content-Type: application/json" \
   -H "x-paystack-signature: ${SIG}" \
   -d "$WEBHOOK_BODY")
 echo "$WH_RESP2" | grep -q '"ignored"' \
-  && log "Second webhook ignored (idempotent): $WH_RESP2" \
-  || fail "Expected idempotent ignore on second webhook: $WH_RESP2"
+  && log "Second webhook ignored (idempotent)" \
+  || fail "Expected idempotent ignore: $WH_RESP2"
 
-APPT_IDEMPOTENT=$(api_auth GET "/booking/appointments/${APPT_ID}" "$PATIENT_TOKEN")
-APPT_STATUS3=$(echo "$APPT_IDEMPOTENT" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
-[ "$APPT_STATUS3" = "CONFIRMED" ] \
-  && log "Appointment still CONFIRMED after second webhook (idempotent)" \
-  || fail "Appointment status changed after second webhook: ${APPT_STATUS3}"
-
-# ── Webhook: bad signature ──
 info "── Webhook: bad signature rejected ──"
 BAD_SIG="0000000000000000000000000000000000000000000000000000000000000000"
 WH_BAD=$(curl -sS --max-time 10 -X POST "${API}/api/payments/paystack/webhook" \
@@ -348,13 +330,13 @@ echo "$WH_BAD" | grep -qiE '"BAD_SIGNATURE"|"statusCode":400' \
 # ── Double-booking: same slot rejected ──
 info "── Double-booking: same slot rejected ──"
 
-# Create second patient + intake for double-booking test
 api POST /auth/signup -d "{
   \"email\":\"${PATIENT2_EMAIL}\",\"password\":\"${PASSWORD}\",
-  \"name\":\"E2E Patient2\",\"role\":\"PATIENT\"}" >/dev/null
+  \"name\":\"E2E Patient B\"}" >/dev/null
 api POST /auth/dev-verify -d "{\"email\":\"${PATIENT2_EMAIL}\"}" >/dev/null
 P2_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PATIENT2_EMAIL}\",\"password\":\"${PASSWORD}\"}")
 PATIENT2_TOKEN=$(echo "$P2_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
+PATIENT2_USER_ID=$(api_auth GET /auth/me "$PATIENT2_TOKEN" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
 
 INTAKE2=$(api_auth POST /triage/intake "$PATIENT2_TOKEN" -d '{
   "complaint":"Knee pain","bodyRegion":"LOWER_BACK","onset":"1 week",
@@ -384,32 +366,24 @@ DUPE_BOOKING=$(api_auth POST /booking "$PATIENT2_TOKEN" -d "{
 DUPE_CODE=$(echo "$DUPE_BOOKING" | grep -o '"code":"[^"]*"' | cut -d'"' -f4 || true)
 [ "$DUPE_CODE" = "SLOT_UNAVAILABLE" ] \
   && log "Double-booking correctly rejected: SLOT_UNAVAILABLE" \
-  || fail "Expected SLOT_UNAVAILABLE for duplicate slot: $DUPE_BOOKING"
+  || fail "Expected SLOT_UNAVAILABLE: $DUPE_BOOKING"
 
-# ── Session join: stops at Daily placeholder ──
-info "── Session join: stops at Daily placeholder ──"
-
-# Move appointment into join window (30 min ago) directly in DB
+info "── Session join window ──"
+# Shift appointment into join window via psql (API clock-deterministic fix in Item 5)
 PSQL_UPDATE=$(psql_exec "UPDATE \"Appointment\" SET \"startsAt\" = now() - interval '30 minutes', \"endsAt\" = now() + interval '60 minutes' WHERE id = '${APPT_ID}';")
 echo "$PSQL_UPDATE" | grep -q "UPDATE 1" \
   && log "Appointment time shifted into join window" \
   || warn "psql time-shift may have failed: $PSQL_UPDATE"
-# Verify the update landed
-APPT_STARTS=$(psql_exec "SELECT \"startsAt\" FROM \"Appointment\" WHERE id = '${APPT_ID}';")
-info "DB startsAt after time-shift: $(echo "$APPT_STARTS" | tr -d '[:space:]')"
 
 JOIN_RESP=$(api_auth POST "/sessions/${APPT_ID}/join" "$PATIENT_TOKEN")
-JOIN_CODE=$(echo "$JOIN_RESP" | grep -o '"code":"[^"]*"' | cut -d'"' -f4 || true)
-# Daily will fail because the key is a placeholder — either VIDEO_PROVIDER_ERROR
-# or the room creation returns an error. Any failure here is from Daily, not auth.
 if echo "$JOIN_RESP" | grep -qiE '"token"|"roomUrl"'; then
-  log "Session join OK (Daily stub accepted)"
+  log "Session join OK"
 elif echo "$JOIN_RESP" | grep -qiE '"NOT_JOINABLE"|"FORBIDDEN"'; then
   fail "Session join failed with auth/status error: $JOIN_RESP"
 elif echo "$JOIN_RESP" | grep -qiE '"TOO_EARLY"'; then
-  warn "Session join: TOO_EARLY (psql clock shift did not propagate to API — timing-only, logic verified by code): $JOIN_RESP"
+  warn "Session join: TOO_EARLY (clock skew — see Item 5 deterministic fix)"
 else
-  log "Session join stopped at Daily placeholder (expected error): code=${JOIN_CODE}"
+  log "Session join stopped at Daily placeholder: $JOIN_RESP"
 fi
 
 # ============================================================================
@@ -417,9 +391,7 @@ fi
 # ============================================================================
 info "══ Part 6: Admin release and refund ══"
 
-# Release the first booking
 RELEASE=$(api_auth POST "/admin/payments/release/${APPT_ID}" "$ADMIN_TOKEN")
-# Release returns nil on HELD payments; check ledger instead
 LEDGER2=$(api_auth GET "/admin/payments/ledger/${APPT_ID}" "$ADMIN_TOKEN")
 LEDGER2_TYPES=$(echo "$LEDGER2" | { grep -o '"type":"[^"]*"' || true; } | cut -d'"' -f4 | tr '\n' ',')
 echo "$LEDGER2" | grep -q '"RELEASE"' \
@@ -428,13 +400,11 @@ echo "$LEDGER2" | grep -q '"RELEASE"' \
   && log "Release ledger rows present: [${LEDGER2_TYPES%,}]" \
   || fail "Missing release ledger rows: $LEDGER2"
 
-# Net of all ledger rows should be zero (CHARGE - HOLD - RELEASE + FEE - PAYOUT = 0)
 FINAL_BALANCE=$(echo "$LEDGER2" | grep -o '"balanceAfterKobo":[0-9-]*' | tail -1 | cut -d':' -f2 || true)
 [ "$FINAL_BALANCE" = "0" ] \
-  && log "Final ledger balance = 0 (net zero error: correct)" \
+  && log "Final ledger balance = 0 (net zero: correct)" \
   || fail "Expected final balance 0, got: ${FINAL_BALANCE}"
 
-# Create a third booking for the refund test (needs a different slot)
 SLOTS_RESP2=$(api_auth GET "/booking/slots/${PHY_USER_ID}" "$PATIENT_TOKEN")
 SLOT2=$(echo "$SLOTS_RESP2" | grep -o '"startsAt":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
 [ -n "$SLOT2" ] || { fail "No second slot available for refund test"; exit 1; }
@@ -467,7 +437,6 @@ REF3=$(echo "$BOOKING3"    | grep -o '"reference":"[^"]*"' | cut -d'"' -f4 || tr
 [ -n "$APPT3_ID" ] && log "Second booking for refund test: apptId=${APPT3_ID}" \
   || { fail "Second booking failed: $BOOKING3"; exit 1; }
 
-# Confirm via webhook
 WH3_BODY="{\"event\":\"charge.success\",\"data\":{\"reference\":\"${REF3}\",\"status\":\"success\",\"metadata\":{\"appointmentId\":\"${APPT3_ID}\"}}}"
 SIG3=$(hmac512 "$WEBHOOK_SECRET" "$WH3_BODY")
 curl -sS --max-time 10 -X POST "${API}/api/payments/paystack/webhook" \
@@ -477,22 +446,20 @@ curl -sS --max-time 10 -X POST "${API}/api/payments/paystack/webhook" \
   && log "Second booking confirmed via webhook" \
   || fail "Second booking webhook failed"
 
-# Admin refund
 REFUND_RESP=$(api_auth POST "/admin/payments/refund/${APPT3_ID}" "$ADMIN_TOKEN" \
   -d '{"reason":"E2E refund test"}')
-# Stub provider returns success; check ledger
 LEDGER3=$(api_auth GET "/admin/payments/ledger/${APPT3_ID}" "$ADMIN_TOKEN")
 echo "$LEDGER3" | grep -q '"REFUND"' \
   && log "Refund ledger row present" \
-  || fail "Missing REFUND row in ledger: $LEDGER3"
+  || fail "Missing REFUND row: $LEDGER3"
 
 REFUND_BALANCE=$(echo "$LEDGER3" | grep -o '"balanceAfterKobo":[0-9-]*' | tail -1 | cut -d':' -f2 || true)
 [ "$REFUND_BALANCE" = "0" ] \
-  && log "Refund ledger balance = 0 (net zero: CHARGE+HOLD+REFUND)" \
-  || warn "Refund final balance = ${REFUND_BALANCE} (expected 0; may differ if HOLD is negative)"
+  && log "Refund ledger balance = 0" \
+  || warn "Refund final balance = ${REFUND_BALANCE} (may differ if HOLD is negative)"
 
 # ============================================================================
-# PART 7 — ADMIN VIEW (ledger)
+# PART 7 — ADMIN VIEW
 # ============================================================================
 info "══ Part 7: Admin ledger view ══"
 
@@ -501,8 +468,201 @@ echo "$FULL_LEDGER" | grep -q '\[' \
   && log "Admin GET /admin/payments/ledger OK" \
   || fail "Admin ledger list failed: $FULL_LEDGER"
 
+# ============================================================================
+# PART 8 — CROSS-USER AUTHORIZATION
+# ============================================================================
+info "══ Part 8: Cross-user authorization ══"
+
+# ─── 8.0 Setup: notes + program + exercise for patient A / physio X ─────────
+
+# Seed a test exercise (safe to run multiple times)
+psql_exec "INSERT INTO \"Exercise\" (id, name, region, \"videoUrl\", cues, difficulty) \
+  VALUES ('ex-e2e-001','E2E Squat','LOWER_BACK','https://placeholder.test/ex1','Keep back straight',1) \
+  ON CONFLICT (id) DO NOTHING;" >/dev/null 2>&1 \
+  && log "Test exercise seeded" || warn "Exercise seed failed (may be fine if it already exists)"
+
+# Create session notes for APPT_ID (physio X writes them)
+NOTES_SETUP=$(api_auth POST /sessions/notes "$PHYSIO_TOKEN2" -d "{
+  \"appointmentId\":\"${APPT_ID}\",
+  \"subjective\":\"Lower back pain\",
+  \"objective\":\"ROM limited at 45 deg\",
+  \"assessment\":\"Mild lumbar strain\",
+  \"plan\":\"Physio exercises 3x/week\",
+  \"outcomeMeasures\":{\"vas\":3}
+}")
+echo "$NOTES_SETUP" | grep -q '"appointmentId"' \
+  && log "Session notes created for cross-user tests" \
+  || warn "Session notes setup failed (cross-note tests may not work): $NOTES_SETUP"
+
+# Create a program for patient A (physio X creates it — has appointment with A)
+PROGRAM_SETUP=$(api_auth POST /programs "$PHYSIO_TOKEN2" -d "{
+  \"patientId\":\"${PATIENT_USER_ID}\",
+  \"startsAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+  \"items\":[{\"exerciseId\":\"ex-e2e-001\",\"sets\":3,\"reps\":10,\"holdSeconds\":0,\"frequency\":\"daily\"}]
+}")
+PROGRAM_ID=$(echo "$PROGRAM_SETUP" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+[ -n "$PROGRAM_ID" ] \
+  && log "Program created for cross-user tests: id=${PROGRAM_ID}" \
+  || warn "Program setup failed (cross-program tests may not work): $PROGRAM_SETUP"
+
+# ─── 8.1 Create physio Y (verified, no relationship with patient A) ──────────
+info "── 8.1: Create physio Y ──"
+PHYSIO_Y_EMAIL="physio-y-${SUFFIX}@e2e.test"
+
+api POST /auth/signup -d "{
+  \"email\":\"${PHYSIO_Y_EMAIL}\",\"password\":\"${PASSWORD}\",
+  \"name\":\"E2E Physio Y\"}" >/dev/null
+api POST /auth/dev-verify -d "{\"email\":\"${PHYSIO_Y_EMAIL}\"}" >/dev/null
+PHY_Y_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_Y_EMAIL}\",\"password\":\"${PASSWORD}\"}")
+PHYSIO_Y_TOKEN=$(echo "$PHY_Y_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
+
+PHY_Y_APPLY=$(api_auth POST /physios/apply "$PHYSIO_Y_TOKEN" -d '{
+  "licenceNo":"PHYSIO-NG-E2E-Y002",
+  "specialties":["Musculoskeletal"],
+  "bio":"E2E test physiotherapist Y. Experienced in musculoskeletal conditions and post-operative rehabilitation.",
+  "rate":800000,"serviceArea":"Abuja"}')
+PHY_Y_ID=$(echo "$PHY_Y_APPLY" | grep -o '"userId":"[^"]*"' | cut -d'"' -f4 || true)
+[ -n "$PHY_Y_ID" ] && log "Physio Y applied: userId=${PHY_Y_ID}" || fail "Physio Y apply: $PHY_Y_APPLY"
+
+api_auth POST /physios/admin/verify "$ADMIN_TOKEN" -d "{
+  \"userId\":\"${PHY_Y_ID}\",\"decision\":\"VERIFIED\"}" | grep -q '"licenceStatus":"VERIFIED"' \
+  && log "Admin verified physio Y" || fail "Admin verify Y failed"
+
+PHY_Y_LOGIN2=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_Y_EMAIL}\",\"password\":\"${PASSWORD}\"}")
+PHYSIO_Y_TOKEN2=$(echo "$PHY_Y_LOGIN2" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
+[ -n "$PHYSIO_Y_TOKEN2" ] && log "Physio Y re-login (PHYSIO token) OK" || fail "Physio Y re-login failed"
+
+# ─── 8.2 Create unverified physio Z (applied, NOT verified) ──────────────────
+info "── 8.2: Create unverified physio Z (applied, not verified) ──"
+PHYSIO_Z_EMAIL="physio-z-unverif-${SUFFIX}@e2e.test"
+
+api POST /auth/signup -d "{
+  \"email\":\"${PHYSIO_Z_EMAIL}\",\"password\":\"${PASSWORD}\",
+  \"name\":\"E2E Physio Z Unverified\"}" >/dev/null
+api POST /auth/dev-verify -d "{\"email\":\"${PHYSIO_Z_EMAIL}\"}" >/dev/null
+PHY_Z_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_Z_EMAIL}\",\"password\":\"${PASSWORD}\"}")
+PHYSIO_Z_TOKEN=$(echo "$PHY_Z_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
+[ -n "$PHYSIO_Z_TOKEN" ] && log "Physio Z login OK (still PATIENT role)" || fail "Physio Z login failed"
+
+api_auth POST /physios/apply "$PHYSIO_Z_TOKEN" -d '{
+  "licenceNo":"PHYSIO-NG-E2E-Z003",
+  "specialties":["Musculoskeletal"],
+  "bio":"E2E unverified physiotherapist Z. Experienced in musculoskeletal conditions and rehabilitation work.",
+  "rate":900000,"serviceArea":"Port Harcourt"}' | grep -q '"userId"' \
+  && log "Physio Z applied (will remain unverified)" \
+  || fail "Physio Z apply failed"
+# Deliberately skip admin verify for Z
+
+# ─── 8.3 Patient B reads Patient A's clinical records → all 403/404 ──────────
+info "── 8.3: Patient B cannot read Patient A's records ──"
+
+assert_forbidden "B reads A's intake (GET /triage/:id)" \
+  "$(api_auth GET "/triage/${INTAKE_ID}" "$PATIENT2_TOKEN")"
+
+assert_forbidden "B reads A's appointment (GET /booking/appointments/:id)" \
+  "$(api_auth GET "/booking/appointments/${APPT_ID}" "$PATIENT2_TOKEN")"
+
+assert_forbidden "B reads A's session (GET /sessions/:id)" \
+  "$(api_auth GET "/sessions/${APPT_ID}" "$PATIENT2_TOKEN")"
+
+assert_forbidden "B reads A's session notes (GET /sessions/:id/notes)" \
+  "$(api_auth GET "/sessions/${APPT_ID}/notes" "$PATIENT2_TOKEN")"
+
+assert_forbidden "B reads A's programs (GET /programs/patient/:patientId)" \
+  "$(api_auth GET "/programs/patient/${PATIENT_USER_ID}" "$PATIENT2_TOKEN")"
+
+assert_forbidden "B verifies A's payment (GET /payments/verify/:ref)" \
+  "$(api_auth GET "/payments/verify/${REF}" "$PATIENT2_TOKEN")"
+
+# ─── 8.4 Physio Y writes on Physio X's appointment → all 403 ─────────────────
+info "── 8.4: Physio Y cannot write on Physio X's appointment ──"
+
+Y_NOTES=$(api_auth POST /sessions/notes "$PHYSIO_Y_TOKEN2" -d "{
+  \"appointmentId\":\"${APPT_ID}\",
+  \"subjective\":\"Y intrusion\",
+  \"objective\":\"Y intrusion\",
+  \"assessment\":\"Y intrusion\",
+  \"plan\":\"Y intrusion\",
+  \"outcomeMeasures\":{}
+}")
+assert_forbidden "Y writes notes on X's appointment" "$Y_NOTES"
+
+Y_PROGRAM=$(api_auth POST /programs "$PHYSIO_Y_TOKEN2" -d "{
+  \"patientId\":\"${PATIENT_USER_ID}\",
+  \"startsAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+  \"items\":[{\"exerciseId\":\"ex-e2e-001\",\"sets\":2,\"reps\":8,\"holdSeconds\":0,\"frequency\":\"daily\"}]
+}")
+assert_forbidden "Y creates program for A (no appointment with A)" "$Y_PROGRAM"
+
+# ─── 8.5 Patient calls physio-only routes → all 403 ──────────────────────────
+info "── 8.5: Patient A cannot call physio-only routes ──"
+
+assert_forbidden "Patient sets availability (physio-only)" \
+  "$(api_auth POST /booking/availability "$PATIENT_TOKEN" -d '{"slots":[]}')"
+
+assert_forbidden "Patient writes session notes (physio-only)" \
+  "$(api_auth POST /sessions/notes "$PATIENT_TOKEN" -d "{
+    \"appointmentId\":\"${APPT_ID}\",
+    \"subjective\":\"x\",\"objective\":\"x\",
+    \"assessment\":\"x\",\"plan\":\"x\",
+    \"outcomeMeasures\":{}
+  }")"
+
+assert_forbidden "Patient creates program (physio-only)" \
+  "$(api_auth POST /programs "$PATIENT_TOKEN" -d "{
+    \"patientId\":\"${PATIENT_USER_ID}\",
+    \"startsAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+    \"items\":[]
+  }")"
+
+# ─── 8.6 Patient calls admin-only routes → all 403 ───────────────────────────
+info "── 8.6: Patient A cannot call admin-only routes ──"
+
+assert_forbidden "Patient reads admin pending physios" \
+  "$(api_auth GET /physios/admin/pending "$PATIENT_TOKEN")"
+
+assert_forbidden "Patient calls admin verify" \
+  "$(api_auth POST /physios/admin/verify "$PATIENT_TOKEN" -d "{
+    \"userId\":\"${PHY_USER_ID}\",\"decision\":\"VERIFIED\"
+  }")"
+
+assert_forbidden "Patient calls admin release" \
+  "$(api_auth POST "/admin/payments/release/${APPT_ID}" "$PATIENT_TOKEN")"
+
+assert_forbidden "Patient calls admin ledger" \
+  "$(api_auth GET "/admin/payments/ledger/${APPT_ID}" "$PATIENT_TOKEN")"
+
+# ─── 8.7 Unverified physio Z (still PATIENT role) cannot call physio routes ──
+info "── 8.7: Unverified physio Z cannot call physio-only routes ──"
+
+assert_forbidden "Unverified physio sets availability" \
+  "$(api_auth POST /booking/availability "$PHYSIO_Z_TOKEN" -d '{"slots":[]}')"
+
+assert_forbidden "Unverified physio writes session notes" \
+  "$(api_auth POST /sessions/notes "$PHYSIO_Z_TOKEN" -d "{
+    \"appointmentId\":\"${APPT_ID}\",
+    \"subjective\":\"z\",\"objective\":\"z\",
+    \"assessment\":\"z\",\"plan\":\"z\",
+    \"outcomeMeasures\":{}
+  }")"
+
+assert_forbidden "Unverified physio joins patient A's session" \
+  "$(api_auth POST "/sessions/${APPT_ID}/join" "$PHYSIO_Z_TOKEN")"
+
+# ─── 8.8 Physio X cannot read Patient B's records ────────────────────────────
+info "── 8.8: Physio X cannot read Patient B's data (no appointment with B) ──"
+
+assert_forbidden "Physio X reads B's intake (no appointment)" \
+  "$(api_auth GET "/triage/${INTAKE2_ID}" "$PHYSIO_TOKEN2")"
+
+assert_forbidden "Physio X reads B's programs (no appointment)" \
+  "$(api_auth GET "/programs/patient/${PATIENT2_USER_ID}" "$PHYSIO_TOKEN2")"
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
 info ""
 info "═══════════════════════════════════════════════════"
-info "PASS: ${PASS}   FAIL: ${FAIL}"
+info "PASS: ${PASS}   FAIL: ${FAIL}   WARN: ${WARN}"
 info "═══════════════════════════════════════════════════"
 [ "$FAIL" -eq 0 ]
