@@ -26,7 +26,7 @@ export class PhysioService {
     async getPublic(userId: string) {
         const p = await this.prisma.client.physioProfile.findUnique({
             where: { userId },
-            include: { user: { select: { id: true, name: true, email: true } } },
+            include: { user: { select: { id: true, name: true } } },
         });
         if (!p) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
         return p;

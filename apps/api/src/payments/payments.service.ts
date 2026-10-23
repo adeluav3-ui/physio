@@ -1,5 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
+import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { OnEvent } from "@nestjs/event-emitter";
@@ -19,7 +20,17 @@ export class PaymentsService {
         return this.provider.initializeCharge(input);
     }
 
-    async verifyCharge(reference: string) {
+    async verifyCharge(user: SessionUser, reference: string) {
+        const payment = await this.prisma.client.payment.findFirst({
+            where: { providerRef: reference },
+            include: { appointment: { select: { patientId: true, physioId: true } } },
+        });
+        if (!payment) throw new NotFoundException({ code: "NOT_FOUND", message: "Payment not found" });
+        const appt = payment.appointment;
+        const isOwner = appt.patientId === user.id || appt.physioId === user.id;
+        if (!isOwner && user.role !== "ADMIN") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your payment" });
+        }
         return this.provider.verifyCharge(reference);
     }
 

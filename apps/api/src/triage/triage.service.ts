@@ -132,9 +132,21 @@ export class TriageService {
             throw new BadRequestException({ code: "NOT_FOUND", message: "Intake not found" });
         }
 
-        // Patients may only read their own intake. Physios and admins can read any.
         if (actor.role === "PATIENT" && intake.patientId !== actor.id) {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your intake" });
+        }
+
+        // Physios may only read triage for intakes linked to their appointments.
+        if (actor.role === "PHYSIO") {
+            const linked = await this.prisma.client.appointment.findFirst({
+                where: { physioId: actor.id, intakeId },
+            });
+            if (!linked) {
+                throw new ForbiddenException({
+                    code: "FORBIDDEN",
+                    message: "This intake is not linked to one of your appointments",
+                });
+            }
         }
 
         await this.audit.record({
