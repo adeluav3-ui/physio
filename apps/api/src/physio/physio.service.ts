@@ -51,15 +51,6 @@ export class PhysioService {
         }
 
         const profile = await this.prisma.client.$transaction(async (tx) => {
-            // If a patient is applying (legacy path), upgrade their role.
-            // A physio signing up already has role PHYSIO, so no update needed.
-            if (user.role === "PATIENT") {
-                await tx.user.update({
-                    where: { id: user.id },
-                    data: { role: "PHYSIO" },
-                });
-            }
-
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
@@ -106,12 +97,17 @@ export class PhysioService {
         const profile = await this.prisma.client.physioProfile.findUnique({ where: { userId } });
         if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
 
-        const updated = await this.prisma.client.physioProfile.update({
-            where: { userId },
-            data: {
-                licenceStatus: decision,
-                verifiedAt: decision === "VERIFIED" ? new Date() : null,
-            },
+        const updated = await this.prisma.client.$transaction(async (tx) => {
+            if (decision === "VERIFIED") {
+                await tx.user.update({ where: { id: userId }, data: { role: "PHYSIO" } });
+            }
+            return tx.physioProfile.update({
+                where: { userId },
+                data: {
+                    licenceStatus: decision,
+                    verifiedAt: decision === "VERIFIED" ? new Date() : null,
+                },
+            });
         });
 
         await this.audit.record({
