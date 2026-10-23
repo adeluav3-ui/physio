@@ -28,6 +28,9 @@ jobs:
       - name: Prisma generate
         run: pnpm db:generate
 
+      - name: Test (API unit)
+        run: pnpm --filter @physio/api test --passWithNoTests
+
       - name: Typecheck
         run: pnpm typecheck
 
