@@ -186,6 +186,14 @@ export class SessionsService {
         if (appt.patientId !== user.id && appt.physioId !== user.id && user.role !== "ADMIN") {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
         }
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "record.view",
+            entity: "Appointment",
+            entityId: appt.id,
+        });
+
         return appt;
     }
 }

@@ -4,6 +4,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 export type AuditAction =
     | "record.view"
     | "record.update"
+    | "record.list"
     | "auth.login"
     | "auth.logout"
     | "auth.signup"

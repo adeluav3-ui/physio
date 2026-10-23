@@ -29,8 +29,16 @@ export class BookingController {
     }
 
     @Get("appointments")
-    listMine(@CurrentUser() user: SessionUser) {
-        if (user.role === "ADMIN") return this.booking.listAll();
+    listMine(
+        @CurrentUser() user: SessionUser,
+        @Query("page") page?: string,
+        @Query("limit") limit?: string,
+    ) {
+        if (user.role === "ADMIN") {
+            const take = limit ? Math.min(Number(limit), 200) : 50;
+            const skip = page ? (Number(page) - 1) * take : 0;
+            return this.booking.listAll(user, take, skip);
+        }
         return user.role === "PATIENT" ? this.booking.listForPatient(user) : this.booking.listForPhysio(user);
     }
 

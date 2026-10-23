@@ -145,3 +145,72 @@ describe("BookingService booking guards", () => {
         });
     });
 });
+
+const adminUser: SessionUser = {
+    id: "admin-001",
+    email: "admin@test.com",
+    name: "Admin",
+    role: "ADMIN",
+    emailVerified: true,
+    status: "ACTIVE",
+};
+
+describe("BookingService audit logging", () => {
+    const APPT_ID = "appt-audit-001";
+
+    function makeAuditPrisma() {
+        return {
+            client: {
+                appointment: {
+                    findUnique: jest.fn().mockResolvedValue({
+                        id: APPT_ID,
+                        patientId: PATIENT_USER_ID,
+                        physioId: PHYSIO_USER_ID,
+                        status: "CONFIRMED",
+                        payment: null,
+                        intake: null,
+                        physio: null,
+                        patient: null,
+                    }),
+                    findMany: jest.fn().mockResolvedValue([{ id: APPT_ID }]),
+                },
+            },
+        };
+    }
+
+    function buildAuditService(prisma: any) {
+        const audit = { record: jest.fn().mockResolvedValue(undefined) };
+        const slots = { isSlotBookable: jest.fn() };
+        const payments = { initializeCharge: jest.fn() };
+        const notifications = { sendAppointmentConfirmed: jest.fn() };
+        const patients = { isComplete: jest.fn() };
+        const svc = new BookingService(prisma, slots as any, payments as any, audit as any, notifications as any, patients as any);
+        return { svc, audit };
+    }
+
+    it("getById writes record.view audit entry for appointment owner", async () => {
+        const prisma = makeAuditPrisma();
+        const { svc, audit } = buildAuditService(prisma);
+        await svc.getById(patientUser, APPT_ID);
+        expect(audit.record).toHaveBeenCalledWith(
+            expect.objectContaining({ action: "record.view", entity: "Appointment", entityId: APPT_ID }),
+        );
+    });
+
+    it("listAll writes record.list audit entry for admin", async () => {
+        const prisma = makeAuditPrisma();
+        const { svc, audit } = buildAuditService(prisma);
+        await svc.listAll(adminUser);
+        expect(audit.record).toHaveBeenCalledWith(
+            expect.objectContaining({ action: "record.list", entity: "Appointment", actorId: adminUser.id }),
+        );
+    });
+
+    it("listAll does not write audit when result is empty", async () => {
+        const prisma = makeAuditPrisma();
+        prisma.client.appointment.findMany.mockResolvedValue([]);
+        const { svc, audit } = buildAuditService(prisma);
+        await svc.listAll(adminUser);
+        expect(audit.record).not.toHaveBeenCalled();
+    });
+});

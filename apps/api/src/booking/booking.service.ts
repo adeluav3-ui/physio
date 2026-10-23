@@ -33,7 +33,7 @@ export class BookingService {
     }
 
     async listForPhysio(user: SessionUser, from?: Date, to?: Date) {
-        return this.prisma.client.appointment.findMany({
+        const appts = await this.prisma.client.appointment.findMany({
             where: {
                 physioId: user.id,
                 ...(from || to
@@ -43,6 +43,15 @@ export class BookingService {
             orderBy: { startsAt: "asc" },
             include: { patient: { include: { user: true } }, payment: true },
         });
+        if (appts.length > 0) {
+            await this.audit.record({
+                actorId: user.id,
+                action: "record.list",
+                entity: "Appointment",
+                entityId: user.id,
+            });
+        }
+        return appts;
     }
 
     async book(user: SessionUser, input: BookAppointmentInput) {
@@ -184,9 +193,10 @@ export class BookingService {
         return appt;
     }
 
-    async listAll(limit = 200) {
-        return this.prisma.client.appointment.findMany({
+    async listAll(user: SessionUser, limit = 50, offset = 0) {
+        const appts = await this.prisma.client.appointment.findMany({
             orderBy: { startsAt: "desc" },
+            skip: offset,
             take: limit,
             include: {
                 patient: { include: { user: true } },
@@ -194,6 +204,15 @@ export class BookingService {
                 payment: true,
             },
         });
+        if (appts.length > 0) {
+            await this.audit.record({
+                actorId: user.id,
+                action: "record.list",
+                entity: "Appointment",
+                entityId: `offset=${offset}:limit=${limit}`,
+            });
+        }
+        return appts;
     }
 
     /**
