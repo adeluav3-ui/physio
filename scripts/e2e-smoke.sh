@@ -232,6 +232,16 @@ PHYSIO_COUNT_V=$(echo "$PHYSIOS_VERIFIED" | { grep -o '"userId"' || true; } | wc
   && log "Verified physio X appears in GET /physios: count=${PHYSIO_COUNT_V}" \
   || fail "Verified physio X missing from GET /physios"
 
+# Public endpoint field audit — licenceNo and licenceStatus must not appear
+echo "$PHYSIOS_VERIFIED" | grep -qiE '"licenceNo"|"licenceStatus"' \
+  && fail "GET /physios leaks forbidden fields (licenceNo/licenceStatus): $PHYSIOS_VERIFIED" \
+  || log "GET /physios: no forbidden fields (licenceNo/licenceStatus absent)"
+
+PHYSIO_SINGLE=$(api GET "/physios/${PHY_USER_ID}")
+echo "$PHYSIO_SINGLE" | grep -qiE '"licenceNo"|"licenceStatus"' \
+  && fail "GET /physios/:userId leaks forbidden fields: $PHYSIO_SINGLE" \
+  || log "GET /physios/:userId: no forbidden fields (licenceNo/licenceStatus absent)"
+
 # ============================================================================
 # PART 4 — PHYSIO X: AVAILABILITY + SLOTS
 # ============================================================================

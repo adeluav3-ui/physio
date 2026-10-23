@@ -15,21 +15,61 @@ export class PhysioService {
         private readonly audit: AuditService,
     ) { }
 
+    private static toPublic(p: {
+        userId: string;
+        specialties: string[];
+        bio: string;
+        rateKobo: number;
+        serviceArea: string;
+        verifiedAt: Date | null;
+        user: { id: string; name: string };
+    }) {
+        return {
+            userId: p.userId,
+            specialties: p.specialties,
+            bio: p.bio,
+            rateKobo: p.rateKobo,
+            serviceArea: p.serviceArea,
+            verified: p.verifiedAt !== null,
+            user: { id: p.user.id, name: p.user.name },
+        };
+    }
+
     async listPublic() {
-        return this.prisma.client.physioProfile.findMany({
+        const rows = await this.prisma.client.physioProfile.findMany({
             where: { licenceStatus: "VERIFIED" },
-            include: { user: { select: { id: true, name: true } } },
+            select: {
+                userId: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                user: { select: { id: true, name: true } },
+            },
             orderBy: { createdAt: "desc" },
         });
+        return rows.map(PhysioService.toPublic);
     }
 
     async getPublic(userId: string) {
         const p = await this.prisma.client.physioProfile.findUnique({
             where: { userId },
-            include: { user: { select: { id: true, name: true } } },
+            select: {
+                userId: true,
+                licenceStatus: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                user: { select: { id: true, name: true } },
+            },
         });
-        if (!p) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
-        return p;
+        if (!p || p.licenceStatus !== "VERIFIED") {
+            throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
+        }
+        return PhysioService.toPublic(p);
     }
 
     async apply(user: SessionUser, input: PhysioApplyInput) {
