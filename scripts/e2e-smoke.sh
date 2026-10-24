@@ -408,8 +408,10 @@ elif echo "$JOIN_RESP" | grep -qiE '"NOT_JOINABLE"|"FORBIDDEN"'; then
   fail "Session join failed with auth/status error: $JOIN_RESP"
 elif echo "$JOIN_RESP" | grep -qiE '"TOO_EARLY"'; then
   fail "Session join: TOO_EARLY after time-shift — API/DB clock drift detected: $JOIN_RESP"
+elif echo "$JOIN_RESP" | grep -qiE '"VIDEO_UNAVAILABLE"'; then
+  log "Session join correctly returned VIDEO_UNAVAILABLE (placeholder API key) — 502 stable code confirmed"
 else
-  log "Session join stopped at video provider placeholder: $JOIN_RESP"
+  fail "Session join: expected VIDEO_UNAVAILABLE from placeholder provider, got: $JOIN_RESP"
 fi
 
 # ============================================================================

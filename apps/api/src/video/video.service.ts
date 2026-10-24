@@ -1,33 +1,45 @@
-import { Injectable } from "@nestjs/common";
+import { BadGatewayException, Injectable, Logger } from "@nestjs/common";
 import { getVideoProvider, type VideoProvider, type VideoRole } from "@physio/video";
 
-/**
- * Thin wrapper around VideoProvider so the rest of the API never touches
- * @physio/video directly. When we swap Daily for in-house, nothing here changes.
- */
 @Injectable()
 export class VideoService {
     private readonly provider: VideoProvider = getVideoProvider();
+    private readonly logger = new Logger(VideoService.name);
 
     get name() {
         return this.provider.name;
     }
 
     async createRoom(appointmentId: string) {
-        return this.provider.createRoom(appointmentId);
+        try {
+            return await this.provider.createRoom(appointmentId);
+        } catch (err) {
+            this.logger.error(`createRoom failed for appointment ${appointmentId}`, err);
+            throw new BadGatewayException({ code: "VIDEO_UNAVAILABLE", message: "Video service is unavailable" });
+        }
     }
 
     async issueToken(roomId: string, userId: string, role: VideoRole) {
-        return this.provider.issueToken(roomId, userId, role);
+        try {
+            return await this.provider.issueToken(roomId, userId, role);
+        } catch (err) {
+            this.logger.error(`issueToken failed for room ${roomId}`, err);
+            throw new BadGatewayException({ code: "VIDEO_UNAVAILABLE", message: "Video service is unavailable" });
+        }
     }
 
     async endRoom(roomId: string) {
-        return this.provider.endRoom(roomId);
+        try {
+            await this.provider.endRoom(roomId);
+        } catch (err) {
+            // Non-fatal: room may have already expired; log but do not surface to caller.
+            this.logger.warn(`endRoom failed for room ${roomId}`, err);
+        }
     }
 
     roomUrl(roomId: string) {
         const domain = process.env.DAILY_DOMAIN;
-        if (!domain) throw new Error("DAILY_DOMAIN missing");
+        if (!domain) throw new BadGatewayException({ code: "VIDEO_UNAVAILABLE", message: "Video service is unavailable" });
         return `https://${domain}.daily.co/${roomId}`;
     }
 }

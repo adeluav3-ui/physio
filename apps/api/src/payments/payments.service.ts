@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadGatewayException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -11,6 +11,7 @@ const PLATFORM_FEE_BPS = Number(process.env["PLATFORM_FEE_BPS"] ?? 1500);
 @Injectable()
 export class PaymentsService {
     private readonly provider = getPaymentProvider();
+    private readonly logger = new Logger(PaymentsService.name);
 
     constructor(
         private readonly prisma: PrismaService,
@@ -18,7 +19,12 @@ export class PaymentsService {
     ) { }
 
     async initializeCharge(input: InitChargeInput) {
-        return this.provider.initializeCharge(input);
+        try {
+            return await this.provider.initializeCharge(input);
+        } catch (err) {
+            this.logger.error("initializeCharge failed", err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
     }
 
     async verifyCharge(user: SessionUser, reference: string) {
@@ -32,7 +38,12 @@ export class PaymentsService {
         if (!isOwner && user.role !== "ADMIN") {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your payment" });
         }
-        return this.provider.verifyCharge(reference);
+        try {
+            return await this.provider.verifyCharge(reference);
+        } catch (err) {
+            this.logger.error(`verifyCharge failed for reference ${reference}`, err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
     }
 
     /**
@@ -121,7 +132,13 @@ export class PaymentsService {
         if (!payment || !payment.providerRef) return;
         if (payment.status === "REFUNDED") return;
 
-        const result = await this.provider.refund({ reference: payment.providerRef });
+        let result;
+        try {
+            result = await this.provider.refund({ reference: payment.providerRef });
+        } catch (err) {
+            this.logger.error(`refund failed for appointment ${appointmentId}`, err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
         if (result.status !== "success") {
             throw new Error(`Refund failed: ${JSON.stringify(result.raw)}`);
         }
