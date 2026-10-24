@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { BRAND, DISCIPLINE_LABELS } from "@physio/shared";
-import ProfessionalsClient from "./professionals-client";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api";
+import ProfessionalsClient from "./professionals-client";
 
 export const metadata: Metadata = {
-    title: "Find a Professional",
-    description: `Search verified rehabilitation professionals on ${BRAND.name}.`,
+    title: "Find a specialist",
+    description: "Search verified rehabilitation professionals on Rehab360.",
 };
 
 export type PublicProfessional = {
@@ -28,22 +28,27 @@ async function ProfessionalsList() {
     try {
         professionals = await apiFetch<PublicProfessional[]>("/physios");
     } catch {
-        // Serve empty state rather than hard crash on first load
+        /* serve empty state */
     }
     return <ProfessionalsClient professionals={professionals} />;
 }
 
 export default function FindProfessionalsPage() {
     return (
-        <main className="mx-auto max-w-4xl px-4 py-10">
-            <h1 className="text-3xl font-semibold text-ink">Find a professional</h1>
-            <p className="mt-2 text-base text-text-muted">
-                Every professional on {BRAND.name} is licence-verified before they can see patients.
-            </p>
-
-            <Suspense fallback={<p className="mt-8 text-sm text-text-muted">Loading professionals…</p>}>
-                <ProfessionalsList />
-            </Suspense>
-        </main>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7" }}>
+            <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
+                <header style={{ display: "flex", flexWrap: "wrap" as const, gap: "16px", alignItems: "center", justifyContent: "space-between", padding: "20px 0" }}>
+                    <Link href="/" style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", textDecoration: "none" }}>Rehab360</Link>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                        <Link href="/auth/login" className="btn btn2">Log in</Link>
+                        <Link href="/auth/signup" className="btn">Sign up</Link>
+                    </div>
+                </header>
+                <h1 style={{ font: "700 34px 'Figtree',sans-serif", marginTop: "12px", marginBottom: 0 }}>Find a specialist</h1>
+                <Suspense fallback={<p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", margin: "20px 0 12px" }}>Loading…</p>}>
+                    <ProfessionalsList />
+                </Suspense>
+            </div>
+        </div>
     );
 }

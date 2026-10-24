@@ -1,243 +1,166 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { BRAND } from "@physio/shared";
-import { Card } from "@physio/ui";
-import { LockedLink } from "@/components/locked-link";
 
 export const metadata: Metadata = {
     title: BRAND.name,
     description: BRAND.tagline,
-    openGraph: {
-        title: BRAND.name,
-        description: BRAND.tagline,
-    },
+    openGraph: { title: BRAND.name, description: BRAND.tagline },
 };
 
 const DISCIPLINES = [
-    { key: "PHYSIO",       label: "Physiotherapy",                env: "NEXT_PUBLIC_WHATSAPP_PHYSIO" },
-    { key: "OT",           label: "Occupational Therapy",         env: "NEXT_PUBLIC_WHATSAPP_OT" },
-    { key: "SPEECH",       label: "Speech & Language Therapy",    env: "NEXT_PUBLIC_WHATSAPP_SPEECH" },
-    { key: "PROSTHETIST",  label: "Prosthetics",                  env: "NEXT_PUBLIC_WHATSAPP_PROSTHETIST" },
-    { key: "ORTHOTIST",    label: "Orthotics",                    env: "NEXT_PUBLIC_WHATSAPP_ORTHOTIST" },
+    { key: "PHYSIO",      label: "Physiotherapy",             desc: "Pain, injury, movement and recovery after surgery.",                   env: "NEXT_PUBLIC_WHATSAPP_PHYSIO" },
+    { key: "OT",          label: "Occupational therapy",      desc: "Daily tasks, work, play and living independently.",                    env: "NEXT_PUBLIC_WHATSAPP_OT" },
+    { key: "SPEECH",      label: "Speech therapy",            desc: "Speaking, understanding, voice and swallowing.",                       env: "NEXT_PUBLIC_WHATSAPP_SPEECH" },
+    { key: "PROSTHETIST", label: "Prosthetics",               desc: "Artificial limbs, fitting and follow-up.",                            env: "NEXT_PUBLIC_WHATSAPP_PROSTHETIST" },
+    { key: "ORTHOTIST",   label: "Orthotics",                 desc: "Braces, supports and inserts.",                                       env: "NEXT_PUBLIC_WHATSAPP_ORTHOTIST" },
 ] as const;
 
-const HOW_IT_WORKS = [
-    { step: "1", title: "Tell us what you need", body: "Complete a short questionnaire so we can match you with the right professional." },
-    { step: "2", title: "Book a session",         body: "Choose a licensed professional, pick a time, and pay securely." },
-    { step: "3", title: "Start recovering",       body: "Video or home-visit sessions, plus a personalised plan to follow at home." },
-] as const;
-
-const FAQ = [
-    {
-        q: "Is this an emergency service?",
-        a: "No. For life-threatening emergencies, call 112 or go to your nearest A&E. Rehab360 connects you with rehabilitation professionals for non-emergency care.",
-    },
-    {
-        q: "Are the professionals licensed?",
-        a: "Every professional on Rehab360 is verified against their licensing body before being listed. You will see a \"Verified\" badge on their profile.",
-    },
-    {
-        q: "How is my information kept private?",
-        a: "Your health information is stored securely and is only shared with the professional you book. We never sell your data.",
-    },
-    {
-        q: "What countries do you serve?",
-        a: "We are currently launching in Nigeria. More countries coming soon.",
-    },
-] as const;
-
-export default async function LandingPage({ searchParams }: { searchParams: Promise<{ locked?: string }> }) {
-    const { locked } = await searchParams;
-    const patientLink   = process.env.NEXT_PUBLIC_WHATSAPP_PATIENTS ?? "#";
-    const disciplineLinks = Object.fromEntries(
-        DISCIPLINES.map((d) => [d.key, process.env[d.env] ?? "#"]),
-    ) as Record<(typeof DISCIPLINES)[number]["key"], string>;
+export default function LandingPage() {
+    const patientLink = process.env.NEXT_PUBLIC_WHATSAPP_PATIENTS ?? "#join";
 
     return (
-        <div className="min-h-screen bg-bg">
-            {/* ── Nav ─────────────────────────────────────────────────────── */}
-            <header className="border-b border-border bg-surface">
-                <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-                    <span className="text-lg font-semibold text-text">{BRAND.name}</span>
-                    <div className="flex items-center gap-3">
-                        <LockedLink
-                            href="/auth/login"
-                            className="rounded-md px-4 py-2 text-sm font-medium text-text-muted hover:text-text"
-                        >
-                            Log in
-                        </LockedLink>
-                        <LockedLink
-                            href="/auth/signup"
-                            className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-text-inverse hover:bg-primary-600"
-                        >
-                            Sign up
-                        </LockedLink>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", margin: 0 }}>
+
+            {/* ── Header ──────────────────────────────────────────────── */}
+            <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
+                <header style={{ display: "flex", flexWrap: "wrap" as const, gap: "16px", alignItems: "center", justifyContent: "space-between", padding: "20px 0" }}>
+                    <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</div>
+                    <nav style={{ display: "flex", flexWrap: "wrap" as const, gap: "24px", alignItems: "center", font: "500 15px 'Figtree',sans-serif" }}>
+                        <a href="#how" style={{ color: "#12302c", textDecoration: "none" }}>How it works</a>
+                        <a href="#pros" style={{ color: "#12302c", textDecoration: "none" }}>For professionals</a>
+                        <a href="#faq" style={{ color: "#12302c", textDecoration: "none" }}>FAQ</a>
+                        <a className="btn" href="#join" style={{ minHeight: "44px" }}>Join the waitlist</a>
+                    </nav>
+                </header>
+
+                {/* ── Hero ─────────────────────────────────────────────── */}
+                <section style={{ display: "flex", flexWrap: "wrap" as const, gap: "48px", alignItems: "center", padding: "56px 0 72px" }}>
+                    <div style={{ flex: "1 1 460px" }}>
+                        <span className="chip">Opening soon in Nigeria</span>
+                        <h1 style={{ font: "700 52px/1.08 'Figtree',sans-serif", marginTop: "18px", letterSpacing: "-0.02em" }}>
+                            Rehabilitation care that comes to you, from people you can trust.
+                        </h1>
+                        <p className="muted" style={{ font: "400 19px/1.55 'Figtree',sans-serif", marginTop: "18px", maxWidth: "520px" }}>
+                            Talk to a licensed physiotherapist, occupational therapist, speech therapist, prosthetist or orthotist by video, then follow your plan at home with them beside you.
+                        </p>
+                        <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px", marginTop: "28px" }}>
+                            <a className="btn" href={patientLink} target="_blank" rel="noopener noreferrer">I need care</a>
+                            <a className="btn btn2" href="#pros">I provide care</a>
+                        </div>
+                        <p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "16px" }}>Free to join the waitlist. No payment details needed.</p>
+                    </div>
+                    <div style={{ flex: "1 1 380px" }}>
+                        <div className="card" style={{ padding: "28px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "#cfe6e2" }}></div>
+                                <div>
+                                    <div style={{ font: "700 16px 'Figtree',sans-serif" }}>[Professional name]</div>
+                                    <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Physiotherapist · Licence verified</div>
+                                </div>
+                            </div>
+                            <div style={{ marginTop: "20px", padding: "16px", borderRadius: "12px", background: "#f1f6f5" }}>
+                                <div style={{ font: "600 13px 'Figtree',sans-serif", color: "#14544e" }}>Your plan for today</div>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", font: "500 15px 'Figtree',sans-serif" }}>
+                                    <span>Shoulder mobility</span><span className="muted">3 sets</span>
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", font: "500 15px 'Figtree',sans-serif" }}>
+                                    <span>Wall slides</span><span className="muted">10 reps</span>
+                                </div>
+                            </div>
+                            <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+                                <span className="chip">Video session Thu 4:00 pm</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            {/* ── How it works ─────────────────────────────────────────── */}
+            <section id="how" style={{ background: "#fff", borderTop: "1px solid #dbe5e2", borderBottom: "1px solid #dbe5e2" }}>
+                <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
+                    <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>How it works</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: "24px", marginTop: "32px" }}>
+                        <div className="card" style={{ background: "#f6f8f7" }}>
+                            <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b766e" }}>1</div>
+                            <h3 style={{ font: "700 20px 'Figtree',sans-serif", marginTop: "8px" }}>Tell us what is wrong</h3>
+                            <p className="muted" style={{ font: "400 16px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>A few questions check for anything urgent and point you to the right kind of specialist.</p>
+                        </div>
+                        <div className="card" style={{ background: "#f6f8f7" }}>
+                            <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b766e" }}>2</div>
+                            <h3 style={{ font: "700 20px 'Figtree',sans-serif", marginTop: "8px" }}>Meet your specialist</h3>
+                            <p className="muted" style={{ font: "400 16px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>Book a video session or a home visit with a professional whose licence we have checked.</p>
+                        </div>
+                        <div className="card" style={{ background: "#f6f8f7" }}>
+                            <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b766e" }}>3</div>
+                            <h3 style={{ font: "700 20px 'Figtree',sans-serif", marginTop: "8px" }}>Follow your plan at home</h3>
+                            <p className="muted" style={{ font: "400 16px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>Exercises, goals and reminders on your phone, with messages to your specialist when you are unsure.</p>
+                        </div>
                     </div>
                 </div>
-            </header>
+            </section>
 
-            <main>
-                {locked && (
-                    <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center">
-                        <p className="text-sm text-amber-800">
-                            <strong>Access required.</strong> {BRAND.name} is not yet open to the public.
-                            Use your access code to continue.
+            {/* ── Five disciplines ─────────────────────────────────────── */}
+            <section id="pros" style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
+                <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>Five kinds of rehabilitation care, one place</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5,minmax(0,1fr))", gap: "16px", marginTop: "28px" }}>
+                    {DISCIPLINES.map((d) => (
+                        <div key={d.key} className="card" style={{ padding: "20px" }}>
+                            <h3 style={{ font: "700 17px 'Figtree',sans-serif" }}>{d.label}</h3>
+                            <p className="muted" style={{ font: "400 14px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>{d.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* ── Join / waitlist ───────────────────────────────────────── */}
+            <section id="join" style={{ background: "#14544e", color: "#fff" }}>
+                <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px", display: "flex", flexWrap: "wrap" as const, gap: "48px" }}>
+                    <div style={{ flex: "1 1 360px" }}>
+                        <h2 style={{ font: "700 34px/1.15 'Figtree',sans-serif" }}>Be among the first.</h2>
+                        <p style={{ font: "400 17px/1.55 'Figtree',sans-serif", marginTop: "12px", color: "#d6ebe8" }}>
+                            Tell us who you are and we will invite you when your city opens. Professionals can also ask to join the first testing group.
                         </p>
                     </div>
-                )}
-
-                {/* ── Hero ───────────────────────────────────────────────── */}
-                <section className="mx-auto max-w-5xl px-4 py-16 text-center md:py-24">
-                    <p className="text-sm font-medium uppercase tracking-wide text-primary-600">
-                        Launching soon in Nigeria
-                    </p>
-                    <h1 className="mt-4 text-4xl font-semibold leading-tight text-text md:text-5xl">
-                        {BRAND.tagline}
-                    </h1>
-                    <p className="mx-auto mt-6 max-w-2xl text-lg text-text-muted">
-                        {BRAND.description}
-                    </p>
-
-                    {/* I need care / I provide care toggle cards */}
-                    <div className="mt-12 grid gap-6 md:grid-cols-2">
-                        {/* Patients */}
-                        <Card className="flex flex-col gap-4 p-8 text-left">
-                            <div>
-                                <h2 className="text-xl font-semibold text-text">I need care</h2>
-                                <p className="mt-3 text-base text-text-muted">
-                                    Get assessed and treated by a licensed professional — over video,
-                                    at home, or in clinic. Follow a personalised plan between sessions.
-                                </p>
+                    <div className="card" style={{ flex: "1 1 420px", color: "#12302c" }}>
+                        <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+                            <div style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", background: "#1b766e", color: "#fff", font: "600 15px 'Figtree',sans-serif" }}>I need care</div>
+                            <div style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", background: "#f1f6f5", font: "600 15px 'Figtree',sans-serif" }}>I provide care</div>
+                        </div>
+                        <div style={{ display: "grid", gap: "14px" }}>
+                            <div><label className="flabel" htmlFor="w-name">Full name</label><input className="in" id="w-name" placeholder="Your name" /></div>
+                            <div><label className="flabel" htmlFor="w-email">Email</label><input className="in" id="w-email" type="email" placeholder="you@example.com" /></div>
+                            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px" }}>
+                                <div style={{ flex: "1 1 180px" }}><label className="flabel" htmlFor="w-need">What do you need help with?</label><input className="in" id="w-need" placeholder="Pick one, or not sure" /></div>
+                                <div style={{ flex: "1 1 140px" }}><label className="flabel" htmlFor="w-city">City</label><input className="in" id="w-city" placeholder="City" /></div>
                             </div>
-                            <a
-                                href={patientLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-auto inline-flex min-h-[44px] items-center justify-center rounded-md bg-primary-500 px-4 text-base font-medium text-text-inverse transition-colors hover:bg-primary-600"
-                            >
-                                Join the patient waitlist
-                            </a>
-                        </Card>
-
-                        {/* Professionals */}
-                        <Card className="flex flex-col gap-4 p-8 text-left">
-                            <div>
-                                <h2 className="text-xl font-semibold text-text">I provide care</h2>
-                                <p className="mt-3 text-base text-text-muted">
-                                    Join a network of licensed practitioners. Choose your discipline
-                                    below to join the relevant pilot group.
-                                </p>
-                            </div>
-                            <div className="mt-2 flex flex-col gap-2">
-                                {DISCIPLINES.map((d) => (
-                                    <a
-                                        key={d.key}
-                                        href={disciplineLinks[d.key]}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex min-h-[44px] items-center justify-between rounded-md border border-border bg-surface px-4 text-sm font-medium text-text transition-colors hover:border-primary-500 hover:bg-primary-50"
-                                    >
-                                        <span>{d.label}</span>
-                                        <span aria-hidden className="text-text-muted">→</span>
-                                    </a>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
-                </section>
-
-                {/* ── How it works ───────────────────────────────────────── */}
-                <section className="bg-surface py-16">
-                    <div className="mx-auto max-w-5xl px-4">
-                        <h2 className="text-center text-2xl font-semibold text-text">How it works</h2>
-                        <div className="mt-10 grid gap-6 md:grid-cols-3">
-                            {HOW_IT_WORKS.map((step) => (
-                                <div key={step.step} className="flex flex-col gap-3">
-                                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-50 text-sm font-semibold text-primary-700">
-                                        {step.step}
-                                    </span>
-                                    <h3 className="text-base font-semibold text-text">{step.title}</h3>
-                                    <p className="text-sm text-text-muted">{step.body}</p>
-                                </div>
-                            ))}
+                            <a className="btn" href={patientLink} target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>Join the waitlist</a>
                         </div>
                     </div>
-                </section>
-
-                {/* ── Disciplines ────────────────────────────────────────── */}
-                <section className="mx-auto max-w-5xl px-4 py-16">
-                    <h2 className="text-center text-2xl font-semibold text-text">Five disciplines, one platform</h2>
-                    <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                        {DISCIPLINES.map((d) => (
-                            <Card key={d.key} className="p-5 text-center">
-                                <p className="text-sm font-semibold text-text">{d.label}</p>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-
-                {/* ── FAQ ─────────────────────────────────────────────────── */}
-                <section className="bg-surface py-16">
-                    <div className="mx-auto max-w-3xl px-4">
-                        <h2 className="text-center text-2xl font-semibold text-text">
-                            Frequently asked questions
-                        </h2>
-                        {/* Emergency notice */}
-                        <div className="mt-8 rounded-lg bg-[#fde8e8] p-4">
-                            <p className="text-sm font-medium text-[#8f1d1d]">
-                                <strong>Not an emergency service.</strong> If you or someone you know
-                                is in immediate danger, call 112 or go to your nearest A&E.{" "}
-                                {BRAND.name} is for non-emergency rehabilitation care.
-                            </p>
-                        </div>
-                        <dl className="mt-8 flex flex-col gap-6">
-                            {FAQ.map((item) => (
-                                <div key={item.q}>
-                                    <dt className="text-base font-semibold text-text">{item.q}</dt>
-                                    <dd className="mt-1.5 text-sm text-text-muted">{item.a}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </div>
-                </section>
-
-                {/* ── Waitlist form ─────────────────────────────────────── */}
-                <section className="mx-auto max-w-xl px-4 py-16">
-                    <h2 className="text-center text-2xl font-semibold text-text">Stay updated</h2>
-                    <p className="mt-3 text-center text-sm text-text-muted">
-                        Be the first to know when we launch.
-                    </p>
-                    <div className="mt-8 flex flex-col gap-3">
-                        <LockedLink
-                            href="/auth/signup"
-                            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-primary-500 px-4 text-base font-medium text-text-inverse transition-colors hover:bg-primary-600"
-                        >
-                            Create an account
-                        </LockedLink>
-                        <LockedLink
-                            href="/auth/login"
-                            className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-border bg-surface px-4 text-base font-medium text-text transition-colors hover:bg-neutral-50"
-                        >
-                            I already have an account
-                        </LockedLink>
-                    </div>
-                </section>
-            </main>
-
-            {/* ── Footer ─────────────────────────────────────────────────── */}
-            <footer className="border-t border-border bg-surface py-8">
-                <div className="mx-auto max-w-5xl px-4 text-center text-sm text-text-muted">
-                    <p>
-                        <strong className="text-text">{BRAND.name}</strong> — {BRAND.description}
-                    </p>
-                    <p className="mt-2">
-                        <Link href="/privacy" className="hover:underline">Privacy policy</Link>
-                        {" · "}
-                        <Link href="/terms" className="hover:underline">Terms of service</Link>
-                        {" · "}
-                        <Link href="/safety" className="hover:underline">Safety</Link>
-                    </p>
                 </div>
+            </section>
+
+            {/* ── FAQ ──────────────────────────────────────────────────── */}
+            <section id="faq" style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
+                <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>Questions people ask</h2>
+                <div style={{ display: "grid", gap: "12px", marginTop: "24px", maxWidth: "760px" }}>
+                    <div className="card" style={{ padding: "18px 20px" }}>
+                        <h3 style={{ font: "600 17px 'Figtree',sans-serif" }}>Is this for emergencies?</h3>
+                        <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>No. If you have severe pain, chest pain, trouble breathing, sudden weakness or loss of feeling, go to the nearest hospital.</p>
+                    </div>
+                    <div className="card" style={{ padding: "18px 20px" }}>
+                        <h3 style={{ font: "600 17px 'Figtree',sans-serif" }}>Are the professionals licensed?</h3>
+                        <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>Every professional is checked against their licensing body before they appear in search.</p>
+                    </div>
+                    <div className="card" style={{ padding: "18px 20px" }}>
+                        <h3 style={{ font: "600 17px 'Figtree',sans-serif" }}>Who can see my records?</h3>
+                        <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>Only you and the professionals you choose. Every access to a record is logged.</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Footer ───────────────────────────────────────────────── */}
+            <footer style={{ borderTop: "1px solid #dbe5e2", padding: "28px 24px", textAlign: "center", font: "400 14px 'Figtree',sans-serif", color: "#4f6663" }}>
+                Rehab360 · Privacy · Terms · Safety information
             </footer>
         </div>
     );

@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "../styles/rehab360.css";
 
 /* Font is set via next/font in layout.tsx — CSS variable --font-sans is injected there */
 

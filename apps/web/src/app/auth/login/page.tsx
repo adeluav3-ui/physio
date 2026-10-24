@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Input } from "@physio/ui";
-import { loginSchema, BRAND } from "@physio/shared";
 import Link from "next/link";
+import { loginSchema } from "@physio/shared";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -17,10 +16,7 @@ export default function LoginPage() {
         e.preventDefault();
         setError(null);
         const parsed = loginSchema.safeParse({ email, password });
-        if (!parsed.success) {
-            setError(parsed.error.issues[0]?.message ?? "Invalid input");
-            return;
-        }
+        if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Invalid input"); return; }
         setLoading(true);
         try {
             const res = await fetch("/api/proxy/auth/login", {
@@ -29,7 +25,7 @@ export default function LoginPage() {
                 body: JSON.stringify(parsed.data),
             });
             if (!res.ok) {
-                const body = await res.json();
+                const body = await res.json().catch(() => ({}));
                 throw new Error(body.message ?? "Login failed");
             }
             const { accessToken, user } = await res.json();
@@ -47,30 +43,33 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <Card className="w-full max-w-md p-8">
-                <p className="mb-1 text-sm font-semibold text-accent">{BRAND.name}</p>
-                <h1 className="text-2xl font-semibold">Sign in</h1>
-                <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-                    <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                    <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                    {error && <p className="text-sm text-danger-700">{error}</p>}
-                    <Button type="submit" loading={loading} fullWidth>
-                        Sign in
-                    </Button>
-                    <div className="text-right">
-                        <Link href="/auth/forgot" className="text-sm text-primary-600 underline">
-                            Forgot password?
+        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
+            <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                <div className="card">
+                    <h2 style={{ font: "700 28px 'Figtree',sans-serif" }}>Welcome back</h2>
+                    <form onSubmit={onSubmit} style={{ display: "grid", gap: "14px", marginTop: "24px" }}>
+                        <div><label className="flabel" htmlFor="l-email">Email</label><input className="in" id="l-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></div>
+                        <div><label className="flabel" htmlFor="l-pass">Password</label><input className="in" id="l-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required /></div>
+                        <div style={{ textAlign: "right", font: "500 14px 'Figtree',sans-serif" }}>
+                            <Link href="/auth/forgot">Forgot password?</Link>
+                        </div>
+                        {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
+                        <button type="submit" className="btn" disabled={loading} style={{ width: "100%", opacity: loading ? 0.7 : 1 }}>
+                            {loading ? "Logging in…" : "Log in"}
+                        </button>
+                        <Link href="/auth/forgot" className="btn btn2" style={{ width: "100%", textAlign: "center" }}>
+                            Email me a login link
                         </Link>
+                    </form>
+                    <div style={{ marginTop: "24px", padding: "14px", borderRadius: "10px", background: "#f1f6f5", font: "400 14px/1.5 'Figtree',sans-serif", color: "#4f6663" }}>
+                        After login: patients go to Home, professionals to their workspace (or the onboarding checklist), admins to the console.
                     </div>
-                </form>
-                <p className="mt-4 text-center text-sm text-text-muted">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/auth/signup" className="text-primary-600 underline">
-                        Sign up
-                    </Link>
+                </div>
+                <p style={{ textAlign: "center", font: "400 14px 'Figtree',sans-serif", marginTop: "16px", color: "#4f6663" }}>
+                    New here? <Link href="/auth/signup">Create an account</Link>
                 </p>
-            </Card>
+            </div>
         </div>
     );
 }
