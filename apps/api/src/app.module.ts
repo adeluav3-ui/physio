@@ -20,6 +20,7 @@ import { ProgramsModule } from "./programs/programs.module.js";
 import { RemindersModule } from "./reminders/reminders.module.js";
 import { PatientsModule } from "./patients/patients.module.js";
 import { GoalPlansModule } from "./goal-plans/goal-plans.module.js";
+import { ReferralsModule } from "./referrals/referrals.module.js";
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { GoalPlansModule } from "./goal-plans/goal-plans.module.js";
         RemindersModule,
         PatientsModule,
         GoalPlansModule,
+        ReferralsModule,
     ],
     providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
