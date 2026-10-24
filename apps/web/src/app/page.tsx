@@ -79,7 +79,7 @@ export default function LandingPage() {
             <section id="how" style={{ background: "#fff", borderTop: "1px solid #dbe5e2", borderBottom: "1px solid #dbe5e2" }}>
                 <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
                     <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>How it works</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: "24px", marginTop: "32px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "24px", marginTop: "32px" }}>
                         <div className="card" style={{ background: "#f6f8f7" }}>
                             <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b766e" }}>1</div>
                             <h3 style={{ font: "700 20px 'Figtree',sans-serif", marginTop: "8px" }}>Tell us what is wrong</h3>
@@ -102,7 +102,7 @@ export default function LandingPage() {
             {/* ── Five disciplines ─────────────────────────────────────── */}
             <section id="pros" style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
                 <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>Five kinds of rehabilitation care, one place</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(5,minmax(0,1fr))", gap: "16px", marginTop: "28px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px", marginTop: "28px" }}>
                     {DISCIPLINES.map((d) => (
                         <div key={d.key} className="card" style={{ padding: "20px" }}>
                             <h3 style={{ font: "700 17px 'Figtree',sans-serif" }}>{d.label}</h3>
