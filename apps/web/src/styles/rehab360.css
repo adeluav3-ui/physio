@@ -216,7 +216,7 @@ a { color: #1b766e; }
 .stcur  { background: #1b766e; color: #fff; border-color: #1b766e; }
 
 /* ── Device case Kanban columns ─────────────────────────────────────────── */
-.kcol { flex: 1 1 200px; min-width: 0; background: #eef3f2; border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
+.kcol, .col { flex: 1 1 200px; min-width: 0; background: #eef3f2; border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
 .mini { background: #fff; border: 1px solid #dbe5e2; border-radius: 12px; padding: 12px; }
 
 /* ── Session / messages ─────────────────────────────────────────────────── */
