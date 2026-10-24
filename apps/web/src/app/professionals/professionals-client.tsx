@@ -45,7 +45,7 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
                     <label htmlFor="f-c" style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>City</label>
                     <input className="in" id="f-c" value={city} onChange={e => setCity(e.target.value)} placeholder="Sagamu" />
                 </div>
-                <button type="button" className="btn" style={{ flex: "0 0 auto" }} onClick={() => {}}>Search</button>
+                <button type="button" className="btn" style={{ flex: "0 0 auto" }}>Search</button>
             </div>
 
             {/* Filter pills */}
@@ -92,7 +92,7 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
                                 <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>Next open</div>
                                 <div style={{ font: "600 16px 'Figtree',sans-serif" }}>{s.next}</div>
                                 <div style={{ font: "700 18px 'Figtree',sans-serif", marginTop: "6px" }}>₦[price]</div>
-                                <a className="btn" href="#" style={{ marginTop: "10px", width: "100%" }}>Book</a>
+                                <a className="btn" href="/auth/signup" style={{ marginTop: "10px", width: "100%" }}>Book</a>
                             </div>
                         </div>
                     ))

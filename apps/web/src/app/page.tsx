@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BRAND } from "@physio/shared";
+import WaitlistForm from "@/components/waitlist-form";
 
 export const metadata: Metadata = {
     title: BRAND.name,
@@ -121,21 +122,7 @@ export default function LandingPage() {
                             Tell us who you are and we will invite you when your city opens. Professionals can also ask to join the first testing group.
                         </p>
                     </div>
-                    <div className="card" style={{ flex: "1 1 420px", color: "#12302c" }}>
-                        <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-                            <div style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", background: "#1b766e", color: "#fff", font: "600 15px 'Figtree',sans-serif" }}>I need care</div>
-                            <div style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", background: "#f1f6f5", font: "600 15px 'Figtree',sans-serif" }}>I provide care</div>
-                        </div>
-                        <div style={{ display: "grid", gap: "14px" }}>
-                            <div><label className="flabel" htmlFor="w-name">Full name</label><input className="in" id="w-name" placeholder="Your name" /></div>
-                            <div><label className="flabel" htmlFor="w-email">Email</label><input className="in" id="w-email" type="email" placeholder="you@example.com" /></div>
-                            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px" }}>
-                                <div style={{ flex: "1 1 180px" }}><label className="flabel" htmlFor="w-need">What do you need help with?</label><input className="in" id="w-need" placeholder="Pick one, or not sure" /></div>
-                                <div style={{ flex: "1 1 140px" }}><label className="flabel" htmlFor="w-city">City</label><input className="in" id="w-city" placeholder="City" /></div>
-                            </div>
-                            <a className="btn" href={patientLink} target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>Join the waitlist</a>
-                        </div>
-                    </div>
+                    <WaitlistForm />
                 </div>
             </section>
 
