@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Find a professional</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#f6f8f7}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:10px;background:#1b766e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#12302c;border:1px solid #c5d3cf}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:16px;padding:20px}
+.in{display:block;width:100%;min-height:46px;border:1px solid #b9c9c5;border-radius:10px;padding:0 12px;font:15px 'Figtree',sans-serif;background:#fff;color:#12302c}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1ef;color:#14544e}
+.ok{background:#e3f4e8;color:#1d5c34}
+.muted{color:#4f6663}
+.pill{display:inline-block;padding:8px 14px;border-radius:99px;border:1px solid #b9c9c5;background:#fff;font:500 14px 'Figtree',sans-serif}
+.pillon{background:#1b766e;color:#fff;border-color:#1b766e}
+</style>
+</helmet>
+<div style="width:100%">
+<div style="max-width:1160px;margin:0 auto;padding:0 24px">
+<header style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:20px 0">
+<div style="font:700 22px 'Figtree',sans-serif;color:#1b766e">Rehab360</div>
+<div style="display:flex;gap:12px"><a class="btn btn2" href="#">Log in</a><a class="btn" href="#">Sign up</a></div>
+</header>
+<h1 style="font:700 34px 'Figtree',sans-serif;margin-top:12px">Find a specialist</h1>
+<div class="card" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+<div style="flex:2 1 260px"><label for="f-q" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">What do you need help with?</label><input class="in" id="f-q" placeholder="Back pain, speech delay, artificial leg"></div>
+<div style="flex:1 1 160px"><label for="f-c" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">City</label><input class="in" id="f-c" placeholder="Sagamu"></div>
+<a class="btn" href="#" style="flex:0 0 auto">Search</a>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+<span class="pill pillon">All</span><span class="pill">Physiotherapy</span><span class="pill">Occupational therapy</span><span class="pill">Speech therapy</span><span class="pill">Prosthetics</span><span class="pill">Orthotics</span>
+<span class="pill" style="margin-left:auto">Video</span><span class="pill">Home visit</span><span class="pill">Clinic</span>
+</div>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;margin:20px 0 12px">Showing sample results. Real professionals appear after verification.</p>
+<div style="display:grid;gap:14px;padding-bottom:64px">
+
+<div class="card" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+<div style="width:72px;height:72px;border-radius:50%;background:#cfe6e2;flex:none"></div>
+<div style="flex:1 1 300px">
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><h3 style="font:700 19px 'Figtree',sans-serif">[Professional name]</h3><span class="chip ok">Licence verified</span></div>
+<div class="muted" style="font:500 15px 'Figtree',sans-serif;margin-top:4px">Physiotherapist · Sports injuries, back pain · English, Yoruba</div>
+<div style="display:flex;gap:8px;margin-top:10px"><span class="chip">Video</span><span class="chip">Home visit</span></div>
+</div>
+<div style="text-align:right;flex:0 0 190px"><div class="muted" style="font:400 13px 'Figtree',sans-serif">Next open</div><div style="font:600 16px 'Figtree',sans-serif">Tomorrow, 10:00 am</div><div style="font:700 18px 'Figtree',sans-serif;margin-top:6px">₦[price]</div><a class="btn" href="#" style="margin-top:10px;width:100%">Book</a></div>
+</div>
+
+<div class="card" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+<div style="width:72px;height:72px;border-radius:50%;background:#d9e6f2;flex:none"></div>
+<div style="flex:1 1 300px">
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><h3 style="font:700 19px 'Figtree',sans-serif">[Professional name]</h3><span class="chip ok">Licence verified</span></div>
+<div class="muted" style="font:500 15px 'Figtree',sans-serif;margin-top:4px">Speech and language therapist · Children, stroke recovery · English</div>
+<div style="display:flex;gap:8px;margin-top:10px"><span class="chip">Video</span></div>
+</div>
+<div style="text-align:right;flex:0 0 190px"><div class="muted" style="font:400 13px 'Figtree',sans-serif">Next open</div><div style="font:600 16px 'Figtree',sans-serif">Mon, 2:00 pm</div><div style="font:700 18px 'Figtree',sans-serif;margin-top:6px">₦[price]</div><a class="btn" href="#" style="margin-top:10px;width:100%">Book</a></div>
+</div>
+
+<div class="card" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
+<div style="width:72px;height:72px;border-radius:50%;background:#efe3d3;flex:none"></div>
+<div style="flex:1 1 300px">
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><h3 style="font:700 19px 'Figtree',sans-serif">[Professional name]</h3><span class="chip ok">Licence verified</span></div>
+<div class="muted" style="font:500 15px 'Figtree',sans-serif;margin-top:4px">Orthotist · Braces, footwear, spinal supports · English, Yoruba</div>
+<div style="display:flex;gap:8px;margin-top:10px"><span class="chip">Video consult</span><span class="chip">Clinic fitting</span></div>
+</div>
+<div style="text-align:right;flex:0 0 190px"><div class="muted" style="font:400 13px 'Figtree',sans-serif">Next open</div><div style="font:600 16px 'Figtree',sans-serif">Wed, 11:30 am</div><div style="font:700 18px 'Figtree',sans-serif;margin-top:6px">₦[price]</div><a class="btn" href="#" style="margin-top:10px;width:100%">Book</a></div>
+</div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":980}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

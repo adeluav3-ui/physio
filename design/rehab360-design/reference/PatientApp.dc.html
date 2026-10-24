@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Patient app: home, plans, booking</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#eef3f2}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.phone{width:390px;height:844px;border:1px solid #b9c9c5;border-radius:36px;background:#f6f8f7;overflow:hidden;display:flex;flex-direction:column;flex:none}
+.body{flex:1;padding:24px 20px;overflow:hidden;display:flex;flex-direction:column;gap:14px}
+.btn{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:12px;background:#1b766e;color:#fff;font:600 16px 'Figtree',sans-serif;text-decoration:none}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:16px;padding:16px}
+.muted{color:#4f6663}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1ef;color:#14544e}
+.cap{font:600 13px 'Figtree',sans-serif;color:#4f6663;margin-bottom:10px}
+.tabs{display:flex;border-top:1px solid #dbe5e2;background:#fff;padding:6px 8px 14px}
+.tab{flex:1;text-align:center;font:500 12px 'Figtree',sans-serif;color:#4f6663;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none}
+.tabon{color:#14544e;font-weight:700}
+.ic{width:24px;height:24px}
+.bar{height:8px;border-radius:99px;background:#dbe5e2}
+.slot{display:inline-block;padding:11px 14px;border-radius:10px;border:1px solid #1b766e;color:#14544e;font:600 14px 'Figtree',sans-serif;background:#fff}
+.on{background:#1b766e;color:#fff}
+</style>
+</helmet>
+<div style="width:1760px;height:960px;padding:40px;display:flex;gap:40px">
+
+<div><div class="cap">Home</div>
+<div class="phone"><div class="body">
+<div><div class="muted" style="font:500 14px 'Figtree',sans-serif">Good afternoon</div><h1 style="font:700 26px 'Figtree',sans-serif">Your day</h1></div>
+<div class="card" style="background:#1b766e;border-color:#1b766e;color:#fff"><div style="font:600 13px 'Figtree',sans-serif;color:#cfe6e2">Next session</div><div style="font:700 20px 'Figtree',sans-serif;margin-top:4px">Thursday, 4:00 pm</div><div style="font:400 15px 'Figtree',sans-serif;margin-top:2px;color:#e3f1ef">Video with [Professional name]</div><a class="btn" href="#" style="background:#fff;color:#14544e;margin-top:14px;min-height:46px">Join when it opens</a></div>
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font:700 17px 'Figtree',sans-serif">Today's tasks</h2><span class="chip">2 of 4 done</span></div>
+<div class="bar" style="margin-top:12px"><div style="width:50%;height:8px;border-radius:99px;background:#1b766e"></div></div>
+<div style="display:grid;gap:12px;margin-top:14px;font:500 15px 'Figtree',sans-serif">
+<div style="display:flex;justify-content:space-between"><span>Shoulder mobility</span><span class="chip">Done</span></div>
+<div style="display:flex;justify-content:space-between"><span>Wall slides</span><span class="chip">Done</span></div>
+<div style="display:flex;justify-content:space-between"><span>Resistance band row</span><span class="muted">To do</span></div>
+<div style="display:flex;justify-content:space-between"><span>Walk for 10 minutes</span><span class="muted">To do</span></div></div></div>
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font:600 15px 'Figtree',sans-serif">1 new message</div><div class="muted" style="font:400 14px 'Figtree',sans-serif">From [Professional name]</div></div><span class="chip">Open</span></div>
+<div class="card"><div class="muted" style="font:500 13px 'Figtree',sans-serif">Streak</div><div style="font:700 22px 'Figtree',sans-serif">5 days in a row</div></div>
+</div>
+<div class="tabs"><a class="tab tabon" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Home</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6"/></svg>Plan</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Visits</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>Me</a></div>
+</div></div>
+
+<div><div class="cap">Plan: physiotherapy</div>
+<div class="phone"><div class="body">
+<h1 style="font:700 26px 'Figtree',sans-serif">Your exercises</h1>
+<div class="muted" style="font:400 15px 'Figtree',sans-serif;margin-top:-8px">Shoulder recovery · Week 2</div>
+<div class="card"><div style="height:130px;border-radius:12px;background:#dbe9e6;display:flex;align-items:center;justify-content:center;font:500 14px 'Figtree',sans-serif" class="muted">Exercise video</div><h2 style="font:700 18px 'Figtree',sans-serif;margin-top:12px">Wall slides</h2><div class="muted" style="font:400 15px 'Figtree',sans-serif;margin-top:2px">10 reps · 3 sets · twice a day</div>
+<div style="font:600 13px 'Figtree',sans-serif;margin-top:14px">How did it feel?</div>
+<div style="display:flex;gap:8px;margin-top:8px"><span class="slot on">Easy</span><span class="slot">Okay</span><span class="slot">Painful</span></div>
+<a class="btn" href="#" style="margin-top:14px">Mark as done</a></div>
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 16px 'Figtree',sans-serif">Resistance band row</span><span class="muted">3 x 12</span></div>
+<div class="card" style="display:flex;justify-content:space-between;align-items:center"><span style="font:600 16px 'Figtree',sans-serif">Pendulum swings</span><span class="muted">2 x 20</span></div>
+<div class="card" style="font:400 14px/1.4 'Figtree',sans-serif;background:#fdf1d8;border-color:#ecd49b;color:#5f3f00">Sharp pain, new numbness or swelling? Stop and message your specialist.</div>
+</div>
+<div class="tabs"><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Home</a><a class="tab tabon" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6"/></svg>Plan</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Visits</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>Me</a></div>
+</div></div>
+
+<div><div class="cap">Plan: speech or occupational therapy</div>
+<div class="phone"><div class="body">
+<h1 style="font:700 26px 'Figtree',sans-serif">Your goals</h1>
+<div class="muted" style="font:400 15px 'Figtree',sans-serif;margin-top:-8px">For [Patient name] · helper view on</div>
+<div class="card"><div style="display:flex;justify-content:space-between"><h2 style="font:700 17px 'Figtree',sans-serif">Say two-word requests</h2><span class="chip">On track</span></div>
+<div class="bar" style="margin-top:12px"><div style="width:60%;height:8px;border-radius:99px;background:#1b766e"></div></div>
+<div class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:6px">Practised 4 of 5 days this week</div></div>
+<div class="card"><h2 style="font:700 17px 'Figtree',sans-serif">This week's practice</h2>
+<div style="display:grid;gap:12px;margin-top:12px;font:500 15px 'Figtree',sans-serif">
+<div style="display:flex;gap:10px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;background:#1b766e;flex:none"></span>Name items at mealtime</div>
+<div style="display:flex;gap:10px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;border:2px solid #b9c9c5;flex:none"></span>Picture book, 10 minutes</div>
+<div style="display:flex;gap:10px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;border:2px solid #b9c9c5;flex:none"></span>Record a short voice clip</div></div>
+<a class="btn" href="#" style="margin-top:14px;background:#fff;color:#14544e;border:1.5px solid #1b766e">Add a note or recording</a></div>
+<div class="card"><h2 style="font:700 17px 'Figtree',sans-serif">Tips for the helper</h2><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">Wait a few seconds before helping. Praise every try.</p></div>
+</div>
+<div class="tabs"><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Home</a><a class="tab tabon" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6"/></svg>Plan</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>Messages</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Visits</a><a class="tab" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>Me</a></div>
+</div></div>
+
+<div><div class="cap">Booking</div>
+<div class="phone"><div class="body">
+<h1 style="font:700 26px 'Figtree',sans-serif">Book a session</h1>
+<div class="card" style="display:flex;gap:12px;align-items:center"><div style="width:52px;height:52px;border-radius:50%;background:#cfe6e2;flex:none"></div><div><div style="font:700 16px 'Figtree',sans-serif">[Professional name]</div><div class="muted" style="font:400 14px 'Figtree',sans-serif">Physiotherapist · Licence verified</div></div></div>
+<div><div style="font:600 14px 'Figtree',sans-serif;margin-bottom:8px">Session type</div><div style="display:flex;gap:8px"><span class="slot on">Video</span><span class="slot">Home visit</span></div></div>
+<div><div style="font:600 14px 'Figtree',sans-serif;margin-bottom:8px">Choose a day</div><div style="display:flex;gap:8px"><span class="slot">Tue 27</span><span class="slot on">Wed 28</span><span class="slot">Thu 29</span></div></div>
+<div><div style="font:600 14px 'Figtree',sans-serif;margin-bottom:8px">Choose a time</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="slot">9:00</span><span class="slot on">10:00</span><span class="slot">11:00</span><span class="slot">3:00 pm</span></div></div>
+<div class="card" style="display:grid;gap:8px;font:500 15px 'Figtree',sans-serif"><div style="display:flex;justify-content:space-between"><span>Session</span><span>₦[price]</span></div><div style="display:flex;justify-content:space-between"><span>Service fee</span><span>₦[fee]</span></div><div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px solid #e6eeec;padding-top:8px"><span>Total</span><span>₦[total]</span></div></div>
+<div style="margin-top:auto"><a class="btn" href="#">Pay and book</a></div>
+</div></div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1760,"height":960}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

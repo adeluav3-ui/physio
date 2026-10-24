@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Public professional profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#f6f8f7}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:10px;background:#1b766e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#12302c;border:1px solid #c5d3cf}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:16px;padding:24px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1ef;color:#14544e}
+.ok{background:#e3f4e8;color:#1d5c34}
+.muted{color:#4f6663}
+.slot{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid #1b766e;color:#14544e;font:600 14px 'Figtree',sans-serif;background:#fff}
+h2{font:700 20px 'Figtree',sans-serif}
+</style>
+</helmet>
+<div style="width:100%">
+<div style="max-width:1160px;margin:0 auto;padding:0 24px">
+<header style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:20px 0">
+<div style="font:700 22px 'Figtree',sans-serif;color:#1b766e">Rehab360</div>
+<a class="btn btn2" href="#">Log in</a>
+</header>
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;padding-bottom:64px">
+<div style="flex:999 1 560px;min-width:0;display:grid;gap:20px">
+<div class="card" style="display:flex;flex-wrap:wrap;gap:24px">
+<div style="width:120px;height:120px;border-radius:50%;background:#cfe6e2;flex:none"></div>
+<div style="flex:1 1 300px">
+<h1 style="font:700 30px 'Figtree',sans-serif">[Professional name]</h1>
+<div class="muted" style="font:500 17px 'Figtree',sans-serif;margin-top:4px">Physiotherapist</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px"><span class="chip ok">Licence verified</span><span class="chip">English, Yoruba</span><span class="chip">Video</span><span class="chip">Home visit</span></div>
+<p class="muted" style="font:400 16px/1.55 'Figtree',sans-serif;margin-top:14px">Helping people return to movement after injury, surgery or long periods of back and neck pain. [Short bio written by the professional]</p>
+</div>
+</div>
+<div class="card"><h2>What I treat</h2>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px"><span class="chip">Back and neck pain</span><span class="chip">Sports injuries</span><span class="chip">After surgery</span><span class="chip">Stroke recovery</span></div></div>
+<div class="card"><h2>How a session works</h2>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:14px">
+<div><div style="font:700 14px 'Figtree',sans-serif;color:#1b766e">1. Book</div><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:4px">Choose a time and answer a few safety questions.</p></div>
+<div><div style="font:700 14px 'Figtree',sans-serif;color:#1b766e">2. Meet</div><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:4px">Join by video or receive a home visit.</p></div>
+<div><div style="font:700 14px 'Figtree',sans-serif;color:#1b766e">3. Follow your plan</div><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:4px">Get exercises and goals on your phone.</p></div>
+</div></div>
+<div class="card"><h2>Licence and registration</h2>
+<p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:8px">Licensing body: [Body name]. Checked by our team on [date]. We show the badge only after a manual check.</p></div>
+</div>
+<aside style="flex:1 1 320px;min-width:0;position:static">
+<div class="card" style="display:grid;gap:14px">
+<div style="font:700 24px 'Figtree',sans-serif">₦[price] <span class="muted" style="font:400 15px 'Figtree',sans-serif">per session</span></div>
+<div><div style="font:600 14px 'Figtree',sans-serif;margin-bottom:8px">Session type</div>
+<div style="display:flex;gap:8px"><span class="slot" style="background:#1b766e;color:#fff">Video</span><span class="slot">Home visit</span></div></div>
+<div><div style="font:600 14px 'Figtree',sans-serif;margin-bottom:8px">Next open times</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><span class="slot">Tue 10:00</span><span class="slot">Tue 11:00</span><span class="slot">Wed 9:00</span><span class="slot">Wed 3:00 pm</span></div></div>
+<a class="btn" href="#">Book a session</a>
+<p class="muted" style="font:400 13px/1.5 'Figtree',sans-serif">Not an emergency service. If symptoms are severe or sudden, go to the nearest hospital.</p>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1060}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
