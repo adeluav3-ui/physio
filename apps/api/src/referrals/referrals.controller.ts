@@ -44,6 +44,12 @@ export class ReferralsController {
         return this.referrals.consent(user, id);
     }
 
+    @Get("admin/all")
+    @Roles("ADMIN")
+    listAll() {
+        return this.referrals.listAll();
+    }
+
     @Post(":id/respond")
     @Roles("PHYSIO")
     respond(

@@ -111,6 +111,18 @@ export class ReferralsService {
         });
     }
 
+    async listAll() {
+        return this.prisma.client.referral.findMany({
+            include: {
+                patient: { include: { user: { select: { name: true, email: true } } } },
+                sender: { include: { user: { select: { name: true } } } },
+                receiver: { include: { user: { select: { name: true } } } },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 200,
+        });
+    }
+
     async listForPatient(patient: SessionUser) {
         return this.prisma.client.referral.findMany({
             where: { patientId: patient.id },

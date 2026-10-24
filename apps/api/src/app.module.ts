@@ -21,6 +21,7 @@ import { RemindersModule } from "./reminders/reminders.module.js";
 import { PatientsModule } from "./patients/patients.module.js";
 import { GoalPlansModule } from "./goal-plans/goal-plans.module.js";
 import { ReferralsModule } from "./referrals/referrals.module.js";
+import { AdminModule } from "./admin/admin.module.js";
 
 @Module({
     imports: [
@@ -50,6 +51,7 @@ import { ReferralsModule } from "./referrals/referrals.module.js";
         PatientsModule,
         GoalPlansModule,
         ReferralsModule,
+        AdminModule,
     ],
     providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

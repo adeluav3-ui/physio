@@ -7,6 +7,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 const nav = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/physios", label: "Professionals" },
+  { href: "/admin/referrals", label: "Referrals" },
   { href: "/admin/triage", label: "Triage" },
   { href: "/admin/appointments", label: "Appointments" },
   { href: "/admin/payments", label: "Payments" },
@@ -14,6 +15,8 @@ const nav = [
   { href: "/admin/library", label: "Library" },
   { href: "/admin/incidents", label: "Incidents" },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/waitlist", label: "Waitlist" },
+  { href: "/admin/audit", label: "Audit log" },
   { href: "/admin/analytics", label: "Analytics" },
 ];
 
