@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: physio-api
+    region: frankfurt
+    plan: starter
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: physio-redis
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: DAILY_API_KEY
+        sync: false
+      - key: DAILY_DOMAIN
+        sync: false
+      - key: VIDEO_PROVIDER
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PLATFORM_FEE_BPS
+        sync: false
+      - key: PROXY_SHARED_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    preDeployCommand: >-
+      cd /app && pnpm --filter @physio/db exec prisma migrate deploy
+
+  - type: redis
+    name: physio-redis
+    region: frankfurt
+    plan: starter
+    ipAllowList: []
