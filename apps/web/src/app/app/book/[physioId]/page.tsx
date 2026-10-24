@@ -45,7 +45,7 @@ export default function BookPage() {
                 setIntake(intakeData);
                 setPro(proData);
                 if (all.length > 0) {
-                    const firstDay = new Date(all[0].startsAt).toISOString().slice(0, 10);
+                    const firstDay = new Date(all[0]!.startsAt).toISOString().slice(0, 10);
                     setSelectedDay(firstDay);
                 }
             })

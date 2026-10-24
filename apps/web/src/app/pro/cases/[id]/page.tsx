@@ -120,8 +120,8 @@ export default function DeviceCasePage() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "12px" }}>
                 {KANBAN_STAGES.map(s => (
                     <div key={s} className="col" style={{ flex: "1 1 200px", minWidth: 0 }}>
-                        <div className="muted" style={{ font: "700 13px 'Figtree',sans-serif" }}>{s} · {kanban[s].length}</div>
-                        {kanban[s].map((item, i) => (
+                        <div className="muted" style={{ font: "700 13px 'Figtree',sans-serif" }}>{s} · {(kanban[s] ?? []).length}</div>
+                        {(kanban[s] ?? []).map((item, i) => (
                             <div key={i} className="mini" style={item.active ? { borderColor: "#1b766e" } : {}}>
                                 <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{item.patientName}</div>
                                 <div className="muted" style={{ font: "400 12px 'Figtree',sans-serif" }}>{item.deviceType}</div>

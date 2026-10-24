@@ -128,11 +128,11 @@ export default function PlanPage() {
                                 </div>
                             ))}
 
-                            {goals[0]?.tasks?.length > 0 && (
+                            {(goals[0]?.tasks?.length ?? 0) > 0 && (
                                 <div className="card">
                                     <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: 0 }}>{"This week's practice"}</h2>
                                     <div style={{ display: "grid", gap: "12px", marginTop: "12px", font: "500 15px 'Figtree',sans-serif" }}>
-                                        {goals[0].tasks.map(task => {
+                                        {(goals[0]?.tasks ?? []).map(task => {
                                             const done = task.logs?.some(l => l.date === todayStr && l.completed);
                                             return (
                                                 <div key={task.id} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
