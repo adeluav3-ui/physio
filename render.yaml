@@ -28,6 +28,8 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
+      - key: VIDEO_PROVIDER
+        value: DAILY
       - key: DAILY_API_KEY
         sync: false
       - key: DAILY_DOMAIN
