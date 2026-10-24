@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign up and log in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#f6f8f7}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:10px;background:#1b766e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none;width:100%}
+.btn2{background:#fff;color:#12302c;border:1px solid #c5d3cf}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:16px;padding:32px}
+.in{display:block;width:100%;min-height:46px;border:1px solid #b9c9c5;border-radius:10px;padding:0 12px;font:15px 'Figtree',sans-serif;background:#fff;color:#12302c}
+label{display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px}
+.muted{color:#4f6663}
+a{color:#1b766e}
+</style>
+</helmet>
+<div style="width:100%;padding:32px 24px">
+<div style="max-width:1000px;margin:0 auto">
+<div style="font:700 22px 'Figtree',sans-serif;color:#1b766e;margin-bottom:24px">Rehab360</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+<div class="card" style="flex:1 1 420px">
+<h1 style="font:700 28px 'Figtree',sans-serif">Create your account</h1>
+<p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">We send appointment reminders and messages to your email.</p>
+<div style="display:flex;gap:8px;margin:20px 0">
+<div style="flex:1;padding:11px;text-align:center;border-radius:10px;background:#1b766e;color:#fff;font:600 14px 'Figtree',sans-serif">I need care</div>
+<div style="flex:1;padding:11px;text-align:center;border-radius:10px;background:#f1f6f5;font:600 14px 'Figtree',sans-serif">I provide care</div>
+</div>
+<div style="display:grid;gap:14px">
+<div><label for="s-name">Full name</label><input class="in" id="s-name" placeholder="Your name"></div>
+<div><label for="s-email">Email</label><input class="in" id="s-email" placeholder="you@example.com"></div>
+<div><label for="s-pass">Password</label><input class="in" id="s-pass" type="password" placeholder="At least 8 characters"></div>
+<label style="display:flex;gap:10px;align-items:flex-start;font:400 14px/1.4 'Figtree',sans-serif;margin:0"><input type="checkbox" style="width:20px;height:20px;margin:0;flex:none"> I agree to the terms and privacy notice.</label>
+<a class="btn" href="#">Create account</a>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;text-align:center">Already have an account? <a href="#">Log in</a></p>
+</div>
+</div>
+<div class="card" style="flex:1 1 420px">
+<h2 style="font:700 28px 'Figtree',sans-serif">Welcome back</h2>
+<div style="display:grid;gap:14px;margin-top:24px">
+<div><label for="l-email">Email</label><input class="in" id="l-email" placeholder="you@example.com"></div>
+<div><label for="l-pass">Password</label><input class="in" id="l-pass" type="password" placeholder="Your password"></div>
+<div style="text-align:right;font:500 14px 'Figtree',sans-serif"><a href="#">Forgot password?</a></div>
+<a class="btn" href="#">Log in</a>
+<a class="btn btn2" href="#">Email me a login link</a>
+</div>
+<div style="margin-top:24px;padding:14px;border-radius:10px;background:#f1f6f5;font:400 14px/1.5 'Figtree',sans-serif" class="muted">After login: patients go to Home, professionals to their workspace (or the onboarding checklist), admins to the console.</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
-import { SignOutButton } from "@/components/sign-out-button";
 
 type Appointment = {
     id: string;
@@ -11,104 +9,83 @@ type Appointment = {
     physio: { user: { name: string } };
 };
 
-export default async function PatientDashboard() {
+function greeting() {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+}
+
+export default async function PatientHome() {
     const user = await requireSession(["PATIENT"]);
 
-    let nextAppointment: Appointment | null = null;
-    try {
-        const appointments = await apiFetch<Appointment[]>("/booking/appointments");
-        nextAppointment =
-            appointments
-                .filter((a) => a.status === "CONFIRMED" && new Date(a.startsAt) > new Date())
-                .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0] ?? null;
-    } catch {
-        // No appointments yet or API not reachable; show empty state.
-    }
+    let appointments: Appointment[] = [];
+    try { appointments = await apiFetch<Appointment[]>("/booking/appointments"); } catch { /* empty */ }
 
-    let profileComplete = true;
-    try {
-        const profile = await apiFetch<{ dob?: string; sex?: string; location?: string; emergencyContact?: string }>("/patients/me");
-        profileComplete = Boolean(profile?.dob && profile?.sex && profile?.location && profile?.emergencyContact);
-    } catch { }
+    const next = appointments
+        .filter(a => a.status === "CONFIRMED" && new Date(a.startsAt) > new Date())
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0] ?? null;
+
+    const nextLabel = next
+        ? new Date(next.startsAt).toLocaleString("en-NG", { weekday: "long", hour: "numeric", minute: "2-digit" })
+        : null;
+    const proName = next?.physio.user.name ?? "[Professional name]";
 
     return (
-        <div className="mx-auto max-w-2xl p-4">
-            <div className="mb-6 flex items-center justify-between">
-                <h1 className="text-2xl font-semibold">Welcome, {user.name.split(" ")[0]}</h1>
-                <SignOutButton />
+        <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            {/* Greeting */}
+            <div>
+                <div className="muted" style={{ font: "500 14px 'Figtree',sans-serif" }}>{greeting()}</div>
+                <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Your day</h1>
             </div>
 
-            <div className="flex flex-col gap-3">
-
-                {!profileComplete && (
-                    <Card>
-                        <p className="text-sm font-semibold">Complete your profile</p>
-                        <p className="mt-1 text-sm text-text-muted">
-                            We need a few details before your first booking.
-                        </p>
-                        <Link
-                            href="/app/profile"
-                            className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                        >
-                            Complete profile
-                        </Link>
-                    </Card>
-                )}
-                {nextAppointment ? (
-                    <Card>
-                        <p className="text-xs uppercase tracking-wide text-text-muted">Next appointment</p>
-                        <p className="mt-1 text-lg font-semibold">
-                            {new Date(nextAppointment.startsAt).toLocaleString()}
-                        </p>
-                        <p className="mt-1 text-sm text-text-muted">
-                            with {nextAppointment.physio.user.name}
-                        </p>
-                        <Link
-                            href={`/app/appointments/${nextAppointment.id}`}
-                            className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                        >
-                            View appointment
-                        </Link>
-                    </Card>
-                ) : (
-                    <Card>
-                        <p className="text-sm text-text-muted">
-                            No upcoming appointments. Complete your intake to get started.
-                        </p>
-                        <Link
-                            href="/app/intake/complaint"
-                            className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                        >
-                            Start intake
-                        </Link>
-                    </Card>
-                )}
-
-                <Card>
-                    <p className="text-sm font-semibold">My plan</p>
-                    <p className="mt-1 text-sm text-text-muted">
-                        View your exercise programme and goal plans assigned by your professional.
-                    </p>
-                    <Link
-                        href="/app/plan"
-                        className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                    >
-                        Open plan
+            {/* Next session */}
+            {next ? (
+                <div className="card" style={{ background: "#1b766e", borderColor: "#1b766e", color: "#fff" }}>
+                    <div style={{ font: "600 13px 'Figtree',sans-serif", color: "#cfe6e2" }}>Next session</div>
+                    <div style={{ font: "700 20px 'Figtree',sans-serif", marginTop: "4px" }}>{nextLabel}</div>
+                    <div style={{ font: "400 15px 'Figtree',sans-serif", marginTop: "2px", color: "#e3f1ef" }}>Video with {proName}</div>
+                    <Link href={`/app/session/${next.id}`} className="btn" style={{ background: "#fff", color: "#14544e", marginTop: "14px", minHeight: "46px", display: "flex" }}>
+                        Join when it opens
                     </Link>
-                </Card>
-
-                <Card>
-                    <p className="text-sm font-semibold">Find a professional</p>
-                    <p className="mt-1 text-sm text-text-muted">
-                        Browse verified physiotherapists, OTs, speech therapists and more.
-                    </p>
-                    <Link
-                        href="/app/physios"
-                        className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                    >
-                        Browse professionals
+                </div>
+            ) : (
+                <div className="card" style={{ background: "#1b766e", borderColor: "#1b766e", color: "#fff" }}>
+                    <div style={{ font: "600 13px 'Figtree',sans-serif", color: "#cfe6e2" }}>No upcoming sessions</div>
+                    <div style={{ font: "400 15px 'Figtree',sans-serif", marginTop: "4px", color: "#e3f1ef" }}>Find a professional to book your first session.</div>
+                    <Link href="/professionals" className="btn" style={{ background: "#fff", color: "#14544e", marginTop: "14px", minHeight: "46px", display: "flex" }}>
+                        Find a specialist
                     </Link>
-                </Card>
+                </div>
+            )}
+
+            {/* Today's tasks */}
+            <div className="card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: 0 }}>{"Today's tasks"}</h2>
+                    <span className="chip-sm">0 of 0 done</span>
+                </div>
+                <div className="bar" style={{ marginTop: "12px" }}>
+                    <div style={{ width: "0%", height: "8px", borderRadius: "99px", background: "#1b766e" }}></div>
+                </div>
+                <div style={{ marginTop: "12px", font: "400 14px 'Figtree',sans-serif", color: "#4f6663" }}>
+                    No tasks yet. Your specialist will add exercises or goals after your first session.
+                </div>
+            </div>
+
+            {/* Message card */}
+            <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                    <div style={{ font: "600 15px 'Figtree',sans-serif" }}>Messages</div>
+                    <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>From your specialists</div>
+                </div>
+                <Link href="/app/messages" className="chip-sm">Open</Link>
+            </div>
+
+            {/* Streak */}
+            <div className="card">
+                <div className="muted" style={{ font: "500 13px 'Figtree',sans-serif" }}>Streak</div>
+                <div style={{ font: "700 22px 'Figtree',sans-serif" }}>Keep it up!</div>
             </div>
         </div>
     );

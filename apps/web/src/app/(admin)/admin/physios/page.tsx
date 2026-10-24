@@ -1,70 +1,104 @@
 import Link from "next/link";
-import { Card, Chip } from "@physio/ui";
 import { apiFetch } from "@/lib/api";
 import { requireSession } from "@/lib/session";
 import { DISCIPLINE_LABELS } from "@physio/shared";
 
 type Pending = {
-    userId: string;
-    discipline: string;
-    licenceNo: string;
-    licensingBody: string | null;
-    specialties: string[];
-    bio: string;
-    serviceArea: string;
+    userId: string; discipline: string; licenceNo: string;
+    licensingBody: string | null; specialties: string[];
+    bio: string; serviceArea: string;
     user: { name: string; email: string; createdAt: string };
 };
 
-export default async function AdminProfessionalsPage() {
+export default async function AdminVerificationPage() {
     await requireSession(["ADMIN"]);
-    const pending = await apiFetch<Pending[]>("/physios/admin/pending");
+    let pending: Pending[] = [];
+    try { pending = await apiFetch<Pending[]>("/physios/admin/pending"); } catch { /* empty */ }
+
+    const first = pending[0] ?? null;
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-semibold">Professional verification</h1>
-            <p className="mt-1 text-sm text-text-muted">{pending.length} awaiting review.</p>
+        <>
+            <h1 style={{ font: "700 28px 'Figtree',sans-serif", margin: 0 }}>Verification queue</h1>
 
-            <ul className="mt-6 flex flex-col gap-3">
-                {pending.map((p) => (
-                    <li key={p.userId}>
-                        <Card>
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <h2 className="font-semibold">{p.user.name}</h2>
-                                        <Chip variant="accent">
-                                            {DISCIPLINE_LABELS[p.discipline as keyof typeof DISCIPLINE_LABELS] ?? p.discipline}
-                                        </Chip>
-                                    </div>
-                                    <p className="mt-1 text-sm text-text-muted">
-                                        {p.user.email} · Licence <span className="font-mono">{p.licenceNo}</span>
-                                    </p>
-                                    {p.licensingBody && (
-                                        <p className="mt-0.5 text-xs text-text-muted">Board: {p.licensingBody}</p>
-                                    )}
-                                    <p className="mt-1 text-sm text-text-muted">
-                                        {p.specialties.join(" · ")} · {p.serviceArea}
-                                    </p>
-                                    <p className="mt-1 text-xs text-text-muted">
-                                        Applied {new Date(p.user.createdAt).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <Link
-                                    href={`/admin/physios/${p.userId}`}
-                                    className="shrink-0 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark"
-                                >
-                                    Review
-                                </Link>
-                            </div>
-                        </Card>
-                    </li>
+            {/* Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "14px", marginTop: "20px" }}>
+                {[
+                    { label: "Waiting for review", value: pending.length },
+                    { label: "Open incidents", value: "—" },
+                    { label: "Stalled referrals", value: "—" },
+                    { label: "Disputed payments", value: "—" },
+                ].map(s => (
+                    <div key={s.label} className="card">
+                        <div className="muted" style={{ font: "500 13px 'Figtree',sans-serif" }}>{s.label}</div>
+                        <div style={{ font: "700 30px 'Figtree',sans-serif" }}>{s.value}</div>
+                    </div>
                 ))}
-                {pending.length === 0 && (
-                    <Card padding="lg" className="text-center text-text-muted">
-                        No professionals waiting for verification.
-                    </Card>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px", alignItems: "flex-start" }}>
+                {/* Waiting list */}
+                <div className="card" style={{ flex: "1 1 360px", paddingBottom: "6px" }}>
+                    <h2 style={{ font: "700 17px 'Figtree',sans-serif", paddingBottom: "10px", margin: 0 }}>Waiting</h2>
+                    {pending.length === 0 ? (
+                        <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif", padding: "12px 0" }}>
+                            No professionals waiting for verification.
+                        </div>
+                    ) : pending.map((p, i) => (
+                        <Link key={p.userId} href={`/admin/physios/${p.userId}`}
+                            style={{ display: "block", textDecoration: "none" }}
+                            className="row">
+                            <div style={{ flex: "1 1 160px" }}>
+                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#12302c" }}>{p.user.name}</div>
+                                <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>
+                                    {DISCIPLINE_LABELS[p.discipline as keyof typeof DISCIPLINE_LABELS] ?? p.discipline}
+                                </div>
+                            </div>
+                            <span className="chip warn">Pending</span>
+                        </Link>
+                    ))}
+                </div>
+
+                {/* Detail panel — first in list */}
+                {first ? (
+                    <div className="card" style={{ flex: "2 1 420px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "10px" }}>
+                            <div>
+                                <h2 style={{ font: "700 22px 'Figtree',sans-serif", margin: 0 }}>{first.user.name}</h2>
+                                <div className="muted" style={{ font: "500 15px 'Figtree',sans-serif", marginTop: "2px" }}>
+                                    {DISCIPLINE_LABELS[first.discipline as keyof typeof DISCIPLINE_LABELS] ?? first.discipline}
+                                    {" · Submitted "}
+                                    {new Date(first.user.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                                </div>
+                            </div>
+                            <span className="chip warn">Pending</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: "14px", marginTop: "20px" }}>
+                            {[
+                                { label: "Licensing body", value: first.licensingBody ?? "—" },
+                                { label: "Licence number", value: first.licenceNo },
+                                { label: "Email", value: first.user.email },
+                                { label: "City", value: first.serviceArea || "—" },
+                            ].map(({ label, value }) => (
+                                <div key={label}>
+                                    <div className="muted" style={{ font: "500 13px 'Figtree',sans-serif" }}>{label}</div>
+                                    <div style={{ font: "600 15px 'Figtree',sans-serif", marginTop: "2px" }}>{value}</div>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ marginTop: "18px", height: "180px", borderRadius: "12px", background: "#eef3f2", border: "1px dashed #b9c9c5", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
+                            <span style={{ font: "500 14px 'Figtree',sans-serif" }}>Uploaded licence document</span>
+                        </div>
+                        <div style={{ marginTop: "18px" }}>
+                            <Link href={`/admin/physios/${first.userId}`} className="btn">Review and decide</Link>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="card" style={{ flex: "2 1 420px", color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>
+                        Select a professional from the list to review their details.
+                    </div>
                 )}
-            </ul>
-        </div>
+            </div>
+        </>
     );
 }

@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, Card, Input } from "@physio/ui";
-import { signUpSchema, BRAND } from "@physio/shared";
+import { signUpSchema } from "@physio/shared";
 
 export default function SignupPage() {
     const router = useRouter();
-    const [wantsPhysio, setWantsPhysio] = useState(false);
+    const [role, setRole] = useState<"patient" | "pro">("patient");
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
+    const [agreed, setAgreed] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
@@ -19,13 +19,9 @@ export default function SignupPage() {
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         setError(null);
-
+        if (!agreed) { setError("Please agree to the terms and privacy notice."); return; }
         const parsed = signUpSchema.safeParse({ email, password, name });
-        if (!parsed.success) {
-            setError(parsed.error.issues[0]?.message ?? "Invalid input");
-            return;
-        }
-
+        if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Invalid input"); return; }
         setLoading(true);
         try {
             const res = await fetch("/api/proxy/auth/signup", {
@@ -33,12 +29,10 @@ export default function SignupPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(parsed.data),
             });
-
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.message ?? "Signup failed");
             }
-
             setDone(true);
         } catch (err) {
             setError((err as Error).message);
@@ -48,104 +42,73 @@ export default function SignupPage() {
     }
 
     if (done) {
-        const nextPath = wantsPhysio ? "/pro/onboarding/apply" : "/app";
+        const nextPath = role === "pro" ? "/pro/onboarding/apply" : "/app";
         return (
-            <div className="flex min-h-screen items-center justify-center p-4">
-                <Card className="w-full max-w-md p-8 text-center">
-                    <h1 className="text-2xl font-semibold">Check your email</h1>
-                    <p className="mt-3 text-sm text-text-muted">
-                        We sent a verification link to <strong>{email}</strong>. Click it to activate your
-                        {wantsPhysio ? " account, then complete your professional application." : " account."}
-                    </p>
-                    <p className="mt-4 text-xs text-text-muted">
-                        In dev mode with placeholder email keys, you can verify directly:
-                    </p>
-                    <Button
-                        className="mt-3"
-                        variant="secondary"
-                        fullWidth
-                        onClick={() =>
-                            router.push(
-                                `/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`,
-                            )
-                        }
-                    >
-                        Verify now (dev)
-                    </Button>
-                </Card>
+            <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
+                <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+                    <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                    <div className="card">
+                        <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Check your email</h1>
+                        <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>
+                            We sent a verification link to <strong>{email}</strong>. Click it to activate your account.
+                        </p>
+                        <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
+                            <button
+                                type="button"
+                                className="btn"
+                                style={{ width: "100%" }}
+                                onClick={() => router.push(`/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`)}
+                            >
+                                Verify now (dev)
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <Card className="w-full max-w-md p-8">
-                <p className="mb-1 text-sm font-semibold text-accent">{BRAND.name}</p>
-                <h1 className="text-2xl font-semibold">Create your account</h1>
-
-                <div className="mt-6">
-                    <p className="text-sm font-medium text-text">I am a</p>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
+        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
+            <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                <div className="card">
+                    <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Create your account</h1>
+                    <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>We send appointment reminders and messages to your email.</p>
+                    <div style={{ display: "flex", gap: "8px", margin: "20px 0" }}>
                         <button
                             type="button"
-                            onClick={() => setWantsPhysio(false)}
-                            className={`h-12 rounded-md border text-sm font-medium ${!wantsPhysio
-                                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                                    : "border-border bg-surface text-text"
-                                }`}
+                            onClick={() => setRole("patient")}
+                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "patient" ? "#1b766e" : "#f1f6f5", color: role === "patient" ? "#fff" : "#12302c", font: "600 14px 'Figtree',sans-serif" }}
                         >
-                            Patient
+                            I need care
                         </button>
                         <button
                             type="button"
-                            onClick={() => setWantsPhysio(true)}
-                            className={`h-12 rounded-md border text-sm font-medium ${wantsPhysio
-                                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                                    : "border-border bg-surface text-text"
-                                }`}
+                            onClick={() => setRole("pro")}
+                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "pro" ? "#1b766e" : "#f1f6f5", color: role === "pro" ? "#fff" : "#12302c", font: "600 14px 'Figtree',sans-serif" }}
                         >
-                            Professional
+                            I provide care
                         </button>
                     </div>
-                    {wantsPhysio && (
-                        <p className="mt-2 text-xs text-text-muted">
-                            Physiotherapists, OTs, speech therapists, prosthetists, and orthotists are all
-                            welcome. You'll provide your licence details after signing up and will be
-                            verified before appearing to patients.
+                    <form onSubmit={onSubmit} style={{ display: "grid", gap: "14px" }}>
+                        <div><label className="flabel" htmlFor="s-name">Full name</label><input className="in" id="s-name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required /></div>
+                        <div><label className="flabel" htmlFor="s-email">Email</label><input className="in" id="s-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></div>
+                        <div><label className="flabel" htmlFor="s-pass">Password</label><input className="in" id="s-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" required /></div>
+                        <label style={{ display: "flex", gap: "10px", alignItems: "flex-start", font: "400 14px/1.4 'Figtree',sans-serif", margin: 0, cursor: "pointer" }}>
+                            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ width: "20px", height: "20px", margin: 0, flexShrink: 0, marginTop: "1px" }} />
+                            I agree to the terms and privacy notice.
+                        </label>
+                        {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
+                        <button type="submit" className="btn" disabled={loading} style={{ width: "100%", opacity: loading ? 0.7 : 1 }}>
+                            {loading ? "Creating…" : "Create account"}
+                        </button>
+                        <p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", textAlign: "center", margin: 0 }}>
+                            Already have an account? <Link href="/auth/login">Log in</Link>
                         </p>
-                    )}
+                    </form>
                 </div>
-
-                <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-                    <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
-                    <Input
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="Password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        hint="At least 10 characters, with a letter and a number"
-                        required
-                    />
-                    {error && <p className="text-sm text-danger-700">{error}</p>}
-                    <Button type="submit" loading={loading} fullWidth>
-                        Create account
-                    </Button>
-                </form>
-
-                <p className="mt-4 text-center text-sm text-text-muted">
-                    Already have an account?{" "}
-                    <Link href="/auth/login" className="text-primary-600 underline">
-                        Sign in
-                    </Link>
-                </p>
-            </Card>
+            </div>
         </div>
     );
 }

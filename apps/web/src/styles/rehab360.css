@@ -1,0 +1,240 @@
+/*
+ * Rehab360 shared design-system classes.
+ * Source of truth: design/rehab360-design/reference/*.dc.html
+ * All class names, colours, font values and spacing are copied verbatim.
+ * Conflicts between files are resolved with suffix variants noted inline.
+ */
+
+/* ── Reset / base (mirrors every reference file) ───────────────────────── */
+.r360 *, .r360 *::before, .r360 *::after { box-sizing: border-box; }
+.r360 h1,.r360 h2,.r360 h3,.r360 p { margin: 0; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+/* Primary green button — all files */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 10px;
+  background: #1b766e;
+  color: #fff;
+  font: 600 15px 'Figtree', sans-serif;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+/* White outline button */
+.btn2 {
+  background: #fff;
+  color: #12302c;
+  border: 1px solid #c5d3cf;
+}
+/* Danger outline button (Admin only) */
+.btn3 {
+  background: #fff;
+  color: #9b1c1c;
+  border: 1px solid #e3b4b4;
+}
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border: 1px solid #dbe5e2;
+  border-radius: 16px;
+  padding: 24px;
+}
+/* Pro/Admin card variant (14px radius, 20px padding) */
+.card14 {
+  background: #fff;
+  border: 1px solid #dbe5e2;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+/* ── Form controls ──────────────────────────────────────────────────────── */
+.in {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #b9c9c5;
+  border-radius: 10px;
+  padding: 0 12px;
+  font: 15px 'Figtree', sans-serif;
+  background: #fff;
+  color: #12302c;
+}
+label.flabel {
+  display: block;
+  font: 600 13px 'Figtree', sans-serif;
+  margin-bottom: 6px;
+}
+
+/* ── Chips / badges ─────────────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font: 600 13px 'Figtree', sans-serif;
+  background: #e3f1ef;
+  color: #14544e;
+}
+/* Find page chip is slightly smaller */
+.chip-sm {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font: 600 12px 'Figtree', sans-serif;
+  background: #e3f1ef;
+  color: #14544e;
+}
+.ok   { background: #e3f4e8; color: #1d5c34; }
+.warn { background: #fdf1d8; color: #7a4f00; }
+.bad  { background: #fde8e8; color: #8f1d1d; }
+
+/* ── Filter pills (Find page) ───────────────────────────────────────────── */
+.pill   { display: inline-block; padding: 8px 14px; border-radius: 99px; border: 1px solid #b9c9c5; background: #fff; font: 500 14px 'Figtree', sans-serif; }
+.pillon { background: #1b766e; color: #fff; border-color: #1b766e; }
+
+/* ── Time slot buttons ──────────────────────────────────────────────────── */
+.slot { display: inline-block; padding: 10px 14px; border-radius: 10px; border: 1px solid #1b766e; color: #14544e; font: 600 14px 'Figtree', sans-serif; background: #fff; cursor: pointer; }
+.on   { background: #1b766e; color: #fff; }
+
+/* ── Text utilities ─────────────────────────────────────────────────────── */
+.muted { color: #4f6663; }
+a { color: #1b766e; }
+
+/* ── Patient phone layout ───────────────────────────────────────────────── */
+/*
+ * The reference uses a 390x844 phone frame for mockup purposes only.
+ * In the real app the phone frame is NOT rendered. Instead we use
+ * a centred max-width container with the bottom tabbar.
+ */
+.phone-wrap {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: #f6f8f7;
+  display: flex;
+  flex-direction: column;
+}
+.phone-body {
+  flex: 1;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+/* ── Patient bottom tab bar ─────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  border-top: 1px solid #dbe5e2;
+  background: #fff;
+  padding: 6px 8px 14px;
+  position: sticky;
+  bottom: 0;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  font: 500 12px 'Figtree', sans-serif;
+  color: #4f6663;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+}
+.tabon { color: #14544e; font-weight: 700; }
+.ic { width: 24px; height: 24px; }
+
+/* ── Progress bar track ─────────────────────────────────────────────────── */
+.bar { height: 8px; border-radius: 99px; background: #dbe5e2; }
+
+/* ── Pro / Admin sidebar shell ──────────────────────────────────────────── */
+.shell { display: flex; flex-wrap: wrap; width: 100%; min-height: 100dvh; }
+.sidebar {
+  flex: 0 0 240px;
+  background: #fff;
+  border-right: 1px solid #dbe5e2;
+  padding: 20px 16px;
+}
+.sidebar-logo {
+  font: 700 20px 'Figtree', sans-serif;
+  color: #1b766e;
+  padding: 0 12px 16px;
+}
+.nav {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font: 500 15px 'Figtree', sans-serif;
+  color: #12302c;
+  text-decoration: none;
+}
+.navon { background: #e3f1ef; font-weight: 600; color: #14544e; }
+.shell-main { flex: 999 1 560px; min-width: 0; padding: 28px; }
+
+/* ── Row separator ──────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #e6eeec;
+}
+
+/* ── Record content tabs (PlanBuilder, patient record) ──────────────────── */
+/* Note: using .rtab/.rtabon to avoid conflict with phone nav .tab/.tabon */
+.rtab { padding: 10px 14px; font: 500 15px 'Figtree', sans-serif; color: #4f6663; border-bottom: 3px solid transparent; cursor: pointer; }
+.rtabon { color: #14544e; font-weight: 700; border-color: #1b766e; }
+
+/* ── Exercise row ───────────────────────────────────────────────────────── */
+.ex { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; border: 1px solid #dbe5e2; border-radius: 12px; background: #fff; }
+.thumb { width: 64px; height: 48px; border-radius: 8px; background: #dbe9e6; flex: none; }
+
+/* ── Onboarding steps (ProOnboarding) ───────────────────────────────────── */
+.step { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; font: 500 15px 'Figtree', sans-serif; }
+.dot  { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 700 13px 'Figtree', sans-serif; flex: none; border: 2px solid #b9c9c5; color: #4f6663; }
+
+/* ── Referral timeline dots (avoids conflict with .dot above) ───────────── */
+.tldot  { width: 14px; height: 14px; border-radius: 50%; margin-top: 4px; flex: none; border: 2px solid #b9c9c5; background: #fff; }
+.tldone { background: #1b766e; border-color: #1b766e; }
+.tlcur  { border-color: #1b766e; }
+
+/* ── Admin stat ─────────────────────────────────────────────────────────── */
+.stat { font: 700 30px 'Figtree', sans-serif; }
+
+/* ── Device case pipeline stages ────────────────────────────────────────── */
+.stage  { flex: 1 1 150px; padding: 12px; border-radius: 12px; border: 1px solid #dbe5e2; background: #fff; font: 600 14px 'Figtree', sans-serif; }
+.stdone { background: #e3f4e8; border-color: #b6dcc2; color: #1d5c34; }
+.stcur  { background: #1b766e; color: #fff; border-color: #1b766e; }
+
+/* ── Device case Kanban columns ─────────────────────────────────────────── */
+.kcol, .col { flex: 1 1 200px; min-width: 0; background: #eef3f2; border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
+.mini { background: #fff; border: 1px solid #dbe5e2; border-radius: 12px; padding: 12px; }
+
+/* ── Session / messages ─────────────────────────────────────────────────── */
+.msg   { max-width: 78%; padding: 12px 14px; border-radius: 16px; font: 400 15px/1.4 'Figtree', sans-serif; }
+.round { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; color: #12302c; border: 1px solid #c5d3cf; font: 600 12px 'Figtree', sans-serif; text-align: center; cursor: pointer; }
+
+/* ── Patient onboarding option buttons ──────────────────────────────────── */
+.opt   { display: block; padding: 16px; border: 1.5px solid #c5d3cf; border-radius: 14px; background: #fff; font: 600 16px 'Figtree', sans-serif; color: #12302c; text-decoration: none; cursor: pointer; }
+.opton { border-color: #1b766e; background: #e3f1ef; }
+
+/* ── Caption label (above phone mockup screens in reference) ────────────── */
+.cap { font: 600 13px 'Figtree', sans-serif; color: #4f6663; margin-bottom: 10px; }
+
+/* ── Waitlist section dark green background ─────────────────────────────── */
+.dark-band { background: #14544e; color: #fff; }
+
+/* ── Responsive: sidebar collapses on phones ─────────────────────────────  */
+@media (max-width: 640px) {
+  .sidebar { flex: 0 0 100%; border-right: none; border-bottom: 1px solid #dbe5e2; }
+  .shell-main { padding: 20px 16px; }
+}
