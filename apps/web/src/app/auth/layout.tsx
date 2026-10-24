@@ -1,6 +1,3 @@
-import { requireAccess } from "@/lib/access";
-
-export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-    await requireAccess();
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
