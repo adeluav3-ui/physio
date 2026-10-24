@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
-import { cn } from "./utils";
+import { cn } from "@physio/ui";
 
 export interface PhoneTabItem {
     href: string;

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Input } from "@physio/ui";
-import { signUpSchema } from "@physio/shared";
+import { signUpSchema, BRAND } from "@physio/shared";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -55,7 +55,7 @@ export default function SignupPage() {
                     <h1 className="text-2xl font-semibold">Check your email</h1>
                     <p className="mt-3 text-sm text-text-muted">
                         We sent a verification link to <strong>{email}</strong>. Click it to activate your
-                        {wantsPhysio ? " account, then complete your physio application." : " account."}
+                        {wantsPhysio ? " account, then complete your professional application." : " account."}
                     </p>
                     <p className="mt-4 text-xs text-text-muted">
                         In dev mode with placeholder email keys, you can verify directly:
@@ -80,6 +80,7 @@ export default function SignupPage() {
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md p-8">
+                <p className="mb-1 text-sm font-semibold text-accent">{BRAND.name}</p>
                 <h1 className="text-2xl font-semibold">Create your account</h1>
 
                 <div className="mt-6">
@@ -103,13 +104,14 @@ export default function SignupPage() {
                                     : "border-border bg-surface text-text"
                                 }`}
                         >
-                            Physiotherapist
+                            Professional
                         </button>
                     </div>
                     {wantsPhysio && (
                         <p className="mt-2 text-xs text-text-muted">
-                            You'll provide your licence details after signing up. All physios are verified
-                            before appearing to patients.
+                            Physiotherapists, OTs, speech therapists, prosthetists, and orthotists are all
+                            welcome. You'll provide your licence details after signing up and will be
+                            verified before appearing to patients.
                         </p>
                     )}
                 </div>

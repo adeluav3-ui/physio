@@ -17,20 +17,28 @@ export class PhysioService {
 
     private static toPublic(p: {
         userId: string;
+        discipline: string;
         specialties: string[];
         bio: string;
         rateKobo: number;
         serviceArea: string;
         verifiedAt: Date | null;
+        photoUrl: string | null;
+        languages: string[];
+        sessionTypes: string[];
         user: { id: string; name: string };
     }) {
         return {
             userId: p.userId,
+            discipline: p.discipline,
             specialties: p.specialties,
             bio: p.bio,
             rateKobo: p.rateKobo,
             serviceArea: p.serviceArea,
             verified: p.verifiedAt !== null,
+            photoUrl: p.photoUrl,
+            languages: p.languages,
+            sessionTypes: p.sessionTypes,
             user: { id: p.user.id, name: p.user.name },
         };
     }
@@ -40,11 +48,15 @@ export class PhysioService {
             where: { licenceStatus: "VERIFIED" },
             select: {
                 userId: true,
+                discipline: true,
                 specialties: true,
                 bio: true,
                 rateKobo: true,
                 serviceArea: true,
                 verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
                 user: { select: { id: true, name: true } },
             },
             orderBy: { createdAt: "desc" },
@@ -58,11 +70,15 @@ export class PhysioService {
             select: {
                 userId: true,
                 licenceStatus: true,
+                discipline: true,
                 specialties: true,
                 bio: true,
                 rateKobo: true,
                 serviceArea: true,
                 verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
                 user: { select: { id: true, name: true } },
             },
         });

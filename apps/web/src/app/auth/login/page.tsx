@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Input } from "@physio/ui";
-import { loginSchema } from "@physio/shared";
+import { loginSchema, BRAND } from "@physio/shared";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -49,6 +49,7 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md p-8">
+                <p className="mb-1 text-sm font-semibold text-accent">{BRAND.name}</p>
                 <h1 className="text-2xl font-semibold">Sign in</h1>
                 <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
                     <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -63,6 +64,12 @@ export default function LoginPage() {
                         </Link>
                     </div>
                 </form>
+                <p className="mt-4 text-center text-sm text-text-muted">
+                    Don&apos;t have an account?{" "}
+                    <Link href="/auth/signup" className="text-primary-600 underline">
+                        Sign up
+                    </Link>
+                </p>
             </Card>
         </div>
     );
