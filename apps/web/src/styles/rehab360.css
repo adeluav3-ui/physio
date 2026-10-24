@@ -238,3 +238,12 @@ a { color: #1b766e; }
   .sidebar { flex: 0 0 100%; border-right: none; border-bottom: 1px solid #dbe5e2; }
   .shell-main { padding: 20px 16px; }
 }
+
+/* ── Landing nav: hamburger on mobile ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .landing-nav-desktop { display: none !important; }
+  .landing-nav-burger  { display: flex !important; align-items: center; }
+}
+@media (min-width: 769px) {
+  .landing-nav-mobile  { display: none !important; }
+}

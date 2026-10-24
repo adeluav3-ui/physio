@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BRAND } from "@physio/shared";
 import WaitlistForm from "@/components/waitlist-form";
+import LandingNav from "@/components/landing-nav";
 
 export const metadata: Metadata = {
     title: BRAND.name,
@@ -22,18 +23,9 @@ export default function LandingPage() {
     return (
         <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", margin: 0 }}>
 
-            {/* ── Header ──────────────────────────────────────────────── */}
-            <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
-                <header style={{ display: "flex", flexWrap: "wrap" as const, gap: "16px", alignItems: "center", justifyContent: "space-between", padding: "20px 0" }}>
-                    <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</div>
-                    <nav style={{ display: "flex", flexWrap: "wrap" as const, gap: "24px", alignItems: "center", font: "500 15px 'Figtree',sans-serif" }}>
-                        <a href="#how" style={{ color: "#12302c", textDecoration: "none" }}>How it works</a>
-                        <a href="#pros" style={{ color: "#12302c", textDecoration: "none" }}>For professionals</a>
-                        <a href="#faq" style={{ color: "#12302c", textDecoration: "none" }}>FAQ</a>
-                        <a className="btn" href="#join" style={{ minHeight: "44px" }}>Join the waitlist</a>
-                    </nav>
-                </header>
+            <LandingNav />
 
+            <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
                 {/* ── Hero ─────────────────────────────────────────────── */}
                 <section style={{ display: "flex", flexWrap: "wrap" as const, gap: "48px", alignItems: "center", padding: "56px 0 72px" }}>
                     <div style={{ flex: "1 1 460px" }}>
@@ -46,7 +38,7 @@ export default function LandingPage() {
                         </p>
                         <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px", marginTop: "28px" }}>
                             <a className="btn" href={patientLink} target="_blank" rel="noopener noreferrer">I need care</a>
-                            <a className="btn btn2" href="#pros">I provide care</a>
+                            <a className="btn btn2" href="#join">I provide care</a>
                         </div>
                         <p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "16px" }}>Free to join the waitlist. No payment details needed.</p>
                     </div>
