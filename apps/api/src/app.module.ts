@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { RedisModule } from "./redis/redis.module.js";
 import { MailModule } from "./mail/mail.module.js";
@@ -22,6 +24,13 @@ import { PatientsModule } from "./patients/patients.module.js";
     imports: [
         ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
         EventEmitterModule.forRoot(),
+        ThrottlerModule.forRoot([
+            {
+                name: "global",
+                ttl: 60_000,
+                limit: 100,
+            },
+        ]),
         PrismaModule,
         RedisModule,
         MailModule,
@@ -39,5 +48,6 @@ import { PatientsModule } from "./patients/patients.module.js";
         RemindersModule,
         PatientsModule,
     ],
+    providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule { }

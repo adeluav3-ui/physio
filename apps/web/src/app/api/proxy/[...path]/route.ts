@@ -27,6 +27,13 @@ async function forward(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
         upstreamHeaders.set("Content-Type", contentType);
     }
 
+    // Forward the real client IP for server-side rate limiting.
+    // In production (Vercel/edge), x-forwarded-for is set by the CDN.
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    if (clientIp) {
+        upstreamHeaders.set("X-Forwarded-For", clientIp);
+    }
+
     // Read body for methods that carry one; pass undefined for GET/HEAD so
     // fetch doesn't send a body at all (which would violate HTTP spec).
     const hasBody = !["GET", "HEAD"].includes(req.method);

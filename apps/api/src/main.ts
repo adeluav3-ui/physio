@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import cookieParser from "cookie-parser";
@@ -7,10 +8,12 @@ import helmet from "helmet";
 import { AppModule } from "./app.module.js";
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, {
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
         bufferLogs: true,
         rawBody: true,
     });
+    // Trust exactly 1 proxy hop (the Next.js proxy) so req.ip is the real client IP.
+    app.set("trust proxy", 1);
     const config = app.get(ConfigService);
     const logger = new Logger("Bootstrap");
 
