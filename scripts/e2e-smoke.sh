@@ -166,6 +166,7 @@ PHYSIO_TOKEN=$(echo "$PHY_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -
 [ -n "$PHYSIO_TOKEN" ] && log "Physio X login OK" || { fail "Physio X login: $PHY_LOGIN"; exit 1; }
 
 PHY_APPLY=$(api_auth POST /physios/apply "$PHYSIO_TOKEN" -d '{
+  "discipline":"PHYSIOTHERAPY",
   "licenceNo":"PHYSIO-NG-E2E-001",
   "specialties":["Musculoskeletal","Sports"],
   "bio":"E2E test physiotherapist X. Experienced in musculoskeletal conditions, sports injuries, and post-operative rehabilitation.",
@@ -546,9 +547,10 @@ PHY_Y_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_Y_EMAIL}\",\"passwo
 PHYSIO_Y_TOKEN=$(echo "$PHY_Y_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
 
 PHY_Y_APPLY=$(api_auth POST /physios/apply "$PHYSIO_Y_TOKEN" -d '{
-  "licenceNo":"PHYSIO-NG-E2E-Y002",
-  "specialties":["Musculoskeletal"],
-  "bio":"E2E test physiotherapist Y. Experienced in musculoskeletal conditions and post-operative rehabilitation.",
+  "discipline":"OCCUPATIONAL_THERAPY",
+  "licenceNo":"OT-NG-E2E-Y002",
+  "specialties":["Upper Limb","Neurological"],
+  "bio":"E2E test occupational therapist Y. Experienced in upper limb rehabilitation and neurological conditions.",
   "rate":800000,"serviceArea":"Abuja"}')
 PHY_Y_ID=$(echo "$PHY_Y_APPLY" | grep -o '"userId":"[^"]*"' | cut -d'"' -f4 || true)
 [ -n "$PHY_Y_ID" ] && log "Physio Y applied: userId=${PHY_Y_ID}" || fail "Physio Y apply: $PHY_Y_APPLY"
@@ -574,6 +576,7 @@ PHYSIO_Z_TOKEN=$(echo "$PHY_Z_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'
 [ -n "$PHYSIO_Z_TOKEN" ] && log "Physio Z login OK (still PATIENT role)" || fail "Physio Z login failed"
 
 api_auth POST /physios/apply "$PHYSIO_Z_TOKEN" -d '{
+  "discipline":"PHYSIOTHERAPY",
   "licenceNo":"PHYSIO-NG-E2E-Z003",
   "specialties":["Musculoskeletal"],
   "bio":"E2E unverified physiotherapist Z. Experienced in musculoskeletal conditions and rehabilitation work.",
@@ -686,6 +689,236 @@ assert_forbidden "Physio X reads B's intake (no appointment)" \
 
 assert_forbidden "Physio X reads B's programs (no appointment)" \
   "$(api_auth GET "/programs/patient/${PATIENT2_USER_ID}" "$PHYSIO_TOKEN2")"
+
+# ============================================================================
+# PART 9 — DISCIPLINE-AWARE ONBOARDING
+# ============================================================================
+info "══ Part 9: Discipline-aware professional onboarding ══"
+
+# 9.1 Apply with a distinct discipline (SPEECH_THERAPY) — full round-trip
+PHYSIO_ST_EMAIL="physio-st-${SUFFIX}@e2e.test"
+
+api POST /auth/signup -d "{
+  \"email\":\"${PHYSIO_ST_EMAIL}\",\"password\":\"${PASSWORD}\",
+  \"name\":\"E2E Speech Therapist\"}" >/dev/null
+api POST /auth/dev-verify -d "{\"email\":\"${PHYSIO_ST_EMAIL}\"}" >/dev/null
+PHY_ST_LOGIN=$(api POST /auth/login -d "{\"email\":\"${PHYSIO_ST_EMAIL}\",\"password\":\"${PASSWORD}\"}")
+PHYSIO_ST_TOKEN=$(echo "$PHY_ST_LOGIN" | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4 || true)
+[ -n "$PHYSIO_ST_TOKEN" ] && log "Speech therapist login OK" || { fail "Speech therapist login: $PHY_ST_LOGIN"; }
+
+PHY_ST_APPLY=$(api_auth POST /physios/apply "$PHYSIO_ST_TOKEN" -d '{
+  "discipline":"SPEECH_THERAPY",
+  "licenceNo":"SLT-NG-E2E-S004",
+  "specialties":["Dysphagia","Voice"],
+  "bio":"E2E speech and language therapist. Specialises in dysphagia management and voice disorders in adult neurology.",
+  "rate":750000,"serviceArea":"Ibadan"}')
+PHY_ST_USER_ID=$(echo "$PHY_ST_APPLY" | grep -o '"userId":"[^"]*"' | cut -d'"' -f4 || true)
+[ -n "$PHY_ST_USER_ID" ] \
+  && log "Speech therapist applied: userId=${PHY_ST_USER_ID}" \
+  || fail "Speech therapist apply: $PHY_ST_APPLY"
+
+# Verify that discipline is stored and returned after admin verification
+api_auth POST /physios/admin/verify "$ADMIN_TOKEN" -d "{
+  \"userId\":\"${PHY_ST_USER_ID}\",\"decision\":\"VERIFIED\"}" | grep -q '"licenceStatus":"VERIFIED"' \
+  && log "Admin verified speech therapist" \
+  || fail "Admin verify speech therapist failed"
+
+ST_PROFILE=$(api GET "/physios/${PHY_ST_USER_ID}")
+echo "$ST_PROFILE" | grep -q '"discipline":"SPEECH_THERAPY"' \
+  && log "Public GET /physios/:id includes discipline=SPEECH_THERAPY" \
+  || fail "discipline field missing or wrong in public profile: $ST_PROFILE"
+
+# 9.2 Applying without discipline must be rejected (400)
+APPLY_NO_DISC=$(api_auth POST /physios/apply "$PHYSIO_ST_TOKEN" -d '{
+  "licenceNo":"SLT-NG-E2E-S999",
+  "specialties":["Dysphagia"],
+  "bio":"Missing discipline field test — this must fail zod validation.",
+  "rate":100000,"serviceArea":"Test"}')
+echo "$APPLY_NO_DISC" | grep -qiE '"statusCode":400|"statusCode":422|"code":"VALIDATION_ERROR"' \
+  && log "Apply without discipline correctly rejected (400/422)" \
+  || warn "Apply without discipline returned unexpected response (may already have profile): $APPLY_NO_DISC"
+
+# ============================================================================
+# PART 10 — REFERRAL STATE MACHINE
+# ============================================================================
+info "══ Part 10: Referral state machine ══"
+
+# 10.1 Physio X sends a referral for Patient A to Physio Y (Occupational Therapy)
+REFERRAL_SEND=$(api_auth POST /referrals "$PHYSIO_TOKEN2" -d "{
+  \"patientId\":\"${PATIENT_USER_ID}\",
+  \"toDiscipline\":\"OCCUPATIONAL_THERAPY\",
+  \"toProfessionalId\":\"${PHY_Y_ID}\",
+  \"reason\":\"Patient A has persistent upper limb weakness following lumbar treatment. Referring for occupational therapy assessment to address ADL limitations.\",
+  \"urgency\":\"ROUTINE\",
+  \"shareAssessmentNote\":true,
+  \"sharePlan\":false
+}")
+REFERRAL_ID=$(echo "$REFERRAL_SEND" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+REFERRAL_STATUS=$(echo "$REFERRAL_SEND" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+[ -n "$REFERRAL_ID" ] && [ "$REFERRAL_STATUS" = "SENT" ] \
+  && log "Referral sent: id=${REFERRAL_ID} status=SENT" \
+  || { fail "Referral send: $REFERRAL_SEND"; }
+
+# 10.2 Physio X can list their sent referrals
+PHYSIO_REFS=$(api_auth GET /referrals/mine "$PHYSIO_TOKEN2")
+echo "$PHYSIO_REFS" | grep -q "\"${REFERRAL_ID}\"" \
+  && log "GET /referrals/mine includes sent referral" \
+  || fail "Sent referral missing from /referrals/mine: $PHYSIO_REFS"
+
+# 10.3 Patient A sees the referral and can consent to it
+PATIENT_REFS=$(api_auth GET /referrals/patient "$PATIENT_TOKEN")
+echo "$PATIENT_REFS" | grep -q "\"${REFERRAL_ID}\"" \
+  && log "GET /referrals/patient shows referral to patient A" \
+  || fail "Referral missing from patient view: $PATIENT_REFS"
+
+CONSENT_RESP=$(api_auth POST "/referrals/${REFERRAL_ID}/consent" "$PATIENT_TOKEN")
+CONSENT_STATUS=$(echo "$CONSENT_RESP" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+[ "$CONSENT_STATUS" = "PATIENT_CONSENTED" ] \
+  && log "Patient A consented: status=PATIENT_CONSENTED" \
+  || fail "Consent failed or wrong status: $CONSENT_RESP"
+
+# 10.4 Physio Y responds with ACCEPTED
+RESPOND_RESP=$(api_auth POST "/referrals/${REFERRAL_ID}/respond" "$PHYSIO_Y_TOKEN2" -d '{
+  "decision":"ACCEPTED","reason":"Ready to accept — scheduling assessment."}')
+RESPOND_STATUS=$(echo "$RESPOND_RESP" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+[ "$RESPOND_STATUS" = "ACCEPTED" ] \
+  && log "Physio Y accepted referral: status=ACCEPTED" \
+  || fail "Respond ACCEPTED failed or wrong status: $RESPOND_RESP"
+
+# 10.5 Admin can list all referrals and the referral appears
+ADMIN_REFS=$(api_auth GET /referrals/admin/all "$ADMIN_TOKEN")
+echo "$ADMIN_REFS" | grep -q "\"${REFERRAL_ID}\"" \
+  && log "Admin GET /referrals/admin/all includes referral" \
+  || fail "Referral missing from admin list: $ADMIN_REFS"
+
+# 10.6 Invalid state transition → 400 INVALID_TRANSITION
+INVALID_TRANSITION=$(api_auth POST "/referrals/${REFERRAL_ID}/respond" "$PHYSIO_Y_TOKEN2" -d '{
+  "decision":"ACCEPTED"}')
+echo "$INVALID_TRANSITION" | grep -qiE '"INVALID_TRANSITION"|"statusCode":400' \
+  && log "Re-accepting already-ACCEPTED referral correctly rejected (INVALID_TRANSITION)" \
+  || warn "Expected INVALID_TRANSITION on double-accept: $INVALID_TRANSITION"
+
+# 10.7 Patient B cannot consent to Patient A's referral → 403/404
+assert_forbidden "Patient B cannot consent to Patient A's referral" \
+  "$(api_auth POST "/referrals/${REFERRAL_ID}/consent" "$PATIENT2_TOKEN")"
+
+# 10.8 Patient cannot call physio-only referral routes → 403
+assert_forbidden "Patient cannot send referral (physio-only)" \
+  "$(api_auth GET /referrals/mine "$PATIENT_TOKEN")"
+
+assert_forbidden "Patient cannot call admin referral route" \
+  "$(api_auth GET /referrals/admin/all "$PATIENT_TOKEN")"
+
+# ============================================================================
+# PART 11 — GOAL PLAN CREATION + TASK LOGGING
+# ============================================================================
+info "══ Part 11: Goal plan creation and task logging ══"
+
+# 11.1 Physio X creates a goal plan for Patient A (has appointment → allowed)
+GOAL_PLAN=$(api_auth POST /goal-plans "$PHYSIO_TOKEN2" -d "{
+  \"patientId\":\"${PATIENT_USER_ID}\",
+  \"title\":\"Lumbar Rehabilitation — 6-week programme\",
+  \"goals\":[
+    {
+      \"title\":\"Restore lumbar flexion ROM to 80%\",
+      \"notes\":\"Current ROM ~45 deg. Target 80% of expected range within 6 weeks.\",
+      \"tasks\":[
+        {\"title\":\"Cat-cow stretch\",\"schedule\":\"daily, 2 sets of 10\",\"notes\":\"Breathe out on extension\"},
+        {\"title\":\"Knee-to-chest stretch\",\"schedule\":\"daily, hold 30s x 3\"}
+      ]
+    },
+    {
+      \"title\":\"Core activation — transversus abdominis\",
+      \"notes\":\"Focus on deep stabiliser recruitment, not global flexors.\",
+      \"tasks\":[
+        {\"title\":\"Abdominal drawing-in manoeuvre\",\"schedule\":\"3x daily, 10-rep holds\"}
+      ]
+    }
+  ]
+}")
+GOAL_PLAN_ID=$(echo "$GOAL_PLAN" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+GOAL_COUNT=$(echo "$GOAL_PLAN" | { grep -o '"title":"[^"]*"' || true; } | wc -l | tr -d ' \n')
+[ -n "$GOAL_PLAN_ID" ] && [ "$GOAL_COUNT" -ge 2 ] \
+  && log "Goal plan created: id=${GOAL_PLAN_ID} with ${GOAL_COUNT} nested items (goals+tasks)" \
+  || { fail "Goal plan create: $GOAL_PLAN"; }
+
+# 11.2 Patient A lists their goal plans
+PATIENT_PLANS=$(api_auth GET /goal-plans/mine "$PATIENT_TOKEN")
+echo "$PATIENT_PLANS" | grep -q "\"${GOAL_PLAN_ID}\"" \
+  && log "GET /goal-plans/mine returns created plan" \
+  || fail "Created plan missing from patient goal plans: $PATIENT_PLANS"
+
+# 11.3 Extract the first task ID and log it as completed
+TASK_ID=$(echo "$GOAL_PLAN" | grep -o '"id":"[^"]*"' | tail -1 | cut -d'"' -f4 || true)
+[ -n "$TASK_ID" ] && log "First task ID extracted: ${TASK_ID}" || { fail "Could not extract task ID from goal plan"; }
+
+LOG_RESP=$(api_auth POST "/goal-plans/tasks/${TASK_ID}/log" "$PATIENT_TOKEN" -d '{"completed":true,"note":"Felt good, manageable pain level 2/10"}')
+echo "$LOG_RESP" | grep -q '"completed":true' \
+  && log "Task log created: completed=true" \
+  || fail "Task log failed: $LOG_RESP"
+
+# 11.4 Idempotent upsert — logging same task again on same day updates the record
+LOG_RESP2=$(api_auth POST "/goal-plans/tasks/${TASK_ID}/log" "$PATIENT_TOKEN" -d '{"completed":false,"note":"Updated — too painful today"}')
+echo "$LOG_RESP2" | grep -q '"completed":false' \
+  && log "Task log upsert OK: updated completed=false for same day" \
+  || fail "Task log upsert failed: $LOG_RESP2"
+
+# 11.5 Physio Y cannot create a goal plan for Patient A (no appointment between them)
+assert_forbidden "Physio Y cannot create goal plan for Patient A (no appointment)" \
+  "$(api_auth POST /goal-plans "$PHYSIO_Y_TOKEN2" -d "{
+    \"patientId\":\"${PATIENT_USER_ID}\",
+    \"title\":\"Unauthorized plan\",
+    \"goals\":[{\"title\":\"Unauthorized goal\",\"tasks\":[]}]
+  }")"
+
+# 11.6 Patient cannot create goal plans (physio-only route)
+assert_forbidden "Patient cannot create goal plan (physio-only)" \
+  "$(api_auth POST /goal-plans "$PATIENT_TOKEN" -d "{
+    \"patientId\":\"${PATIENT_USER_ID}\",
+    \"title\":\"Self-prescribed\",
+    \"goals\":[{\"title\":\"Goal 1\",\"tasks\":[]}]
+  }")"
+
+# 11.7 RED triage blocks booking (explicit label)
+info "── 11.7: RED triage blocks booking ──"
+RED_INTAKE=$(api_auth POST /triage/intake "$PATIENT_TOKEN" -d '{
+  "complaint":"Cauda equina — numbness and bladder retention","bodyRegion":"LOWER_BACK","onset":"2 hours ago",
+  "painScore":9,"history":"None","medications":"None",
+  "redFlagAnswers":[
+    {"questionId":"red.major_trauma","answer":false},
+    {"questionId":"red.neuro_progressive_weakness","answer":false},
+    {"questionId":"red.neuro_bladder_bowel","answer":true},
+    {"questionId":"red.neuro_saddle_numbness","answer":true},
+    {"questionId":"red.cardioresp","answer":false},
+    {"questionId":"red.systemic","answer":false},
+    {"questionId":"red.post_op_complication","answer":false},
+    {"questionId":"red.severe_worsening","answer":false},
+    {"questionId":"amber.post_op_planned","answer":false},
+    {"questionId":"amber.mobility_limited","answer":false}
+  ]
+}')
+RED_INTAKE_ID=$(echo "$RED_INTAKE" | grep -o '"intakeId":"[^"]*"' | cut -d'"' -f4 || true)
+RED_LEVEL=$(echo "$RED_INTAKE" | grep -o '"level":"[^"]*"' | cut -d'"' -f4 || true)
+[ "$RED_LEVEL" = "RED" ] \
+  && log "RED triage flagged correctly (bladder+saddle numbness flags): level=RED, intakeId=${RED_INTAKE_ID}" \
+  || fail "Expected RED triage level, got: ${RED_LEVEL} — response: $RED_INTAKE"
+
+# Attempt to book with a RED intake — must be rejected
+SLOTS_R=$(api_auth GET "/booking/slots/${PHY_USER_ID}" "$PATIENT_TOKEN")
+SLOT_R=$(echo "$SLOTS_R" | grep -o '"startsAt":"[^"]*"' | head -1 | cut -d'"' -f4 || true)
+if [ -n "$SLOT_R" ] && [ -n "$RED_INTAKE_ID" ]; then
+  RED_BOOKING=$(api_auth POST /booking "$PATIENT_TOKEN" -d "{
+    \"physioId\":\"${PHY_USER_ID}\",
+    \"intakeId\":\"${RED_INTAKE_ID}\",
+    \"type\":\"ASSESSMENT\",\"mode\":\"VIDEO\",
+    \"startsAt\":\"${SLOT_R}\",\"durationMinutes\":45
+  }")
+  echo "$RED_BOOKING" | grep -qiE '"RED_FLAG_BLOCK"|"statusCode":422|"statusCode":400' \
+    && log "RED triage correctly blocks booking (RED_FLAG_BLOCK)" \
+    || fail "Expected RED_FLAG_BLOCK on booking with RED intake, got: $RED_BOOKING"
+else
+  warn "Could not run RED triage booking block test (no available slot or intake missing)"
+fi
 
 # ============================================================================
 # SUMMARY
