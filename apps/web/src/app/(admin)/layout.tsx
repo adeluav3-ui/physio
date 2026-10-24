@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { BRAND } from "@physio/shared";
 import { getSession } from "@/lib/session";
 import { SignOutButton } from "@/components/sign-out-button";
 
 const nav = [
   { href: "/admin", label: "Overview" },
-  { href: "/admin/physios", label: "Physios" },
+  { href: "/admin/physios", label: "Professionals" },
   { href: "/admin/triage", label: "Triage" },
   { href: "/admin/appointments", label: "Appointments" },
   { href: "/admin/payments", label: "Payments" },
@@ -25,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-screen bg-bg">
       <aside className="hidden w-64 flex-col border-r border-border bg-surface lg:flex">
         <div className="flex items-center justify-between border-b border-border p-4">
-          <span className="text-lg font-semibold">Physio Admin</span>
+          <span className="text-lg font-semibold">{BRAND.name} Admin</span>
           <SignOutButton />
         </div>
         <nav className="flex-1 p-2">

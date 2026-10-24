@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Resend } from "resend";
+import { BRAND } from "@physio/shared";
 
 @Injectable()
 export class MailService {
@@ -16,7 +17,7 @@ export class MailService {
             this.logger.warn("RESEND_API_KEY is a placeholder — email delivery disabled");
         }
         this.resend = isPlaceholder ? null : new Resend(key!);
-        this.from = config.get<string>("EMAIL_FROM") ?? "Physio <no-reply@physio.local>";
+        this.from = config.get<string>("EMAIL_FROM") ?? BRAND.emailFrom;
         this.appUrl = config.get<string>("APP_URL") ?? "http://localhost:3000";
     }
 
@@ -41,9 +42,9 @@ export class MailService {
         const url = `${this.appUrl}/auth/verify?token=${encodeURIComponent(token)}`;
         await this.send(
             email,
-            "Verify your Physio email",
+            "Verify your Rehab360 email",
             `<p>Hi ${escapeHtml(name)},</p>
-       <p>Confirm your email to activate your Physio account.</p>
+       <p>Confirm your email to activate your Rehab360 account.</p>
        <p><a href="${url}">Verify email</a></p>
        <p>This link expires in 24 hours.</p>`,
             `Hi ${name},\n\nVerify your email: ${url}\n\nThis link expires in 24 hours.`,
@@ -54,7 +55,7 @@ export class MailService {
         const url = `${this.appUrl}/auth/reset?token=${encodeURIComponent(token)}`;
         await this.send(
             email,
-            "Reset your Physio password",
+            "Reset your Rehab360 password",
             `<p>Hi ${escapeHtml(name)},</p>
        <p>Use this link to set a new password. It expires in 1 hour.</p>
        <p><a href="${url}">Reset password</a></p>`,

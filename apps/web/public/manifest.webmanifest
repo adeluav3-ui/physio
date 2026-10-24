@@ -1,10 +1,10 @@
 {
-    "name": "Physio",
-    "short_name": "Physio",
+    "name": "Rehab360",
+    "short_name": "Rehab360",
     "start_url": "/app",
     "display": "standalone",
-    "background_color": "#f8f9fa",
-    "theme_color": "#2a938b",
+    "background_color": "#f6f8f7",
+    "theme_color": "#1b766e",
     "icons": [
         {
             "src": "/icons/icon-192.png",

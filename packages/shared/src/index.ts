@@ -1,3 +1,4 @@
+export * from "./brand.js";
 export * from "./enums.js";
 export * from "./auth.js";
 export * from "./intake.js";

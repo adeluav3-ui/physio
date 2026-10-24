@@ -87,14 +87,14 @@ export default async function PatientDashboard() {
                 <Card>
                     <p className="text-sm font-semibold">Today's program</p>
                     <p className="mt-1 text-sm text-text-muted">
-                        Your physio hasn't assigned a program yet. You'll see it here after your first session.
+                        Your professional hasn't assigned a program yet. You'll see it here after your first session.
                     </p>
                 </Card>
 
                 <Card>
                     <p className="text-sm font-semibold">Messages</p>
                     <p className="mt-1 text-sm text-text-muted">
-                        No messages yet. You can message your physio after your first session.
+                        No messages yet. You can message your professional after your first session.
                     </p>
                 </Card>
             </div>
