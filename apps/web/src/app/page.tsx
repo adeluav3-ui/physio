@@ -1,7 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BRAND } from "@physio/shared";
 import { Card } from "@physio/ui";
+import { LockedLink } from "@/components/locked-link";
 
 export const metadata: Metadata = {
     title: BRAND.name,
@@ -45,7 +46,8 @@ const FAQ = [
     },
 ] as const;
 
-export default function LandingPage() {
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ locked?: string }> }) {
+    const { locked } = await searchParams;
     const patientLink   = process.env.NEXT_PUBLIC_WHATSAPP_PATIENTS ?? "#";
     const disciplineLinks = Object.fromEntries(
         DISCIPLINES.map((d) => [d.key, process.env[d.env] ?? "#"]),
@@ -58,23 +60,32 @@ export default function LandingPage() {
                 <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
                     <span className="text-lg font-semibold text-text">{BRAND.name}</span>
                     <div className="flex items-center gap-3">
-                        <Link
+                        <LockedLink
                             href="/auth/login"
                             className="rounded-md px-4 py-2 text-sm font-medium text-text-muted hover:text-text"
                         >
                             Log in
-                        </Link>
-                        <Link
+                        </LockedLink>
+                        <LockedLink
                             href="/auth/signup"
                             className="rounded-md bg-primary-500 px-4 py-2 text-sm font-medium text-text-inverse hover:bg-primary-600"
                         >
                             Sign up
-                        </Link>
+                        </LockedLink>
                     </div>
                 </div>
             </header>
 
             <main>
+                {locked && (
+                    <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center">
+                        <p className="text-sm text-amber-800">
+                            <strong>Access required.</strong> {BRAND.name} is not yet open to the public.
+                            Use your access code to continue.
+                        </p>
+                    </div>
+                )}
+
                 {/* ── Hero ───────────────────────────────────────────────── */}
                 <section className="mx-auto max-w-5xl px-4 py-16 text-center md:py-24">
                     <p className="text-sm font-medium uppercase tracking-wide text-primary-600">
@@ -197,18 +208,18 @@ export default function LandingPage() {
                         Be the first to know when we launch.
                     </p>
                     <div className="mt-8 flex flex-col gap-3">
-                        <Link
+                        <LockedLink
                             href="/auth/signup"
                             className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-primary-500 px-4 text-base font-medium text-text-inverse transition-colors hover:bg-primary-600"
                         >
                             Create an account
-                        </Link>
-                        <Link
+                        </LockedLink>
+                        <LockedLink
                             href="/auth/login"
                             className="inline-flex min-h-[44px] items-center justify-center rounded-md border border-border bg-surface px-4 text-base font-medium text-text transition-colors hover:bg-neutral-50"
                         >
                             I already have an account
-                        </Link>
+                        </LockedLink>
                     </div>
                 </section>
             </main>
