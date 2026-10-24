@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { z } from "zod";
 import type { SessionUser } from "@physio/shared";
-import { GoalPlansService } from "./goal-plans.service.js";
+import { GoalPlansService, goalPlanCreateSchema, type GoalPlanCreateInput } from "./goal-plans.service.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { Roles, RolesGuard } from "../auth/roles.guard.js";
 import { CurrentUser } from "../common/current-user.decorator.js";
@@ -16,6 +16,15 @@ const logTaskSchema = z.object({
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class GoalPlansController {
     constructor(private readonly goalPlans: GoalPlansService) {}
+
+    @Post()
+    @Roles("PHYSIO")
+    create(
+        @CurrentUser() user: SessionUser,
+        @Body(new ZodBody(goalPlanCreateSchema)) body: GoalPlanCreateInput,
+    ) {
+        return this.goalPlans.createForPatient(user, body);
+    }
 
     @Get("mine")
     @Roles("PATIENT")

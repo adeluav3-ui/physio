@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { emailSchema, idSchema, phoneSchema } from "./common.js";
-import { Role, UserStatus } from "./enums.js";
+import { Role, UserStatus, Discipline } from "./enums.js";
 
 export const passwordSchema = z
     .string()
@@ -43,6 +43,7 @@ export type SessionUser = z.infer<typeof sessionUserSchema>;
 
 // ── Physio onboarding ─────────────────────
 export const physioApplySchema = z.object({
+    discipline: Discipline,
     licenceNo: z.string().min(3).max(60),
     specialties: z.array(z.string().min(2)).min(1).max(10),
     bio: z.string().min(50).max(2000),

@@ -110,6 +110,7 @@ export class PhysioService {
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
+                    discipline: input.discipline,
                     licenceNo: input.licenceNo,
                     specialties: input.specialties,
                     bio: input.bio,

@@ -1,10 +1,51 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { z } from "zod";
 import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
+
+export const goalPlanCreateSchema = z.object({
+    patientId: z.string().uuid(),
+    title: z.string().min(2).max(200),
+    goals: z.array(z.object({
+        title: z.string().min(2).max(200),
+        notes: z.string().max(1000).optional(),
+        tasks: z.array(z.object({
+            title: z.string().min(2).max(200),
+            schedule: z.string().min(1).max(100),
+            notes: z.string().max(500).optional(),
+        })).max(20).default([]),
+    })).min(1).max(20),
+});
+export type GoalPlanCreateInput = z.infer<typeof goalPlanCreateSchema>;
 
 @Injectable()
 export class GoalPlansService {
     constructor(private readonly prisma: PrismaService) {}
+
+    async createForPatient(physio: SessionUser, input: GoalPlanCreateInput) {
+        const appointment = await this.prisma.client.appointment.findFirst({
+            where: { physioId: physio.id, patientId: input.patientId },
+        });
+        if (!appointment) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "No appointment with this patient" });
+        }
+
+        return this.prisma.client.goalPlan.create({
+            data: {
+                patientId: input.patientId,
+                professionalId: physio.id,
+                title: input.title,
+                goals: {
+                    create: input.goals.map((g) => ({
+                        title: g.title,
+                        notes: g.notes ?? null,
+                        tasks: { create: g.tasks.map((t) => ({ title: t.title, schedule: t.schedule, notes: t.notes ?? null })) },
+                    })),
+                },
+            },
+            include: { goals: { include: { tasks: true } } },
+        });
+    }
 
     async listForPatient(user: SessionUser) {
         return this.prisma.client.goalPlan.findMany({
