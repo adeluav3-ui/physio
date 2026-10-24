@@ -27,7 +27,7 @@ export default async function TriageResultPage({
             reasons={reasons}
             {...(level !== "RED" && {
                 primaryAction: {
-                    label: "Find a physio",
+                    label: "Find a professional",
                     onClick: () => { window.location.href = "/app/physios"; },
                 },
             })}

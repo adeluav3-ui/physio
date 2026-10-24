@@ -30,15 +30,21 @@ export default async function PhysioDashboard() {
         }
     }
 
-    let today: Appointment[] = [];
+    type AppointmentWithPatient = Appointment & { patientId?: string };
+    let today: AppointmentWithPatient[] = [];
+    let upcoming: AppointmentWithPatient[] = [];
     try {
-        const appointments = await apiFetch<Appointment[]>("/booking/appointments");
+        const appointments = await apiFetch<AppointmentWithPatient[]>("/booking/appointments");
         const now = new Date();
         today = appointments.filter(
             (a) =>
                 a.status === "CONFIRMED" &&
                 new Date(a.startsAt).toDateString() === now.toDateString(),
         );
+        upcoming = appointments
+            .filter((a) => a.status === "CONFIRMED" && new Date(a.startsAt) > now)
+            .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+            .slice(0, 5);
     } catch {
         // Empty state.
     }
@@ -57,10 +63,10 @@ export default async function PhysioDashboard() {
                             Nothing scheduled today. Check your availability to open more slots.
                         </p>
                         <Link
-                            href="/pro/availability"
+                            href="/pro/appointments"
                             className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
                         >
-                            Edit availability
+                            View all appointments
                         </Link>
                     </Card>
                 ) : (
@@ -73,14 +79,46 @@ export default async function PhysioDashboard() {
                                 })}
                             </p>
                             <p className="mt-1 text-lg font-semibold">{a.patient.user.name}</p>
-                            <Link
-                                href={`/pro/appointments/${a.id}/prep`}
-                                className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                            >
-                                Open prep
-                            </Link>
+                            <div className="mt-3 flex gap-3">
+                                <Link
+                                    href={`/pro/session/${a.id}`}
+                                    className="text-sm font-medium text-primary-600 underline"
+                                >
+                                    Open session
+                                </Link>
+                                {a.patientId && (
+                                    <Link
+                                        href={`/pro/patients/${a.patientId}`}
+                                        className="text-sm text-text-muted underline"
+                                    >
+                                        Patient record
+                                    </Link>
+                                )}
+                            </div>
                         </Card>
                     ))
+                )}
+
+                {upcoming.length > 0 && (
+                    <Card>
+                        <p className="text-sm font-semibold">Upcoming sessions</p>
+                        <ul className="mt-2 flex flex-col gap-1">
+                            {upcoming.map((a) => (
+                                <li key={a.id} className="flex items-center justify-between text-sm">
+                                    <span className="text-text-muted">
+                                        {new Date(a.startsAt).toLocaleDateString(undefined, {
+                                            weekday: "short",
+                                            day: "numeric",
+                                            month: "short",
+                                        })}
+                                        {" · "}
+                                        {new Date(a.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                    </span>
+                                    <span className="font-medium">{a.patient.user.name}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </Card>
                 )}
             </div>
         </div>

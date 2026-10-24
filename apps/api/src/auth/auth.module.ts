@@ -8,6 +8,7 @@ import { TokenService } from "./token.service.js";
 import { JwtStrategy } from "./jwt.strategy.js";
 import { RolesGuard } from "./roles.guard.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
+import { IpEmailThrottlerGuard, IpOnlyThrottlerGuard } from "./throttler-guards.js";
 
 @Module({
     imports: [
@@ -23,7 +24,7 @@ import { JwtAuthGuard } from "./jwt-auth.guard.js";
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, TokenService, JwtStrategy, RolesGuard, JwtAuthGuard],
+    providers: [AuthService, TokenService, JwtStrategy, RolesGuard, JwtAuthGuard, IpEmailThrottlerGuard, IpOnlyThrottlerGuard],
     exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule { }

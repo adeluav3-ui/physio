@@ -1,7 +1,9 @@
-import { Global, Module } from "@nestjs/common";
+import { Global, Logger, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { REDIS } from "./redis.constants.js";
+
+const logger = new Logger("RedisModule");
 
 @Global()
 @Module({
@@ -12,10 +14,24 @@ import { REDIS } from "./redis.constants.js";
             useFactory: (config: ConfigService) => {
                 const url = config.get<string>("REDIS_URL");
                 if (!url) throw new Error("REDIS_URL is required");
-                return new Redis(url, { maxRetriesPerRequest: null });
+                return new Redis(url, {
+                    lazyConnect: true,
+                    connectTimeout: 3000,
+                    maxRetriesPerRequest: null,
+                    enableOfflineQueue: false,
+                    retryStrategy: (times) => {
+                        if (times > 5) {
+                            logger.error(
+                                `Redis unreachable after ${times} attempts — health check will report redis: "down"`,
+                            );
+                            return null;
+                        }
+                        return Math.min(times * 500, 2000);
+                    },
+                });
             },
         },
     ],
     exports: [REDIS],
 })
-export class RedisModule { }
+export class RedisModule {}

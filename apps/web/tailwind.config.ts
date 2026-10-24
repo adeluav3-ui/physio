@@ -9,7 +9,7 @@ const config: Config = {
         extend: {
             colors: {
                 primary: {
-                    50: "var(--color-primary-50)",
+                    50:  "var(--color-primary-50)",
                     100: "var(--color-primary-100)",
                     200: "var(--color-primary-200)",
                     300: "var(--color-primary-300)",
@@ -21,8 +21,8 @@ const config: Config = {
                     900: "var(--color-primary-900)",
                 },
                 neutral: {
-                    0: "var(--color-neutral-0)",
-                    50: "var(--color-neutral-50)",
+                    0:   "var(--color-neutral-0)",
+                    50:  "var(--color-neutral-50)",
                     100: "var(--color-neutral-100)",
                     200: "var(--color-neutral-200)",
                     300: "var(--color-neutral-300)",
@@ -33,27 +33,39 @@ const config: Config = {
                     800: "var(--color-neutral-800)",
                     900: "var(--color-neutral-900)",
                 },
-                success: {
-                    50: "var(--color-success-50)",
-                    500: "var(--color-success-500)",
-                    700: "var(--color-success-700)",
+                /* status — use ONLY for safety / clinical status + text labels */
+                ok: {
+                    bg:   "var(--color-ok-bg)",
+                    text: "var(--color-ok-text)",
                 },
-                warning: {
-                    50: "var(--color-warning-50)",
-                    500: "var(--color-warning-500)",
-                    700: "var(--color-warning-700)",
+                warn: {
+                    bg:   "var(--color-warn-bg)",
+                    text: "var(--color-warn-text)",
                 },
                 danger: {
-                    50: "var(--color-danger-50)",
+                    bg:   "var(--color-danger-bg)",
+                    text: "var(--color-danger-text)",
+                    /* legacy aliases */
+                    50:  "var(--color-danger-bg)",
                     500: "var(--color-danger-500)",
-                    700: "var(--color-danger-700)",
+                    700: "var(--color-danger-text)",
                 },
-                bg: "var(--color-bg)",
+                success: {
+                    50:  "var(--color-ok-bg)",
+                    500: "var(--color-success-500)",
+                    700: "var(--color-ok-text)",
+                },
+                warning: {
+                    50:  "var(--color-warn-bg)",
+                    500: "var(--color-warning-500)",
+                    700: "var(--color-warn-text)",
+                },
+                bg:      "var(--color-bg)",
                 surface: "var(--color-surface)",
-                border: "var(--color-border)",
+                border:  "var(--color-border)",
                 text: {
                     DEFAULT: "var(--color-text)",
-                    muted: "var(--color-text-muted)",
+                    muted:   "var(--color-text-muted)",
                     inverse: "var(--color-text-inverse)",
                 },
             },
@@ -69,11 +81,14 @@ const config: Config = {
                 lg: "var(--shadow-lg)",
             },
             fontFamily: {
-                sans: ["var(--font-sans)"],
-                mono: ["var(--font-mono)"],
+                sans: ["var(--font-sans)", "Figtree", "system-ui", "-apple-system", "sans-serif"],
+                mono: ["var(--font-mono)", "ui-monospace", "monospace"],
             },
             transitionTimingFunction: {
                 out: "var(--ease-out)",
+            },
+            minHeight: {
+                "touch": "44px",
             },
         },
     },

@@ -14,6 +14,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Generate Prisma client before building (generated/ is gitignored)
+RUN pnpm db:generate
+
 # Build the API and all its workspace dependencies (note the three dots)
 RUN pnpm --filter @physio/api... build
 

@@ -19,7 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     async validate(payload: JwtPayload) {
         try {
             return await this.auth.getSession(payload.sub);
-        } catch {
+        } catch (e) {
+            if (e instanceof UnauthorizedException) throw e;
             throw new UnauthorizedException({ code: "INVALID_SESSION", message: "Session expired" });
         }
     }

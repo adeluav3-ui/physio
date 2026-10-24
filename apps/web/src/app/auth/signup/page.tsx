@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Input } from "@physio/ui";
-import { signUpSchema } from "@physio/shared";
+import { signUpSchema, BRAND } from "@physio/shared";
 
 export default function SignupPage() {
     const router = useRouter();
-    const [role, setRole] = useState<"PATIENT" | "PHYSIO">("PATIENT");
+    const [wantsPhysio, setWantsPhysio] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
@@ -20,7 +20,7 @@ export default function SignupPage() {
         e.preventDefault();
         setError(null);
 
-        const parsed = signUpSchema.safeParse({ email, password, name, role });
+        const parsed = signUpSchema.safeParse({ email, password, name });
         if (!parsed.success) {
             setError(parsed.error.issues[0]?.message ?? "Invalid input");
             return;
@@ -48,14 +48,14 @@ export default function SignupPage() {
     }
 
     if (done) {
-        const nextPath = role === "PHYSIO" ? "/pro/onboarding/apply" : "/app";
+        const nextPath = wantsPhysio ? "/pro/onboarding/apply" : "/app";
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
                 <Card className="w-full max-w-md p-8 text-center">
                     <h1 className="text-2xl font-semibold">Check your email</h1>
                     <p className="mt-3 text-sm text-text-muted">
                         We sent a verification link to <strong>{email}</strong>. Click it to activate your
-                        {role === "PHYSIO" ? " physio" : ""} account.
+                        {wantsPhysio ? " account, then complete your professional application." : " account."}
                     </p>
                     <p className="mt-4 text-xs text-text-muted">
                         In dev mode with placeholder email keys, you can verify directly:
@@ -80,6 +80,7 @@ export default function SignupPage() {
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md p-8">
+                <p className="mb-1 text-sm font-semibold text-accent">{BRAND.name}</p>
                 <h1 className="text-2xl font-semibold">Create your account</h1>
 
                 <div className="mt-6">
@@ -87,8 +88,8 @@ export default function SignupPage() {
                     <div className="mt-2 grid grid-cols-2 gap-2">
                         <button
                             type="button"
-                            onClick={() => setRole("PATIENT")}
-                            className={`h-12 rounded-md border text-sm font-medium ${role === "PATIENT"
+                            onClick={() => setWantsPhysio(false)}
+                            className={`h-12 rounded-md border text-sm font-medium ${!wantsPhysio
                                     ? "border-primary-500 bg-primary-50 text-primary-700"
                                     : "border-border bg-surface text-text"
                                 }`}
@@ -97,19 +98,20 @@ export default function SignupPage() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setRole("PHYSIO")}
-                            className={`h-12 rounded-md border text-sm font-medium ${role === "PHYSIO"
+                            onClick={() => setWantsPhysio(true)}
+                            className={`h-12 rounded-md border text-sm font-medium ${wantsPhysio
                                     ? "border-primary-500 bg-primary-50 text-primary-700"
                                     : "border-border bg-surface text-text"
                                 }`}
                         >
-                            Physiotherapist
+                            Professional
                         </button>
                     </div>
-                    {role === "PHYSIO" && (
+                    {wantsPhysio && (
                         <p className="mt-2 text-xs text-text-muted">
-                            You'll provide your licence details after signing up. All physios are verified
-                            before appearing to patients.
+                            Physiotherapists, OTs, speech therapists, prosthetists, and orthotists are all
+                            welcome. You'll provide your licence details after signing up and will be
+                            verified before appearing to patients.
                         </p>
                     )}
                 </div>

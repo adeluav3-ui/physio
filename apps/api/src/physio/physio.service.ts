@@ -15,21 +15,77 @@ export class PhysioService {
         private readonly audit: AuditService,
     ) { }
 
+    private static toPublic(p: {
+        userId: string;
+        discipline: string;
+        specialties: string[];
+        bio: string;
+        rateKobo: number;
+        serviceArea: string;
+        verifiedAt: Date | null;
+        photoUrl: string | null;
+        languages: string[];
+        sessionTypes: string[];
+        user: { id: string; name: string };
+    }) {
+        return {
+            userId: p.userId,
+            discipline: p.discipline,
+            specialties: p.specialties,
+            bio: p.bio,
+            rateKobo: p.rateKobo,
+            serviceArea: p.serviceArea,
+            verified: p.verifiedAt !== null,
+            photoUrl: p.photoUrl,
+            languages: p.languages,
+            sessionTypes: p.sessionTypes,
+            user: { id: p.user.id, name: p.user.name },
+        };
+    }
+
     async listPublic() {
-        return this.prisma.client.physioProfile.findMany({
+        const rows = await this.prisma.client.physioProfile.findMany({
             where: { licenceStatus: "VERIFIED" },
-            include: { user: { select: { id: true, name: true } } },
+            select: {
+                userId: true,
+                discipline: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
+                user: { select: { id: true, name: true } },
+            },
             orderBy: { createdAt: "desc" },
         });
+        return rows.map(PhysioService.toPublic);
     }
 
     async getPublic(userId: string) {
         const p = await this.prisma.client.physioProfile.findUnique({
             where: { userId },
-            include: { user: { select: { id: true, name: true, email: true } } },
+            select: {
+                userId: true,
+                licenceStatus: true,
+                discipline: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
+                user: { select: { id: true, name: true } },
+            },
         });
-        if (!p) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
-        return p;
+        if (!p || p.licenceStatus !== "VERIFIED") {
+            throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
+        }
+        return PhysioService.toPublic(p);
     }
 
     async apply(user: SessionUser, input: PhysioApplyInput) {
@@ -51,18 +107,10 @@ export class PhysioService {
         }
 
         const profile = await this.prisma.client.$transaction(async (tx) => {
-            // If a patient is applying (legacy path), upgrade their role.
-            // A physio signing up already has role PHYSIO, so no update needed.
-            if (user.role === "PATIENT") {
-                await tx.user.update({
-                    where: { id: user.id },
-                    data: { role: "PHYSIO" },
-                });
-            }
-
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
+                    discipline: input.discipline,
                     licenceNo: input.licenceNo,
                     specialties: input.specialties,
                     bio: input.bio,
@@ -106,12 +154,17 @@ export class PhysioService {
         const profile = await this.prisma.client.physioProfile.findUnique({ where: { userId } });
         if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
 
-        const updated = await this.prisma.client.physioProfile.update({
-            where: { userId },
-            data: {
-                licenceStatus: decision,
-                verifiedAt: decision === "VERIFIED" ? new Date() : null,
-            },
+        const updated = await this.prisma.client.$transaction(async (tx) => {
+            if (decision === "VERIFIED") {
+                await tx.user.update({ where: { id: userId }, data: { role: "PHYSIO" } });
+            }
+            return tx.physioProfile.update({
+                where: { userId },
+                data: {
+                    licenceStatus: decision,
+                    verifiedAt: decision === "VERIFIED" ? new Date() : null,
+                },
+            });
         });
 
         await this.audit.record({

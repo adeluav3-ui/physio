@@ -28,7 +28,7 @@ export default async function AdminOverview() {
 
             <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
                 <Card>
-                    <p className="text-xs uppercase tracking-wide text-text-muted">Physios awaiting verification</p>
+                    <p className="text-xs uppercase tracking-wide text-text-muted">Professionals awaiting verification</p>
                     <p className="mt-1 text-3xl font-semibold">{pendingPhysios}</p>
                     <Link
                         href="/admin/physios"

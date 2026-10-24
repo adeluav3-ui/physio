@@ -23,7 +23,7 @@ export class ProgramsController {
     }
 
     @Get("patient/:patientId")
-    listForPatient(@Param("patientId") patientId: string) {
-        return this.programs.listForPatient(patientId);
+    listForPatient(@CurrentUser() user: SessionUser, @Param("patientId") patientId: string) {
+        return this.programs.listForPatient(user, patientId);
     }
 }

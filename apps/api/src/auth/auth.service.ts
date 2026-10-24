@@ -39,9 +39,9 @@ export class AuthService {
                 email: input.email,
                 passwordHash,
                 name: input.name,
-                role: input.role,
+                role: "PATIENT",
                 status: "PENDING",
-                ...(input.role === "PATIENT" && { patientProfile: { create: {} } }),
+                patientProfile: { create: {} },
             },
             select: { id: true, email: true, name: true, role: true },
         });
@@ -97,8 +97,9 @@ export class AuthService {
     }
 
     async devVerify(email: string) {
+        const isProduction = process.env.NODE_ENV === "production";
         const key = process.env.RESEND_API_KEY ?? "";
-        if (!key.startsWith("placeholder")) {
+        if (isProduction || !key.startsWith("placeholder")) {
             throw new ForbiddenException({
                 code: "DEV_ONLY",
                 message: "Dev verification is disabled in this environment",
@@ -165,6 +166,9 @@ export class AuthService {
         });
         if (!user) {
             throw new UnauthorizedException({ code: "USER_NOT_FOUND", message: "User not found" });
+        }
+        if (user.status !== "ACTIVE") {
+            throw new UnauthorizedException({ code: "ACCOUNT_INACTIVE", message: "Account is not active" });
         }
         return {
             id: user.id,

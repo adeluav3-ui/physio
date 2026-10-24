@@ -22,7 +22,7 @@ export class PhysioController {
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Post("apply")
-    @Roles("PATIENT")
+    @Roles("PATIENT", "PHYSIO")
     apply(@CurrentUser() user: SessionUser, @Body(new ZodBody(physioApplySchema)) body: PhysioApplyInput) {
         return this.physio.apply(user, body);
     }

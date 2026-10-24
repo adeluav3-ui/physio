@@ -41,9 +41,10 @@ export class PatientsService {
         if (input.location !== undefined) data.location = input.location;
         if (input.emergencyContact !== undefined) data.emergencyContact = input.emergencyContact;
 
-        return this.prisma.client.patientProfile.update({
+        return this.prisma.client.patientProfile.upsert({
             where: { userId: user.id },
-            data,
+            create: { userId: user.id, ...data },
+            update: data,
         });
     }
     async isComplete(userId: string) {

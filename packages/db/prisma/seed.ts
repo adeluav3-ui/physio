@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client/client.js";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -85,7 +86,7 @@ const exercises = [
     },
 ];
 
-async function main() {
+async function seedExercises() {
     console.log("Seeding exercise library...");
     for (const e of exercises) {
         await prisma.exercise.upsert({
@@ -95,6 +96,78 @@ async function main() {
         });
     }
     console.log(`Seeded ${exercises.length} exercises.`);
+}
+
+async function seedAdmin() {
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+
+    if (!email || !password) {
+        console.log("ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin seed.");
+        return;
+    }
+
+    if (password.length < 12) {
+        console.error("ADMIN_PASSWORD must be at least 12 characters.");
+        process.exit(1);
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+
+    if (existing) {
+        await prisma.user.update({
+            where: { email },
+            data: {
+                role: "ADMIN",
+                status: "ACTIVE",
+                emailVerifiedAt: existing.emailVerifiedAt ?? new Date(),
+                passwordHash,
+            },
+        });
+        console.log(`Admin updated: ${email}`);
+    } else {
+        await prisma.user.create({
+            data: {
+                email,
+                name: email.split("@")[0]!,
+                role: "ADMIN",
+                status: "ACTIVE",
+                emailVerifiedAt: new Date(),
+                passwordHash,
+            },
+        });
+        console.log(`Admin created: ${email}`);
+    }
+}
+
+// ── Licensing bodies ──────────────────────────────────────────────────────────
+// TODO(Victor): Replace placeholder names with the real accrediting bodies.
+// COREN = Council for Rehabilitation of Patients in Nigeria (placeholder)
+const LICENSING_BODIES = [
+    { discipline: "PHYSIOTHERAPY",      name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "OCCUPATIONAL_THERAPY", name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "SPEECH_THERAPY",     name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "PROSTHETICS",        name: "PLACEHOLDER — Prosthetics & Orthotics Board Nigeria (TODO: confirm)", country: "NG" },
+    { discipline: "ORTHOTICS",          name: "PLACEHOLDER — Prosthetics & Orthotics Board Nigeria (TODO: confirm)", country: "NG" },
+] as const;
+
+async function seedLicensingBodies() {
+    for (const body of LICENSING_BODIES) {
+        await prisma.licensingBody.upsert({
+            where: { discipline_name_country: { discipline: body.discipline, name: body.name, country: body.country } },
+            create: { discipline: body.discipline, name: body.name, country: body.country, active: true },
+            update: {},
+        });
+    }
+    console.log(`Licensing bodies seeded: ${LICENSING_BODIES.length}`);
+}
+
+async function main() {
+    await seedExercises();
+    await seedLicensingBodies();
+    await seedAdmin();
 }
 
 main()

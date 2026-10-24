@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Input } from "@physio/ui";
-import { physioApplySchema } from "@physio/shared";
+import { Button, Card, Field, Input } from "@physio/ui";
+import { physioApplySchema, DISCIPLINE_LABELS } from "@physio/shared";
 
-export default function PhysioApplyPage() {
+type Discipline = keyof typeof DISCIPLINE_LABELS;
+
+const DISCIPLINES = Object.entries(DISCIPLINE_LABELS) as [Discipline, string][];
+
+export default function ProfessionalApplyPage() {
     const router = useRouter();
     const [checking, setChecking] = useState(true);
+    const [discipline, setDiscipline] = useState<Discipline>("PHYSIOTHERAPY");
     const [licenceNo, setLicenceNo] = useState("");
     const [specialties, setSpecialties] = useState("");
     const [bio, setBio] = useState("");
@@ -23,7 +28,7 @@ export default function PhysioApplyPage() {
                 return r.json();
             })
             .then((user) => {
-                if (user.role !== "PHYSIO") throw new Error("Wrong role");
+                if (user.role !== "PHYSIO" && user.role !== "PATIENT") throw new Error("Not signed in");
                 setChecking(false);
             })
             .catch(() => {
@@ -36,6 +41,7 @@ export default function PhysioApplyPage() {
         setError(null);
 
         const parsed = physioApplySchema.safeParse({
+            discipline,
             licenceNo,
             specialties: specialties.split(",").map((s) => s.trim()).filter(Boolean),
             bio,
@@ -75,38 +81,60 @@ export default function PhysioApplyPage() {
     }
 
     return (
-        <div className="mx-auto max-w-2xl p-4">
-            <h1 className="text-2xl font-semibold">Physio application</h1>
+        <div className="mx-auto max-w-2xl p-4 pb-16">
+            <h1 className="text-2xl font-semibold">Professional application</h1>
             <p className="mt-1 text-sm text-text-muted">
-                We verify every licence with the Medical Rehabilitation Therapists Board of Nigeria
-                before your profile appears to patients.
+                We verify every licence with the relevant regulatory body before your profile appears to patients.
             </p>
 
             <Card className="mt-6">
-                <form onSubmit={onSubmit} className="flex flex-col gap-4">
+                <form onSubmit={onSubmit} className="flex flex-col gap-5">
+
+                    <Field label="Discipline" required>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                            {DISCIPLINES.map(([key, label]) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setDiscipline(key)}
+                                    className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                                        discipline === key
+                                            ? "border-primary-500 bg-primary-50 text-primary-700"
+                                            : "border-border bg-surface text-text hover:border-primary-300"
+                                    }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </Field>
+
                     <Input
-                        label="Licence number"
+                        label="Licence / registration number"
                         value={licenceNo}
                         onChange={(e) => setLicenceNo(e.target.value)}
+                        hint="As it appears on your regulatory board certificate"
                         required
                     />
+
                     <Input
                         label="Specialties"
                         value={specialties}
                         onChange={(e) => setSpecialties(e.target.value)}
-                        hint="Comma-separated, e.g. Sports, Post-op, Neuro"
+                        hint="Comma-separated, e.g. Paediatrics, Neuro, Post-op"
                         required
                     />
-                    <div>
-                        <label className="text-sm font-medium text-text">Short bio</label>
+
+                    <Field label="Short bio" required>
                         <textarea
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
-                            className="mt-1 h-32 w-full rounded-md border border-border p-3 text-sm"
-                            placeholder="Your experience and approach to care"
+                            className="h-32 w-full rounded-md border border-border p-3 text-sm focus:border-primary-400 focus:outline-none"
+                            placeholder="Your experience and approach to care (min. 50 characters)"
                             required
                         />
-                    </div>
+                    </Field>
+
                     <Input
                         label="Session rate (NGN)"
                         type="number"
@@ -115,11 +143,12 @@ export default function PhysioApplyPage() {
                         hint="What patients pay per session"
                         required
                     />
+
                     <Input
                         label="Service area"
                         value={serviceArea}
                         onChange={(e) => setServiceArea(e.target.value)}
-                        hint="City or region for home visits"
+                        hint="City or region where you see patients"
                         required
                     />
 

@@ -11,7 +11,15 @@ import { REMINDERS_QUEUE } from "./reminders.constants.js";
         BullModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
-                connection: { url: config.getOrThrow<string>("REDIS_URL") },
+                connection: {
+                    url: config.getOrThrow<string>("REDIS_URL"),
+                    lazyConnect: true,
+                    connectTimeout: 3000,
+                    retryStrategy: (times: number) => {
+                        if (times > 5) return null;
+                        return Math.min(times * 500, 2000);
+                    },
+                },
             }),
         }),
         BullModule.registerQueue({ name: REMINDERS_QUEUE }),
@@ -19,4 +27,4 @@ import { REMINDERS_QUEUE } from "./reminders.constants.js";
     providers: [RemindersService, RemindersProcessor, RemindersScheduler],
     exports: [RemindersService],
 })
-export class RemindersModule { }
+export class RemindersModule {}

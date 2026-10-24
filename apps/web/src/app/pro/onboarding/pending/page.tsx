@@ -13,7 +13,7 @@ export default function PhysioPendingPage() {
                 return r.json();
             })
             .then((user) => {
-                if (user.role !== "PHYSIO") throw new Error("Wrong role");
+                if (user.role !== "PHYSIO" && user.role !== "PATIENT") throw new Error("Not signed in");
                 setChecking(false);
             })
             .catch(() => {

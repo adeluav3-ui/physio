@@ -1,14 +1,17 @@
-import { Injectable } from "@nestjs/common";
+import { BadGatewayException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
+import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { OnEvent } from "@nestjs/event-emitter";
 
-const PLATFORM_FEE_BPS = 1500; // 15%
+// Basis points (1 bps = 0.01%). Env var PLATFORM_FEE_BPS overrides; default 1500 (15%).
+const PLATFORM_FEE_BPS = Number(process.env["PLATFORM_FEE_BPS"] ?? 1500);
 
 @Injectable()
 export class PaymentsService {
     private readonly provider = getPaymentProvider();
+    private readonly logger = new Logger(PaymentsService.name);
 
     constructor(
         private readonly prisma: PrismaService,
@@ -16,11 +19,31 @@ export class PaymentsService {
     ) { }
 
     async initializeCharge(input: InitChargeInput) {
-        return this.provider.initializeCharge(input);
+        try {
+            return await this.provider.initializeCharge(input);
+        } catch (err) {
+            this.logger.error("initializeCharge failed", err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
     }
 
-    async verifyCharge(reference: string) {
-        return this.provider.verifyCharge(reference);
+    async verifyCharge(user: SessionUser, reference: string) {
+        const payment = await this.prisma.client.payment.findFirst({
+            where: { providerRef: reference },
+            include: { appointment: { select: { patientId: true, physioId: true } } },
+        });
+        if (!payment) throw new NotFoundException({ code: "NOT_FOUND", message: "Payment not found" });
+        const appt = payment.appointment;
+        const isOwner = appt.patientId === user.id || appt.physioId === user.id;
+        if (!isOwner && user.role !== "ADMIN") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your payment" });
+        }
+        try {
+            return await this.provider.verifyCharge(reference);
+        } catch (err) {
+            this.logger.error(`verifyCharge failed for reference ${reference}`, err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
     }
 
     /**
@@ -85,7 +108,7 @@ export class PaymentsService {
         await this.recordLedger({
             appointmentId,
             type: "PHYSIO_PAYOUT",
-            amountKobo: -physioPayout,
+            amountKobo: physioPayout,
             note: "Physio earnings recorded",
         });
 
@@ -109,7 +132,13 @@ export class PaymentsService {
         if (!payment || !payment.providerRef) return;
         if (payment.status === "REFUNDED") return;
 
-        const result = await this.provider.refund({ reference: payment.providerRef });
+        let result;
+        try {
+            result = await this.provider.refund({ reference: payment.providerRef });
+        } catch (err) {
+            this.logger.error(`refund failed for appointment ${appointmentId}`, err);
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
+        }
         if (result.status !== "success") {
             throw new Error(`Refund failed: ${JSON.stringify(result.raw)}`);
         }
