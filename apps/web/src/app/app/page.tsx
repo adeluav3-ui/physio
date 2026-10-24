@@ -85,17 +85,29 @@ export default async function PatientDashboard() {
                 )}
 
                 <Card>
-                    <p className="text-sm font-semibold">Today's program</p>
+                    <p className="text-sm font-semibold">My plan</p>
                     <p className="mt-1 text-sm text-text-muted">
-                        Your professional hasn't assigned a program yet. You'll see it here after your first session.
+                        View your exercise programme and goal plans assigned by your professional.
                     </p>
+                    <Link
+                        href="/app/plan"
+                        className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
+                    >
+                        Open plan
+                    </Link>
                 </Card>
 
                 <Card>
-                    <p className="text-sm font-semibold">Messages</p>
+                    <p className="text-sm font-semibold">Find a professional</p>
                     <p className="mt-1 text-sm text-text-muted">
-                        No messages yet. You can message your professional after your first session.
+                        Browse verified physiotherapists, OTs, speech therapists and more.
                     </p>
+                    <Link
+                        href="/app/physios"
+                        className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
+                    >
+                        Browse professionals
+                    </Link>
                 </Card>
             </div>
         </div>
