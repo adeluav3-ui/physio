@@ -29,9 +29,16 @@ async function forward(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
 
     // Forward the real client IP for server-side rate limiting.
     // In production (Vercel/edge), x-forwarded-for is set by the CDN.
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        ?? req.headers.get("x-real-ip")?.trim();
     if (clientIp) {
         upstreamHeaders.set("X-Forwarded-For", clientIp);
+        // Verified channel: API trusts X-Client-IP only when X-Proxy-Secret matches.
+        upstreamHeaders.set("X-Client-IP", clientIp);
+    }
+    const proxySecret = process.env.PROXY_SHARED_SECRET;
+    if (proxySecret) {
+        upstreamHeaders.set("X-Proxy-Secret", proxySecret);
     }
 
     // Read body for methods that carry one; pass undefined for GET/HEAD so

@@ -25,11 +25,10 @@ import { PatientsModule } from "./patients/patients.module.js";
         ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
         EventEmitterModule.forRoot(),
         ThrottlerModule.forRoot([
-            {
-                name: "global",
-                ttl: 60_000,
-                limit: 100,
-            },
+            { name: "global", ttl: 60_000, limit: 100 },
+            // "ip" throttler is enforced only by IpOnlyThrottlerGuard on specific routes.
+            // skipIf:()=>true prevents the global APP_GUARD from applying it everywhere.
+            { name: "ip", ttl: 900_000, limit: 999, skipIf: () => true },
         ]),
         PrismaModule,
         RedisModule,

@@ -13,24 +13,24 @@ import { AuthService } from "./auth.service.js";
 import { ZodBody } from "../common/zod-validation.pipe.js";
 import { JwtAuthGuard } from "./jwt-auth.guard.js";
 import { CurrentUser } from "../common/current-user.decorator.js";
-import { IpEmailThrottlerGuard } from "./throttler-guards.js";
+import { IpEmailThrottlerGuard, IpOnlyThrottlerGuard } from "./throttler-guards.js";
 import type { SessionUser } from "@physio/shared";
 
 @Controller("auth")
 export class AuthController {
     constructor(private readonly auth: AuthService) { }
 
-    // 20 attempts per hour per IP+email (prevents mass account creation)
-    @UseGuards(IpEmailThrottlerGuard)
-    @Throttle({ global: { limit: 20, ttl: 3_600_000 } })
+    // 20 attempts per hour per IP+email + 50 per hour per IP
+    @UseGuards(IpEmailThrottlerGuard, IpOnlyThrottlerGuard)
+    @Throttle({ global: { limit: 20, ttl: 3_600_000 }, ip: { limit: 50, ttl: 3_600_000 } })
     @Post("signup")
     signUp(@Body(new ZodBody(signUpSchema)) body: SignUpInput) {
         return this.auth.signUp(body);
     }
 
-    // 10 attempts per 15 min per IP+email (protects against credential stuffing)
-    @UseGuards(IpEmailThrottlerGuard)
-    @Throttle({ global: { limit: 10, ttl: 900_000 } })
+    // 10 attempts per 15 min per IP+email + 30 per 15 min per IP
+    @UseGuards(IpEmailThrottlerGuard, IpOnlyThrottlerGuard)
+    @Throttle({ global: { limit: 10, ttl: 900_000 }, ip: { limit: 30, ttl: 900_000 } })
     @Post("login")
     login(@Body(new ZodBody(loginSchema)) body: LoginInput) {
         return this.auth.login(body);
