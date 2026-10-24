@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/client/client.js";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -142,8 +142,31 @@ async function seedAdmin() {
     }
 }
 
+// ── Licensing bodies ──────────────────────────────────────────────────────────
+// TODO(Victor): Replace placeholder names with the real accrediting bodies.
+// COREN = Council for Rehabilitation of Patients in Nigeria (placeholder)
+const LICENSING_BODIES = [
+    { discipline: "PHYSIOTHERAPY",      name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "OCCUPATIONAL_THERAPY", name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "SPEECH_THERAPY",     name: "Medical Rehabilitation Therapists (Registration) Board of Nigeria (MRTB)", country: "NG" },
+    { discipline: "PROSTHETICS",        name: "PLACEHOLDER — Prosthetics & Orthotics Board Nigeria (TODO: confirm)", country: "NG" },
+    { discipline: "ORTHOTICS",          name: "PLACEHOLDER — Prosthetics & Orthotics Board Nigeria (TODO: confirm)", country: "NG" },
+] as const;
+
+async function seedLicensingBodies() {
+    for (const body of LICENSING_BODIES) {
+        await prisma.licensingBody.upsert({
+            where: { discipline_name_country: { discipline: body.discipline, name: body.name, country: body.country } },
+            create: { discipline: body.discipline, name: body.name, country: body.country, active: true },
+            update: {},
+        });
+    }
+    console.log(`Licensing bodies seeded: ${LICENSING_BODIES.length}`);
+}
+
 async function main() {
     await seedExercises();
+    await seedLicensingBodies();
     await seedAdmin();
 }
 

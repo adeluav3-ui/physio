@@ -9,6 +9,46 @@ datasource db {
 }
 
 // ── Enums ────────────────────────────────
+
+enum Discipline {
+  PHYSIOTHERAPY
+  OCCUPATIONAL_THERAPY
+  SPEECH_THERAPY
+  PROSTHETICS
+  ORTHOTICS
+}
+
+enum ReferralStatus {
+  SENT
+  PATIENT_CONSENTED
+  ACCEPTED
+  DECLINED
+  BOOKED
+  SESSION_HELD
+  SUMMARY_SENT
+  CONFIRMED
+  CLOSED
+  EXPIRED
+}
+
+enum ReferralUrgency {
+  ROUTINE
+  SOON
+  URGENT
+}
+
+enum GoalStatus {
+  ACTIVE
+  ACHIEVED
+  PAUSED
+  CANCELLED
+}
+
+enum PlanType {
+  EXERCISE    // physiotherapy
+  GOAL        // occupational therapy, speech therapy
+}
+
 enum Role {
   PATIENT
   PHYSIO
@@ -135,13 +175,20 @@ model EmailToken {
 
 model PhysioProfile {
   userId         String        @id
+  discipline     Discipline    @default(PHYSIOTHERAPY)
   licenceNo      String
+  licensingBody  String?
   licenceStatus  LicenceStatus @default(UNVERIFIED)
   specialties    String[]
   bio            String
   rateKobo       Int
   serviceArea    String
   verifiedAt     DateTime?
+  rejectedAt     DateTime?
+  rejectionReason String?
+  languages      String[]      @default([])
+  photoUrl       String?
+  sessionTypes   String[]      @default([])
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -149,8 +196,12 @@ model PhysioProfile {
   availability   Availability[]
   appointments   Appointment[] @relation("physio_appointments")
   programs       Program[]
+  referralsSent  Referral[]    @relation("referral_sender")
+  referralsReceived Referral[] @relation("referral_receiver")
+  goalPlans      GoalPlan[]
 
   @@index([licenceStatus])
+  @@index([discipline, licenceStatus])
 }
 
 model PatientProfile {
@@ -166,12 +217,34 @@ model PatientProfile {
   intakes           Intake[]
   appointments      Appointment[] @relation("patient_appointments")
   programs          Program[]
+  dependents        Dependent[]
+  goalPlans         GoalPlan[]
+  referralsAsPatient Referral[]
+}
+
+// ── Caregiver / Dependents ────────────────
+model Dependent {
+  id           String         @id @default(uuid())
+  caregiverId  String
+  name         String
+  dob          DateTime?
+  sex          String?
+  relationship String         // "child" | "sibling" | "parent" | "spouse" | "other"
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  caregiver    PatientProfile @relation(fields: [caregiverId], references: [userId], onDelete: Cascade)
+  intakes      Intake[]       @relation("dependent_intakes")
+  appointments Appointment[]  @relation("dependent_appointments")
+
+  @@index([caregiverId])
 }
 
 // ── Intake & triage ──────────────────────
 model Intake {
   id             String   @id @default(uuid())
   patientId      String
+  dependentId    String?
   complaint      String
   bodyRegion     String
   onset          String
@@ -182,6 +255,7 @@ model Intake {
   createdAt      DateTime @default(now())
 
   patient        PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+  dependent      Dependent?     @relation("dependent_intakes", fields: [dependentId], references: [id])
   triage         TriageResult?
   appointment    Appointment?
 
@@ -219,6 +293,7 @@ model Appointment {
   id           String            @id @default(uuid())
   patientId    String
   physioId     String
+  dependentId  String?
   intakeId     String?           @unique
   type         AppointmentType
   mode         SessionMode
@@ -230,6 +305,7 @@ model Appointment {
 
   patient      PatientProfile @relation("patient_appointments", fields: [patientId], references: [userId])
   physio       PhysioProfile   @relation("physio_appointments", fields: [physioId], references: [userId])
+  dependent    Dependent?      @relation("dependent_appointments", fields: [dependentId], references: [id])
   intake       Intake?         @relation(fields: [intakeId], references: [id])
   payment      Payment?
   videoSession VideoSession?
@@ -237,6 +313,7 @@ model Appointment {
   homeVisit    HomeVisit?
   review       Review?
   ledger       LedgerEntry[]
+  referral     Referral?       @relation("referral_appointment")
 
   @@index([patientId, startsAt])
   @@index([physioId, startsAt])
@@ -307,17 +384,19 @@ model SessionNote {
 
 // ── Exercise library & programs ──────────
 model Exercise {
-  id              String        @id @default(uuid())
-  name            String
-  region          String
-  videoUrl        String
-  cues            String
+  id               String        @id @default(uuid())
+  name             String
+  region           String
+  videoUrl         String
+  cues             String
   contraindications String?
-  difficulty      Int           @default(1)
-  createdAt       DateTime      @default(now())
+  difficulty       Int           @default(1)
+  clinicalReview   Boolean       @default(false) // true = reviewed by a clinician, safe to show patients
+  createdAt        DateTime      @default(now())
 
-  programItems    ProgramItem[]
+  programItems     ProgramItem[]
   @@index([region, difficulty])
+  @@index([clinicalReview])
 }
 
 model Program {
@@ -436,18 +515,21 @@ model AuditLog {
 }
 
 model WaitlistEntry {
-  id          String   @id @default(uuid())
-  kind        String   // "PATIENT" | "PROFESSIONAL"
-  specialty   String?  // only for professionals: PHYSIO | SPEECH | OT | PROSTHETIST | ORTHOTIST
-  name        String
-  email       String
-  phone       String
-  city        String
-  concern     String?  // patient's primary concern
-  licenceNo   String?  // professional's licence (optional)
-  experience  String?  // professional's years of experience
-  notes       String?
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid())
+  kind         String   // "PATIENT" | "PROFESSIONAL"
+  specialty    String?  // legacy; use discipline for new entries
+  discipline   String?  // "PHYSIOTHERAPY" | "OCCUPATIONAL_THERAPY" | "SPEECH_THERAPY" | "PROSTHETICS" | "ORTHOTICS"
+  licensingBody String?
+  pilotTester  Boolean  @default(false)
+  name         String
+  email        String
+  phone        String?
+  city         String
+  concern      String?  // patient's primary concern / "what do you need help with"
+  licenceNo    String?  // professional's licence (optional)
+  experience   String?  // professional's years of experience
+  notes        String?
+  createdAt    DateTime @default(now())
 
   @@index([kind, createdAt])
 }
@@ -465,4 +547,133 @@ model Notification {
   createdAt DateTime            @default(now())
 
   @@index([userId, createdAt])
+}
+
+// ── Referrals ─────────────────────────────
+model Referral {
+  id                  String          @id @default(uuid())
+  fromProfessionalId  String
+  toDiscipline        Discipline
+  toProfessionalId    String?         // null = any available
+  patientId           String
+  reason              String
+  urgency             ReferralUrgency
+  status              ReferralStatus  @default(SENT)
+  declineReason       String?
+  summary             String?
+
+  // Shared items: flags indicating what the sender chose to share
+  shareAssessmentNote Boolean         @default(false)
+  sharePlan           Boolean         @default(false)
+  shareMessages       Boolean         @default(false)
+  patientConsented    Boolean         @default(false)
+  patientConsentedAt  DateTime?
+
+  // Linked appointment (set when BOOKED)
+  appointmentId       String?         @unique
+  expiresAt           DateTime?
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  sender              PhysioProfile   @relation("referral_sender", fields: [fromProfessionalId], references: [userId])
+  receiver            PhysioProfile?  @relation("referral_receiver", fields: [toProfessionalId], references: [userId])
+  patient             PatientProfile  @relation(fields: [patientId], references: [userId])
+  appointment         Appointment?    @relation("referral_appointment", fields: [appointmentId], references: [id])
+  auditEntries        ReferralAudit[]
+
+  @@index([fromProfessionalId, status])
+  @@index([toProfessionalId, status])
+  @@index([patientId])
+  @@index([toDiscipline, status])
+}
+
+model ReferralAudit {
+  id         String         @id @default(uuid())
+  referralId String
+  actorId    String?
+  fromStatus ReferralStatus?
+  toStatus   ReferralStatus
+  note       String?
+  at         DateTime       @default(now())
+
+  referral   Referral       @relation(fields: [referralId], references: [id], onDelete: Cascade)
+
+  @@index([referralId, at])
+}
+
+// ── Goal plans (OT, Speech therapy) ──────
+model GoalPlan {
+  id           String         @id @default(uuid())
+  patientId    String
+  professionalId String
+  title        String
+  status       String         @default("ACTIVE") // ACTIVE | COMPLETED | ARCHIVED
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  patient      PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+  professional PhysioProfile  @relation(fields: [professionalId], references: [userId])
+  goals        Goal[]
+
+  @@index([patientId, status])
+  @@index([professionalId])
+}
+
+model Goal {
+  id          String     @id @default(uuid())
+  goalPlanId  String
+  title       String
+  status      GoalStatus @default(ACTIVE)
+  progress    Int        @default(0)  // 0-100
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  goalPlan    GoalPlan   @relation(fields: [goalPlanId], references: [id], onDelete: Cascade)
+  tasks       PracticeTask[]
+
+  @@index([goalPlanId, status])
+}
+
+model PracticeTask {
+  id          String   @id @default(uuid())
+  goalId      String
+  title       String
+  schedule    String   // e.g. "daily", "3x/week", "Mon Wed Fri"
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  goal        Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  logs        TaskLog[]
+
+  @@index([goalId])
+}
+
+model TaskLog {
+  id             String      @id @default(uuid())
+  practiceTaskId String
+  date           DateTime    @db.Date
+  completed      Boolean
+  note           String?
+  createdAt      DateTime    @default(now())
+
+  task           PracticeTask @relation(fields: [practiceTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([practiceTaskId, date])
+}
+
+// ── Licensing bodies config ───────────────
+// Admin-editable list of recognised licensing bodies per discipline.
+// Seeded with placeholders; Victor to confirm real bodies.
+model LicensingBody {
+  id         String     @id @default(uuid())
+  discipline Discipline
+  name       String
+  country    String     @default("NG")
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+
+  @@unique([discipline, name, country])
+  @@index([discipline, active])
 }

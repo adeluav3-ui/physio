@@ -1,5 +1,45 @@
 import { z } from "zod";
 
+export const Discipline = z.enum([
+    "PHYSIOTHERAPY",
+    "OCCUPATIONAL_THERAPY",
+    "SPEECH_THERAPY",
+    "PROSTHETICS",
+    "ORTHOTICS",
+]);
+export type Discipline = z.infer<typeof Discipline>;
+
+export const DISCIPLINE_LABELS: Record<Discipline, string> = {
+    PHYSIOTHERAPY:      "Physiotherapy",
+    OCCUPATIONAL_THERAPY: "Occupational Therapy",
+    SPEECH_THERAPY:     "Speech & Language Therapy",
+    PROSTHETICS:        "Prosthetics",
+    ORTHOTICS:          "Orthotics",
+};
+
+export const ReferralStatus = z.enum([
+    "SENT",
+    "PATIENT_CONSENTED",
+    "ACCEPTED",
+    "DECLINED",
+    "BOOKED",
+    "SESSION_HELD",
+    "SUMMARY_SENT",
+    "CONFIRMED",
+    "CLOSED",
+    "EXPIRED",
+]);
+export type ReferralStatus = z.infer<typeof ReferralStatus>;
+
+export const ReferralUrgency = z.enum(["ROUTINE", "SOON", "URGENT"]);
+export type ReferralUrgency = z.infer<typeof ReferralUrgency>;
+
+export const GoalStatus = z.enum(["ACTIVE", "ACHIEVED", "PAUSED", "CANCELLED"]);
+export type GoalStatus = z.infer<typeof GoalStatus>;
+
+export const PlanType = z.enum(["EXERCISE", "GOAL"]);
+export type PlanType = z.infer<typeof PlanType>;
+
 export const Role = z.enum(["PATIENT", "PHYSIO", "ADMIN"]);
 export type Role = z.infer<typeof Role>;
 
