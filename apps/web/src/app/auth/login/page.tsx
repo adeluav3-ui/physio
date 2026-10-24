@@ -62,9 +62,6 @@ export default function LoginPage() {
                             Email me a login link
                         </Link>
                     </form>
-                    <div style={{ marginTop: "24px", padding: "14px", borderRadius: "10px", background: "#f1f6f5", font: "400 14px/1.5 'Figtree',sans-serif", color: "#4f6663" }}>
-                        After login: patients go to Home, professionals to their workspace (or the onboarding checklist), admins to the console.
-                    </div>
                 </div>
                 <p style={{ textAlign: "center", font: "400 14px 'Figtree',sans-serif", marginTop: "16px", color: "#4f6663" }}>
                     New here? <Link href="/auth/signup">Create an account</Link>
