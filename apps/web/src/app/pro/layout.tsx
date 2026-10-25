@@ -16,7 +16,9 @@ const DISCIPLINE_MAP: Record<string, string> = {
 };
 
 export default async function ProLayout({ children }: { children: React.ReactNode }) {
-    const user = await requireSession(["PHYSIO"]);
+    // PATIENT is allowed so new professionals can reach /pro/onboarding before admin verifies them.
+    // ProShell's BARE path list skips the sidebar for /pro/onboarding routes.
+    const user = await requireSession(["PATIENT", "PHYSIO"]);
     let discipline = "";
     try {
         const pro = await apiFetch<{ discipline: string }>(`/physios/${user.id}`);
