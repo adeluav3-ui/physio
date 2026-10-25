@@ -26,7 +26,7 @@ export type LedgerEntry = z.infer<typeof ledgerEntrySchema>;
 
 export const refundRequestSchema = z.object({
     appointmentId: idSchema,
-    reason: z.string().min(10).max(500),
+    reason: z.string(),
 });
 
 export const paystackWebhookSchema = z.object({

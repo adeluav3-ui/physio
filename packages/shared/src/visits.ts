@@ -4,9 +4,9 @@ import { HomeVisitStatus } from "./enums.js";
 
 export const homeVisitRequestSchema = z.object({
     appointmentId: idSchema,
-    address: z.string().min(10).max(500),
+    address: z.string(),
     geo: z.object({ lat: z.number(), lng: z.number() }),
-    notes: z.string().max(1000).optional(),
+    notes: z.string().optional(),
 });
 export type HomeVisitRequestInput = z.infer<typeof homeVisitRequestSchema>;
 

@@ -17,8 +17,8 @@ export const programItemInputSchema = z.object({
     sets: z.number().int().min(0).max(20),
     reps: z.number().int().min(0).max(100),
     holdSeconds: z.number().int().min(0).max(300).default(0),
-    frequency: z.string().min(1).max(100),
-    notes: z.string().max(500).optional(),
+    frequency: z.string(),
+    notes: z.string().optional(),
 });
 
 export const programCreateSchema = z.object({
@@ -34,6 +34,6 @@ export const exerciseLogSchema = z.object({
     date: z.string().date(),
     completed: z.boolean(),
     painAfter: z.number().int().min(0).max(10).optional(),
-    notes: z.string().max(500).optional(),
+    notes: z.string().optional(),
 });
 export type ExerciseLogInput = z.infer<typeof exerciseLogSchema>;

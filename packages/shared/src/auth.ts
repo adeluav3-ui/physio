@@ -1,24 +1,19 @@
 import { z } from "zod";
-import { emailSchema, idSchema, phoneSchema } from "./common.js";
+import { emailSchema, idSchema } from "./common.js";
 import { Role, UserStatus, Discipline } from "./enums.js";
 
-export const passwordSchema = z
-    .string()
-    .min(10, "Password must be at least 10 characters")
-    .max(128)
-    .regex(/[A-Za-z]/, "Must contain a letter")
-    .regex(/\d/, "Must contain a number");
+export const passwordSchema = z.string();
 
 export const signUpSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
-    name: z.string().min(2).max(120),
+    name: z.string(),
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
 
 export const loginSchema = z.object({
     email: emailSchema,
-    password: z.string().min(1),
+    password: z.string(),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
@@ -37,23 +32,23 @@ export const sessionUserSchema = z.object({
     role: Role,
     status: UserStatus,
     emailVerified: z.boolean(),
-    phone: phoneSchema,
+    phone: z.string().optional(),
 });
 export type SessionUser = z.infer<typeof sessionUserSchema>;
 
 // ── Physio onboarding ─────────────────────
 export const physioApplySchema = z.object({
     discipline: Discipline,
-    licenceNo: z.string().min(3).max(60),
-    specialties: z.array(z.string().min(2)).min(1).max(10),
-    bio: z.string().min(50).max(2000),
-    rate: z.number().int().min(0).max(1_000_000), // kobo
-    serviceArea: z.string().min(2).max(200),
+    licenceNo: z.string(),
+    specialties: z.array(z.string()),
+    bio: z.string(),
+    rate: z.number().int().min(0), // kobo
+    serviceArea: z.string(),
 });
 export type PhysioApplyInput = z.infer<typeof physioApplySchema>;
 
 export const physioVerifySchema = z.object({
     userId: idSchema,
     decision: z.enum(["VERIFIED", "REJECTED"]),
-    reason: z.string().max(500).optional(),
+    reason: z.string().optional(),
 });

@@ -84,16 +84,6 @@ export default function ProfessionalApplyPage() {
     };
 
     function validateStep(): string | null {
-        if (step === 1) {
-            if (licenceNo.trim().length < 3) return "Licence number must be at least 3 characters.";
-        }
-        if (step === 2) {
-            const specs = specialties.split(",").map(s => s.trim()).filter(Boolean);
-            if (specs.length === 0) return "Please add at least one specialty.";
-            if (bio.trim().length < 50) return `Bio is too short — write at least 50 characters (currently ${bio.trim().length}).`;
-            if (!rate || isNaN(Number(rate)) || Number(rate) <= 0) return "Please enter a valid session rate.";
-            if (serviceArea.trim().length < 2) return "Please enter your service area.";
-        }
         return null;
     }
 

@@ -153,7 +153,7 @@ export default function SignupPage() {
                         <div>
                             <label className="flabel" htmlFor="s-pass">Password</label>
                             <div style={{ position: "relative" }}>
-                                <input className="in" id="s-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 10 characters" required style={{ paddingRight: "44px" }} />
+                                <input className="in" id="s-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Choose a password" required style={{ paddingRight: "44px" }} />
                                 <button type="button" onClick={() => setShowPass(v => !v)} aria-label={showPass ? "Hide password" : "Show password"}
                                     style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6663", display: "flex", alignItems: "center", padding: 0 }}>
                                     {IC_EYE(showPass)}

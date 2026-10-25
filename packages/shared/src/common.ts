@@ -20,9 +20,6 @@ export type ApiError = {
     details?: unknown;
 };
 
-export const phoneSchema = z
-    .string()
-    .regex(/^\+?[1-9]\d{6,14}$/, "Invalid phone number")
-    .optional();
+export const phoneSchema = z.string().optional();
 
-export const emailSchema = z.string().email().max(254).toLowerCase();
+export const emailSchema = z.string().email().toLowerCase();

@@ -22,13 +22,13 @@ export const redFlagAnswer = z.object({
 });
 
 export const intakeSubmitSchema = z.object({
-    complaint: z.string().min(5).max(1000),
+    complaint: z.string(),
     bodyRegion,
-    onset: z.string().min(2).max(200),
+    onset: z.string(),
     painScore: z.number().int().min(0).max(10),
-    history: z.string().max(2000).optional(),
-    medications: z.string().max(1000).optional(),
-    redFlagAnswers: z.array(redFlagAnswer).min(1),
+    history: z.string().optional(),
+    medications: z.string().optional(),
+    redFlagAnswers: z.array(redFlagAnswer),
 });
 export type IntakeSubmitInput = z.infer<typeof intakeSubmitSchema>;
 

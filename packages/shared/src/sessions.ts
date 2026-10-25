@@ -4,10 +4,10 @@ import { VideoProviderName } from "./enums.js";
 
 export const sessionNoteSchema = z.object({
     appointmentId: idSchema,
-    subjective: z.string().max(4000),
-    objective: z.string().max(4000),
-    assessment: z.string().max(4000),
-    plan: z.string().max(4000),
+    subjective: z.string(),
+    objective: z.string(),
+    assessment: z.string(),
+    plan: z.string(),
     outcomeMeasures: z.record(z.number()).default({}),
 });
 export type SessionNoteInput = z.infer<typeof sessionNoteSchema>;

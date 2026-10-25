@@ -29,5 +29,5 @@ export type TriageRule = {
 export const triageOverrideSchema = z.object({
     intakeId: idSchema,
     level: TriageLevel,
-    reason: z.string().min(10).max(500),
+    reason: z.string(),
 });
