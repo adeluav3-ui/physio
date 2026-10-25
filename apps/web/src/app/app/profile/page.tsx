@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Input } from "@physio/ui";
+import { SignOutButton } from "@/components/sign-out-button";
 
 export default function PatientProfilePage() {
     const router = useRouter();
@@ -13,11 +13,12 @@ export default function PatientProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [saved, setSaved] = useState(false);
 
     useEffect(() => {
         fetch("/api/proxy/patients/me")
-            .then((r) => (r.ok ? r.json() : null))
-            .then((data) => {
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
                 if (data) {
                     setDob(data.dob ? data.dob.slice(0, 10) : "");
                     setSex(data.sex ?? "");
@@ -25,7 +26,7 @@ export default function PatientProfilePage() {
                     setEmergencyContact(data.emergencyContact ?? "");
                 }
             })
-            .catch(() => { })
+            .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
 
@@ -33,6 +34,7 @@ export default function PatientProfilePage() {
         e.preventDefault();
         setError(null);
         setSaving(true);
+        setSaved(false);
         try {
             const res = await fetch("/api/proxy/patients/me", {
                 method: "PUT",
@@ -43,7 +45,7 @@ export default function PatientProfilePage() {
                 const b = await res.json().catch(() => ({}));
                 throw new Error(b.message ?? "Failed to save");
             }
-            router.push("/app");
+            setSaved(true);
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -51,26 +53,23 @@ export default function PatientProfilePage() {
         }
     }
 
-    if (loading) return <div className="p-8 text-center text-sm text-text-muted">Loading…</div>;
+    if (loading) return (
+        <div style={{ padding: "32px 20px", textAlign: "center", font: "400 14px 'Figtree',sans-serif", color: "#4f6663" }}>Loading…</div>
+    );
 
     return (
-        <div className="mx-auto max-w-md p-4">
-            <Card className="p-6">
-                <h1 className="text-2xl font-semibold">Your details</h1>
-                <p className="mt-1 text-sm text-text-muted">
-                    Required before your first booking. Used only for your care.
-                </p>
+        <div style={{ padding: "20px" }}>
+            <h1 style={{ font: "700 22px 'Figtree',sans-serif", marginBottom: "16px" }}>Your details</h1>
 
-                <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-                    <Input label="Date of birth" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required />
+            <div className="card">
+                <form onSubmit={onSubmit} style={{ display: "grid", gap: "14px" }}>
                     <div>
-                        <label className="text-sm font-medium">Sex</label>
-                        <select
-                            value={sex}
-                            onChange={(e) => setSex(e.target.value)}
-                            className="mt-1 h-12 w-full rounded-md border border-border bg-surface px-3 text-base"
-                            required
-                        >
+                        <label className="flabel" htmlFor="p-dob">Date of birth</label>
+                        <input className="in" id="p-dob" type="date" value={dob} onChange={e => setDob(e.target.value)} required />
+                    </div>
+                    <div>
+                        <label className="flabel" htmlFor="p-sex">Sex</label>
+                        <select className="in" id="p-sex" value={sex} onChange={e => setSex(e.target.value)} required style={{ cursor: "pointer" }}>
                             <option value="">Select…</option>
                             <option value="FEMALE">Female</option>
                             <option value="MALE">Male</option>
@@ -78,18 +77,28 @@ export default function PatientProfilePage() {
                             <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
                         </select>
                     </div>
-                    <Input label="Location (city / region)" value={location} onChange={(e) => setLocation(e.target.value)} required />
-                    <Input
-                        label="Emergency contact"
-                        value={emergencyContact}
-                        onChange={(e) => setEmergencyContact(e.target.value)}
-                        hint="Name and phone number"
-                        required
-                    />
-                    {error && <p className="text-sm text-danger-700">{error}</p>}
-                    <Button type="submit" loading={saving} fullWidth>Save details</Button>
+                    <div>
+                        <label className="flabel" htmlFor="p-loc">Location (city / region)</label>
+                        <input className="in" id="p-loc" value={location} onChange={e => setLocation(e.target.value)} required />
+                    </div>
+                    <div>
+                        <label className="flabel" htmlFor="p-ec">Emergency contact</label>
+                        <input className="in" id="p-ec" value={emergencyContact} onChange={e => setEmergencyContact(e.target.value)} placeholder="Name and phone number" required />
+                    </div>
+
+                    {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
+                    {saved && <p style={{ color: "#1d5c34", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>Saved.</p>}
+
+                    <button type="submit" className="btn" disabled={saving} style={{ width: "100%", opacity: saving ? 0.7 : 1 }}>
+                        {saving ? "Saving…" : "Save details"}
+                    </button>
                 </form>
-            </Card>
+            </div>
+
+            <div className="card" style={{ marginTop: "14px" }}>
+                <div style={{ font: "600 15px 'Figtree',sans-serif", marginBottom: "12px" }}>Account</div>
+                <SignOutButton className="btn btn2" style={{ width: "100%", minHeight: "44px" }} />
+            </div>
         </div>
     );
 }

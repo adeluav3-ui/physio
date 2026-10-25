@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
     { label: "Home", href: "/pro" },
@@ -37,12 +38,15 @@ export default function ProShell({
                         <Link key={n.href} href={n.href} className={`nav${on ? " navon" : ""}`}>{n.label}</Link>
                     );
                 })}
-                {userName && (
-                    <div style={{ marginTop: "auto", padding: "12px", borderRadius: "12px", background: "#f1f6f5" }}>
-                        <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{userName}</div>
-                        {discipline && <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>{discipline}</div>}
-                    </div>
-                )}
+                <div style={{ marginTop: "auto", paddingTop: "16px" }}>
+                    {userName && (
+                        <div style={{ padding: "12px", borderRadius: "12px", background: "#f1f6f5", marginBottom: "10px" }}>
+                            <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{userName}</div>
+                            {discipline && <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>{discipline}</div>}
+                        </div>
+                    )}
+                    <SignOutButton className="btn btn2" style={{ width: "100%", minHeight: "40px" }} />
+                </div>
             </aside>
             <main style={{ flex: "999 1 560px", minWidth: 0, padding: "28px" }}>
                 {children}
