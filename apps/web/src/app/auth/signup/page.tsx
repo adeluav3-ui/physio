@@ -8,7 +8,6 @@ import { signUpSchema, DISCIPLINE_LABELS } from "@physio/shared";
 type Discipline = keyof typeof DISCIPLINE_LABELS;
 const DISCIPLINES = Object.entries(DISCIPLINE_LABELS) as [Discipline, string][];
 
-const DEV_VERIFY = process.env.NEXT_PUBLIC_ENABLE_DEV_VERIFY === "1";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -62,16 +61,14 @@ export default function SignupPage() {
                             We sent a verification link to <strong>{email}</strong>. Click it to activate your account, then log in.
                         </p>
                         <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
-                            {DEV_VERIFY && (
-                                <button
-                                    type="button"
-                                    className="btn"
-                                    style={{ width: "100%" }}
-                                    onClick={() => router.push(`/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`)}
-                                >
-                                    Verify now (dev)
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="btn"
+                                style={{ width: "100%" }}
+                                onClick={() => router.push(`/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`)}
+                            >
+                                Verify now (dev)
+                            </button>
                             <Link href={`/auth/login?next=${encodeURIComponent(nextPath)}`} className="btn btn2" style={{ width: "100%", textAlign: "center" }}>
                                 Go to log in
                             </Link>

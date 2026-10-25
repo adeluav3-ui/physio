@@ -97,12 +97,11 @@ export class AuthService {
     }
 
     async devVerify(email: string) {
-        const isProduction = process.env.NODE_ENV === "production";
-        const key = process.env.RESEND_API_KEY ?? "";
-        if (isProduction || !key.startsWith("placeholder")) {
+        const enabled = process.env.DEV_VERIFY_ENABLED === "true";
+        if (!enabled) {
             throw new ForbiddenException({
                 code: "DEV_ONLY",
-                message: "Dev verification is disabled in this environment",
+                message: "Dev verification is not enabled. Set DEV_VERIFY_ENABLED=true in your environment.",
             });
         }
 
