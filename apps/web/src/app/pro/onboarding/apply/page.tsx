@@ -45,6 +45,18 @@ export default function ProfessionalApplyPage() {
     const [breakLen, setBreakLen] = useState("15");
     const [sessionTypes, setSessionTypes] = useState("Video");
 
+    type DaySlot = { enabled: boolean; start: string; end: string };
+    const [avail, setAvail] = useState<Record<string, DaySlot>>(() =>
+        Object.fromEntries(DAYS.map(d => [d, { enabled: false, start: "09:00", end: "17:00" }]))
+    );
+
+    function toggleDay(day: string) {
+        setAvail(prev => ({ ...prev, [day]: { ...prev[day]!, enabled: !prev[day]!.enabled } }));
+    }
+    function setDayTime(day: string, field: "start" | "end", value: string) {
+        setAvail(prev => ({ ...prev, [day]: { ...prev[day]!, [field]: value } }));
+    }
+
     /* Step 5 */
     const [bankName, setBankName] = useState("");
     const [accountNo, setAccountNo] = useState("");
@@ -208,13 +220,38 @@ export default function ProfessionalApplyPage() {
                                     </div>
                                 </div>
                                 <div style={{ marginTop: "24px", display: "grid", gap: "10px" }}>
-                                    {DAYS.map(day => (
-                                        <div key={day} style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center", padding: "12px 14px", border: "1px solid #dbe5e2", borderRadius: "12px" }}>
-                                            <span style={{ width: "90px", font: "600 15px 'Figtree',sans-serif" }}>{day}</span>
-                                            <span className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Not available</span>
-                                            <span className="muted" style={{ marginLeft: "auto", font: "500 14px 'Figtree',sans-serif", cursor: "pointer" }}>Add hours</span>
-                                        </div>
-                                    ))}
+                                    {DAYS.map(day => {
+                                        const slot = avail[day]!;
+                                        return (
+                                            <div key={day} style={{ padding: "12px 14px", border: `1px solid ${slot.enabled ? "#1b766e" : "#dbe5e2"}`, borderRadius: "12px", background: slot.enabled ? "#f1f9f7" : "#fff" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                                    <span style={{ width: "100px", font: "600 15px 'Figtree',sans-serif" }}>{day}</span>
+                                                    {!slot.enabled && (
+                                                        <span className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Not available</span>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleDay(day)}
+                                                        style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", font: "600 14px 'Figtree',sans-serif", color: slot.enabled ? "#8f1d1d" : "#1b766e", padding: 0 }}
+                                                    >
+                                                        {slot.enabled ? "Remove" : "Add hours"}
+                                                    </button>
+                                                </div>
+                                                {slot.enabled && (
+                                                    <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px", marginTop: "10px", alignItems: "center" }}>
+                                                        <div>
+                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6663" }}>From</label>
+                                                            <input type="time" className="in" value={slot.start} onChange={e => setDayTime(day, "start", e.target.value)} style={{ minHeight: "38px", width: "120px" }} />
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6663" }}>To</label>
+                                                            <input type="time" className="in" value={slot.end} onChange={e => setDayTime(day, "end", e.target.value)} style={{ minHeight: "38px", width: "120px" }} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </>
                         )}
