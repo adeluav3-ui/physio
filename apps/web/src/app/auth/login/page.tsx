@@ -37,8 +37,23 @@ function LoginForm() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: accessToken }),
             });
-            const defaultDest = user.role === "PATIENT" ? "/app" : user.role === "PHYSIO" ? "/pro" : "/admin";
-            router.push(next ?? defaultDest);
+
+            if (user.role === "PHYSIO") {
+                router.push(next ?? "/pro");
+            } else if (user.role === "ADMIN") {
+                router.push(next ?? "/admin");
+            } else {
+                // PATIENT — could be a genuine patient OR a professional awaiting verification.
+                // Check if they have a physio profile (submitted onboarding but not yet verified).
+                const proRes = await fetch(`/api/proxy/physios/${user.id}`).catch(() => null);
+                if (proRes?.ok) {
+                    // Has a profile → must be a professional waiting for admin verification
+                    router.push(next ?? "/pro/onboarding/pending");
+                } else {
+                    // No profile yet — use next from signup flow, or patient home
+                    router.push(next ?? "/app");
+                }
+            }
         } catch (err) {
             setError((err as Error).message);
         } finally {

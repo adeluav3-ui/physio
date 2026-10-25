@@ -79,7 +79,7 @@ function VerifyContent() {
         <>
             <h1 style={{ font: "700 28px 'Figtree',sans-serif", color: "#8f1d1d" }}>Verification failed</h1>
             <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>{error}</p>
-            <Link href="/auth/login" className="btn btn2" style={{ width: "100%", textAlign: "center", marginTop: "20px", display: "block" }}>
+            <Link href={`/auth/login?next=${encodeURIComponent(next)}`} className="btn btn2" style={{ width: "100%", textAlign: "center", marginTop: "20px", display: "block" }}>
                 Back to log in
             </Link>
         </>
