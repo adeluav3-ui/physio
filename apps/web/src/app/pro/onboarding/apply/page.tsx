@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { physioApplySchema, DISCIPLINE_LABELS } from "@physio/shared";
 
 type Discipline = keyof typeof DISCIPLINE_LABELS;
 const DISCIPLINES = Object.entries(DISCIPLINE_LABELS) as [Discipline, string][];
+const VALID_DISCIPLINES = DISCIPLINES.map(([k]) => k);
 
 const STEPS = [
     "Account and discipline",
@@ -20,11 +21,15 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 
 export default function ProfessionalApplyPage() {
     const router = useRouter();
+    const params = useSearchParams();
+    const urlDiscipline = params.get("discipline") as Discipline | null;
     const [checking, setChecking] = useState(true);
     const [step, setStep] = useState(0);
 
-    /* Step 1 */
-    const [discipline, setDiscipline] = useState<Discipline>("PHYSIOTHERAPY");
+    /* Step 1 — pre-filled from signup if discipline was selected there */
+    const [discipline, setDiscipline] = useState<Discipline>(
+        urlDiscipline && VALID_DISCIPLINES.includes(urlDiscipline) ? urlDiscipline : "PHYSIOTHERAPY"
+    );
 
     /* Step 2 */
     const [licenceNo, setLicenceNo] = useState("");

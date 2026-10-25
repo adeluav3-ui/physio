@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button, Card } from "@physio/ui";
+import Link from "next/link";
 
 function VerifyContent() {
     const router = useRouter();
@@ -53,44 +53,50 @@ function VerifyContent() {
     }, [token, email, dev]);
 
     if (status === "working") {
-        return <p className="text-sm text-text-muted">Verifying your email…</p>;
+        return <p className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Verifying your email…</p>;
     }
 
     if (status === "success") {
         return (
             <>
-                <h1 className="text-2xl font-semibold">Email verified</h1>
-                <p className="mt-3 text-sm text-text-muted">Your account is active. You can now sign in.</p>
-                <Button
-                    className="mt-6"
-                    fullWidth
+                <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Email verified</h1>
+                <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>
+                    Your account is active. Log in to continue.
+                </p>
+                <button
+                    type="button"
+                    className="btn"
+                    style={{ width: "100%", marginTop: "20px" }}
                     onClick={() => router.push(`/auth/login?next=${encodeURIComponent(next)}`)}
                 >
-                    Go to sign in
-                </Button>
+                    Go to log in
+                </button>
             </>
         );
     }
 
     return (
         <>
-            <h1 className="text-2xl font-semibold text-danger-700">Verification failed</h1>
-            <p className="mt-3 text-sm text-text-muted">{error}</p>
-            <Button className="mt-6" variant="secondary" fullWidth onClick={() => router.push("/auth/login")}>
-                Back to sign in
-            </Button>
+            <h1 style={{ font: "700 28px 'Figtree',sans-serif", color: "#8f1d1d" }}>Verification failed</h1>
+            <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>{error}</p>
+            <Link href="/auth/login" className="btn btn2" style={{ width: "100%", textAlign: "center", marginTop: "20px", display: "block" }}>
+                Back to log in
+            </Link>
         </>
     );
 }
 
 export default function VerifyPage() {
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <Card className="w-full max-w-md p-8 text-center">
-                <Suspense fallback={<p className="text-sm text-text-muted">Loading…</p>}>
-                    <VerifyContent />
-                </Suspense>
-            </Card>
+        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: "440px" }}>
+                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                <div className="card" style={{ textAlign: "center" }}>
+                    <Suspense fallback={<p className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</p>}>
+                        <VerifyContent />
+                    </Suspense>
+                </div>
+            </div>
         </div>
     );
 }
