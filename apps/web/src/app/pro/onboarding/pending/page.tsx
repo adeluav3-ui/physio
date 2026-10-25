@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PhysioPendingPage() {
+    const router = useRouter();
     const [checking, setChecking] = useState(true);
+    const [signingOut, setSigningOut] = useState(false);
 
     useEffect(() => {
         fetch("/api/proxy/auth/me")
@@ -14,6 +17,13 @@ export default function PhysioPendingPage() {
             })
             .catch(() => { window.location.href = "/auth/login?next=/pro/onboarding/pending"; });
     }, []);
+
+    async function signOut() {
+        setSigningOut(true);
+        await fetch("/api/session", { method: "DELETE" }).catch(() => {});
+        router.push("/");
+        router.refresh();
+    }
 
     if (checking) {
         return (
@@ -36,6 +46,25 @@ export default function PhysioPendingPage() {
                             {"You'll receive an email when your profile is live."}
                         </p>
                         <div className="chip warn" style={{ marginTop: "20px" }}>Verification in progress</div>
+                        <div style={{ display: "grid", gap: "12px", marginTop: "28px" }}>
+                            <button
+                                type="button"
+                                className="btn"
+                                style={{ width: "100%" }}
+                                onClick={() => router.push("/")}
+                            >
+                                Go to home page
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn2"
+                                style={{ width: "100%" }}
+                                onClick={signOut}
+                                disabled={signingOut}
+                            >
+                                {signingOut ? "Signing out…" : "Sign out"}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

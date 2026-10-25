@@ -25,6 +25,7 @@ function LoginForm() {
     const [showPass, setShowPass] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState("");
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -32,6 +33,7 @@ function LoginForm() {
         const parsed = loginSchema.safeParse({ email, password });
         if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Invalid input"); return; }
         setLoading(true);
+        setStatus("Logging in…");
         try {
             const res = await fetch("/api/proxy/auth/login", {
                 method: "POST",
@@ -43,30 +45,48 @@ function LoginForm() {
                 throw new Error(body.message ?? "Login failed");
             }
             const { accessToken, user } = await res.json();
-            await fetch("/api/session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: accessToken }),
-            });
 
             if (user.role === "PHYSIO") {
+                // Set cookie then navigate — no extra API call needed
+                setStatus("Opening your dashboard…");
+                await fetch("/api/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: accessToken }),
+                });
                 router.push(next ?? "/pro");
             } else if (user.role === "ADMIN") {
+                setStatus("Opening admin panel…");
+                await fetch("/api/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: accessToken }),
+                });
                 router.push(next ?? "/admin");
             } else {
-                // PATIENT — could be a genuine patient OR a professional awaiting verification.
-                // Check if they have a physio profile (submitted onboarding but not yet verified).
-                const proRes = await fetch(`/api/proxy/physios/${user.id}`).catch(() => null);
-                if (proRes?.ok) {
-                    // Has a profile → must be a professional waiting for admin verification
-                    router.push(next ?? "/pro/onboarding/pending");
+                // PATIENT — run session write + physio profile check in parallel
+                setStatus("Opening your dashboard…");
+                const [, proRes] = await Promise.all([
+                    fetch("/api/session", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ token: accessToken }),
+                    }),
+                    // Only check for pending professional profile when next isn't already set
+                    !next
+                        ? fetch(`/api/proxy/physios/${user.id}`).catch(() => null)
+                        : Promise.resolve(null),
+                ]);
+
+                if (!next && proRes?.ok) {
+                    router.push("/pro/onboarding/pending");
                 } else {
-                    // No profile yet — use next from signup flow, or patient home
                     router.push(next ?? "/app");
                 }
             }
         } catch (err) {
             setError((err as Error).message);
+            setStatus("");
         } finally {
             setLoading(false);
         }
@@ -76,11 +96,11 @@ function LoginForm() {
         <div className="card">
             <h2 style={{ font: "700 28px 'Figtree',sans-serif" }}>Welcome back</h2>
             <form onSubmit={onSubmit} style={{ display: "grid", gap: "14px", marginTop: "24px" }}>
-                <div><label className="flabel" htmlFor="l-email">Email</label><input className="in" id="l-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></div>
+                <div><label className="flabel" htmlFor="l-email">Email</label><input className="in" id="l-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" required /></div>
                 <div>
                     <label className="flabel" htmlFor="l-pass">Password</label>
                     <div style={{ position: "relative" }}>
-                        <input className="in" id="l-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required style={{ paddingRight: "44px" }} />
+                        <input className="in" id="l-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" autoComplete="current-password" required style={{ paddingRight: "44px" }} />
                         <button type="button" onClick={() => setShowPass(v => !v)} aria-label={showPass ? "Hide password" : "Show password"}
                             style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6663", display: "flex", alignItems: "center", padding: 0 }}>
                             {IC_EYE(showPass)}
@@ -92,11 +112,8 @@ function LoginForm() {
                 </div>
                 {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
                 <button type="submit" className="btn" disabled={loading} style={{ width: "100%", opacity: loading ? 0.7 : 1 }}>
-                    {loading ? "Logging in…" : "Log in"}
+                    {status || "Log in"}
                 </button>
-                <Link href="/auth/forgot" className="btn btn2" style={{ width: "100%", textAlign: "center" }}>
-                    Email me a login link
-                </Link>
             </form>
         </div>
     );
