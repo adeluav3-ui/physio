@@ -74,6 +74,29 @@ export default function ProfessionalApplyPage() {
             .catch(() => { window.location.href = "/auth/login?next=/pro/onboarding/apply"; });
     }, []);
 
+    const FIELD_LABELS: Record<string, string> = {
+        discipline: "Discipline",
+        licenceNo: "Licence number",
+        specialties: "Specialties",
+        bio: "Bio / professional summary",
+        rate: "Session rate",
+        serviceArea: "Service area",
+    };
+
+    function validateStep(): string | null {
+        if (step === 1) {
+            if (licenceNo.trim().length < 3) return "Licence number must be at least 3 characters.";
+        }
+        if (step === 2) {
+            const specs = specialties.split(",").map(s => s.trim()).filter(Boolean);
+            if (specs.length === 0) return "Please add at least one specialty.";
+            if (bio.trim().length < 50) return `Bio is too short — write at least 50 characters (currently ${bio.trim().length}).`;
+            if (!rate || isNaN(Number(rate)) || Number(rate) <= 0) return "Please enter a valid session rate.";
+            if (serviceArea.trim().length < 2) return "Please enter your service area.";
+        }
+        return null;
+    }
+
     async function submit() {
         setError(null);
         const parsed = physioApplySchema.safeParse({
@@ -84,7 +107,13 @@ export default function ProfessionalApplyPage() {
             rate: Math.round(Number(rate) * 100),
             serviceArea,
         });
-        if (!parsed.success) { setError(parsed.error.issues[0]?.message ?? "Please check your inputs"); return; }
+        if (!parsed.success) {
+            const issue = parsed.error.issues[0];
+            const fieldKey = issue?.path[0] as string | undefined;
+            const fieldLabel = fieldKey ? (FIELD_LABELS[fieldKey] ?? fieldKey) : null;
+            setError(fieldLabel ? `${fieldLabel}: ${issue!.message}` : (issue?.message ?? "Please check your inputs"));
+            return;
+        }
         setLoading(true);
         try {
             const res = await fetch("/api/proxy/physios/apply", {
@@ -184,8 +213,13 @@ export default function ProfessionalApplyPage() {
                                         <input className="in" value={specialties} onChange={e => setSpecialties(e.target.value)} placeholder="Comma-separated, e.g. Paediatrics, Neuro, Post-op" />
                                     </div>
                                     <div>
-                                        <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Short bio</label>
-                                        <textarea className="in" value={bio} onChange={e => setBio(e.target.value)} placeholder="Your experience and approach to care (min. 50 characters)" style={{ minHeight: "100px", padding: "10px 12px", resize: "vertical" }} />
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                                            <label style={{ font: "600 13px 'Figtree',sans-serif" }}>Bio / professional summary</label>
+                                            <span style={{ font: "400 12px 'Figtree',sans-serif", color: bio.trim().length < 50 ? "#8f1d1d" : "#1d5c34" }}>
+                                                {bio.trim().length} / 50 min
+                                            </span>
+                                        </div>
+                                        <textarea className="in" value={bio} onChange={e => setBio(e.target.value)} placeholder="Your experience and approach to care (minimum 50 characters)" style={{ minHeight: "100px", padding: "10px 12px", resize: "vertical" }} />
                                     </div>
                                     <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
                                         <div style={{ flex: "1 1 200px" }}>
@@ -289,9 +323,11 @@ export default function ProfessionalApplyPage() {
                                         <div><span className="muted">Service area: </span>{serviceArea || "—"}</div>
                                     </div>
                                 </div>
-                                {error && <div className="card" style={{ marginTop: "16px", background: "#fde8e8", borderColor: "#f3b4b4", color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif" }}>{error}</div>}
                             </>
                         )}
+
+                        {/* Error shown on all steps */}
+                        {error && <div style={{ marginTop: "16px", padding: "12px 14px", borderRadius: "12px", background: "#fde8e8", border: "1px solid #f3b4b4", color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif" }}>{error}</div>}
 
                         {/* Navigation */}
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "24px", justifyContent: "space-between" }}>
@@ -299,7 +335,12 @@ export default function ProfessionalApplyPage() {
                                 <button type="button" className="btn btn2" onClick={() => { setError(null); setStep(s => s - 1); }}>Back</button>
                             ) : <span />}
                             {step < STEPS.length - 1 ? (
-                                <button type="button" className="btn" onClick={() => { setError(null); setStep(s => s + 1); }}>Save and continue</button>
+                                <button type="button" className="btn" onClick={() => {
+                                    const err = validateStep();
+                                    if (err) { setError(err); return; }
+                                    setError(null);
+                                    setStep(s => s + 1);
+                                }}>Save and continue</button>
                             ) : (
                                 <button type="button" className="btn" disabled={loading} onClick={submit}>
                                     {loading ? "Submitting…" : "Submit for verification"}
