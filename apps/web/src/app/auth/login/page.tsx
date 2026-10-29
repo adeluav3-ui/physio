@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { loginSchema } from "@physio/shared";
@@ -19,6 +19,9 @@ function LoginForm() {
     const router = useRouter();
     const params = useSearchParams();
     const next = params.get("next");
+
+    // Pre-warm the Render API so the first submit hits a live container.
+    useEffect(() => { fetch("/api/keep-alive").catch(() => {}); }, []);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

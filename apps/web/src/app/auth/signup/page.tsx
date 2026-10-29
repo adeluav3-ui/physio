@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUpSchema, DISCIPLINE_LABELS } from "@physio/shared";
@@ -21,6 +21,10 @@ const DISCIPLINES = Object.entries(DISCIPLINE_LABELS) as [Discipline, string][];
 
 export default function SignupPage() {
     const router = useRouter();
+
+    // Pre-warm the Render API so the first submit hits a live container.
+    useEffect(() => { fetch("/api/keep-alive").catch(() => {}); }, []);
+
     const [role, setRole] = useState<"patient" | "pro">("patient");
     const [discipline, setDiscipline] = useState<Discipline>("PHYSIOTHERAPY");
     const [name, setName] = useState("");

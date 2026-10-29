@@ -247,3 +247,36 @@ a { color: #1b766e; }
 @media (min-width: 769px) {
   .landing-nav-mobile  { display: none !important; }
 }
+
+/* ── Skeleton / loading states ───────────────────────────────────────────── */
+@keyframes r360-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+/* Base skeleton block — add inline height/width as needed */
+.skel {
+  background: #dbe5e2;
+  border-radius: 6px;
+  animation: r360-pulse 1.4s ease-in-out infinite;
+  display: block;
+}
+/* Full card placeholder */
+.skel-card {
+  background: #fff;
+  border: 1px solid #dbe5e2;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+/* Button disabled/loading — cursor changes, opacity drops */
+.btn:disabled,
+.btn2:disabled,
+.btn3:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; opacity: 0.6; }
+}
