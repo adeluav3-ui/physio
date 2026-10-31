@@ -1,4 +1,17 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    UseGuards,
+} from "@nestjs/common";
+import type { ExerciseUpsertInput } from "@physio/shared";
+import { exerciseUpsertSchema } from "@physio/shared";
+import { ZodBody } from "../common/zod-validation.pipe.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { Roles, RolesGuard } from "../auth/roles.guard.js";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -23,5 +36,74 @@ export class AdminController {
         return this.prisma.client.waitlistEntry.findMany({
             orderBy: { createdAt: "desc" },
         });
+    }
+
+    // ── Users ──────────────────────────────────────────────
+    @Get("users")
+    async users() {
+        return this.prisma.client.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+                createdAt: true,
+                physioProfile: {
+                    select: {
+                        discipline: true,
+                        licenceStatus: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    // ── Exercise library ───────────────────────────────────
+    @Get("exercises")
+    async listExercises() {
+        return this.prisma.client.exercise.findMany({
+            orderBy: [{ category: "asc" }, { name: "asc" }],
+        });
+    }
+
+    @Post("exercises")
+    async createExercise(@Body(new ZodBody(exerciseUpsertSchema)) body: ExerciseUpsertInput) {
+        return this.prisma.client.exercise.create({
+            data: {
+                ...body,
+                videoUrl: body.videoUrl ?? null,
+                instructions: body.instructions ?? null,
+                contraindications: body.contraindications ?? null,
+            },
+        });
+    }
+
+    @Patch("exercises/:id")
+    async updateExercise(
+        @Param("id") id: string,
+        @Body(new ZodBody(exerciseUpsertSchema.partial())) body: Partial<ExerciseUpsertInput>,
+    ) {
+        const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+        const { videoUrl, instructions, contraindications, ...rest } = body;
+        return this.prisma.client.exercise.update({
+            where: { id },
+            data: {
+                ...rest,
+                ...(videoUrl !== undefined ? { videoUrl: videoUrl ?? null } : {}),
+                ...(instructions !== undefined ? { instructions: instructions ?? null } : {}),
+                ...(contraindications !== undefined ? { contraindications: contraindications ?? null } : {}),
+            },
+        });
+    }
+
+    @Delete("exercises/:id")
+    async deleteExercise(@Param("id") id: string) {
+        const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+        await this.prisma.client.exercise.delete({ where: { id } });
+        return { ok: true };
     }
 }

@@ -5,8 +5,14 @@ import Link from "next/link";
 
 type ExerciseItem = {
     id: string; sets: number | null; reps: number | null; frequency: string;
-    exercise: { id: string; name: string; region: string };
+    exercise: { id: string; name: string; region: string; videoUrl: string | null };
 };
+
+function extractYouTubeId(url: string | null): string | null {
+    if (!url) return null;
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
+    return m?.[1] ?? null;
+}
 type Program = { id: string; startsAt: string; items: ExerciseItem[]; };
 type PracticeTask = { id: string; title: string; schedule: string; logs: { date: string; completed: boolean }[]; };
 type Goal = { id: string; title: string; status: string; progress: number; tasks: PracticeTask[]; };
@@ -70,9 +76,24 @@ export default function PlanPage() {
                             {/* Active exercise card */}
                             {current && (
                                 <div className="card">
-                                    <div style={{ height: "130px", borderRadius: "12px", background: "#dbe9e6", display: "flex", alignItems: "center", justifyContent: "center", font: "500 14px 'Figtree',sans-serif", color: "#4f6663" }}>
-                                        Exercise video
-                                    </div>
+                                    {(() => {
+                                        const vid = extractYouTubeId(current.exercise.videoUrl);
+                                        return vid ? (
+                                            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #dbe5e2", aspectRatio: "16/9" }}>
+                                                <iframe
+                                                    src={`https://www.youtube.com/embed/${vid}?rel=0`}
+                                                    title={current.exercise.name}
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                    style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div style={{ height: "130px", borderRadius: "12px", background: "#dbe9e6", display: "flex", alignItems: "center", justifyContent: "center", font: "500 14px 'Figtree',sans-serif", color: "#4f6663" }}>
+                                                No video for this exercise
+                                            </div>
+                                        );
+                                    })()}
                                     <h2 style={{ font: "700 18px 'Figtree',sans-serif", marginTop: "12px" }}>{current.exercise.name}</h2>
                                     <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif", marginTop: "2px" }}>
                                         {current.reps ? `${current.reps} reps` : ""}{current.sets ? ` · ${current.sets} sets` : ""}{current.frequency ? ` · ${current.frequency}` : ""}

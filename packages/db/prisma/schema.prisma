@@ -391,19 +391,26 @@ model SessionNote {
 
 // ── Exercise library & programs ──────────
 model Exercise {
-  id               String        @id @default(uuid())
-  name             String
-  region           String
-  videoUrl         String
-  cues             String
-  contraindications String?
-  difficulty       Int           @default(1)
-  clinicalReview   Boolean       @default(false) // true = reviewed by a clinician, safe to show patients
-  createdAt        DateTime      @default(now())
+  id                 String        @id @default(uuid())
+  name               String
+  category           String        @default("General")
+  region             String
+  videoUrl           String?
+  instructions       String?
+  cues               String
+  contraindications  String?
+  difficulty         Int           @default(1)
+  defaultSets        Int           @default(3)
+  defaultReps        Int           @default(10)
+  defaultHoldSeconds Int           @default(0)
+  clinicalReview     Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   programItems     ProgramItem[]
   @@index([region, difficulty])
   @@index([clinicalReview])
+  @@index([category])
 }
 
 model Program {
