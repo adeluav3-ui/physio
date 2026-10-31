@@ -40,10 +40,15 @@ export type SessionUser = z.infer<typeof sessionUserSchema>;
 export const physioApplySchema = z.object({
     discipline: Discipline,
     licenceNo: z.string(),
+    licenceDocUrl: z.string().url(),
+    certificateUrl: z.string().url(),
+    ninNumber: z.string(),
+    ninDocUrl: z.string().url(),
+    photoUrl: z.string().url(),
     specialties: z.array(z.string()),
     bio: z.string(),
-    rate: z.number().int().min(0), // kobo
     serviceArea: z.string(),
+    // rate is NOT included — session rates are set by admin
 });
 export type PhysioApplyInput = z.infer<typeof physioApplySchema>;
 

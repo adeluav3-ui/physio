@@ -96,6 +96,7 @@ export class PhysioService {
             });
         }
 
+        // Prevent same account applying twice
         const existing = await this.prisma.client.physioProfile.findUnique({
             where: { userId: user.id },
         });
@@ -106,15 +107,42 @@ export class PhysioService {
             });
         }
 
+        // Prevent same licence number being registered under a different account
+        const duplicateLicence = await this.prisma.client.physioProfile.findFirst({
+            where: { licenceNo: input.licenceNo },
+        });
+        if (duplicateLicence) {
+            throw new BadRequestException({
+                code: "DUPLICATE_LICENCE",
+                message: "This licence number is already registered. If this is your licence, contact support.",
+            });
+        }
+
+        // Prevent same NIN being registered under a different account
+        const duplicateNin = await this.prisma.client.physioProfile.findFirst({
+            where: { ninNumber: input.ninNumber },
+        });
+        if (duplicateNin) {
+            throw new BadRequestException({
+                code: "DUPLICATE_NIN",
+                message: "This NIN is already registered. If this is your NIN, contact support.",
+            });
+        }
+
         const profile = await this.prisma.client.$transaction(async (tx) => {
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
                     discipline: input.discipline,
                     licenceNo: input.licenceNo,
+                    licenceDocUrl: input.licenceDocUrl,
+                    certificateUrl: input.certificateUrl,
+                    ninNumber: input.ninNumber,
+                    ninDocUrl: input.ninDocUrl,
+                    photoUrl: input.photoUrl,
                     specialties: input.specialties,
                     bio: input.bio,
-                    rateKobo: input.rate,
+                    rateKobo: 0, // admin-controlled; set during verification
                     serviceArea: input.serviceArea,
                     licenceStatus: "UNVERIFIED",
                 },

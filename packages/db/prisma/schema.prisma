@@ -174,31 +174,38 @@ model EmailToken {
 }
 
 model PhysioProfile {
-  userId         String        @id
-  discipline     Discipline    @default(PHYSIOTHERAPY)
-  licenceNo      String
-  licensingBody  String?
-  licenceStatus  LicenceStatus @default(UNVERIFIED)
-  specialties    String[]
-  bio            String
-  rateKobo       Int
-  serviceArea    String
-  verifiedAt     DateTime?
-  rejectedAt     DateTime?
+  userId          String        @id
+  discipline      Discipline    @default(PHYSIOTHERAPY)
+  licenceNo       String        @unique
+  licensingBody   String?
+  licenceStatus   LicenceStatus @default(UNVERIFIED)
+  specialties     String[]
+  bio             String
+  rateKobo        Int           @default(0)  // set by admin, not by the professional
+  serviceArea     String
+  verifiedAt      DateTime?
+  rejectedAt      DateTime?
   rejectionReason String?
-  languages      String[]      @default([])
-  photoUrl       String?
-  sessionTypes   String[]      @default([])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  languages       String[]      @default([])
+  photoUrl        String?
+  sessionTypes    String[]      @default([])
 
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  availability   Availability[]
-  appointments   Appointment[] @relation("physio_appointments")
-  programs       Program[]
-  referralsSent  Referral[]    @relation("referral_sender")
-  referralsReceived Referral[] @relation("referral_receiver")
-  goalPlans      GoalPlan[]
+  // Identity & credential documents (URLs from Vercel Blob)
+  licenceDocUrl   String?
+  certificateUrl  String?
+  ninNumber       String?       @unique  // 11-digit NIN; prevents same person registering twice
+  ninDocUrl       String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability    Availability[]
+  appointments    Appointment[] @relation("physio_appointments")
+  programs        Program[]
+  referralsSent   Referral[]    @relation("referral_sender")
+  referralsReceived Referral[]  @relation("referral_receiver")
+  goalPlans       GoalPlan[]
 
   @@index([licenceStatus])
   @@index([discipline, licenceStatus])
