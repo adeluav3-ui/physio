@@ -57,3 +57,8 @@ export const physioVerifySchema = z.object({
     decision: z.enum(["VERIFIED", "REJECTED"]),
     reason: z.string().optional(),
 });
+
+export const setUserRoleSchema = z.object({
+    role: z.enum(["PATIENT", "PHYSIO", "ADMIN"]),
+});
+export type SetUserRoleInput = z.infer<typeof setUserRoleSchema>;

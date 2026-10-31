@@ -39,6 +39,8 @@ export default function AdminUsersPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<Filter>("ALL");
     const [search, setSearch] = useState("");
+    const [promoting, setPromoting] = useState<string | null>(null);
+    const [roleErr, setRoleErr] = useState<{ id: string; msg: string } | null>(null);
 
     useEffect(() => {
         fetch("/api/proxy/admin/users")
@@ -47,6 +49,26 @@ export default function AdminUsersPage() {
             .catch(console.error)
             .finally(() => setLoading(false));
     }, []);
+
+    async function setRole(userId: string, role: "ADMIN" | "PATIENT" | "PHYSIO") {
+        setPromoting(userId);
+        setRoleErr(null);
+        try {
+            const r = await fetch(`/api/proxy/admin/users/${userId}/role`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role }),
+            });
+            if (!r.ok) {
+                const body = await r.json().catch(() => ({}));
+                throw new Error(body.message ?? "Failed to update role");
+            }
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
+        } catch (e) {
+            setRoleErr({ id: userId, msg: (e as Error).message });
+        }
+        setPromoting(null);
+    }
 
     const visible = users.filter(u => {
         if (filter !== "ALL" && u.role !== filter) return false;
@@ -128,7 +150,7 @@ export default function AdminUsersPage() {
                         <table style={{ width: "100%", borderCollapse: "collapse", font: "400 14px 'Figtree',sans-serif" }}>
                             <thead>
                                 <tr style={{ borderBottom: "1px solid #dbe5e2", background: "#f6f8f7" }}>
-                                    {["Name", "Email", "Role / Discipline", "Account", "Licence", "Joined"].map(h => (
+                                    {["Name", "Email", "Role / Discipline", "Account", "Licence", "Joined", "Actions"].map(h => (
                                         <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6663", whiteSpace: "nowrap" }}>
                                             {h}
                                         </th>
@@ -165,6 +187,34 @@ export default function AdminUsersPage() {
                                         </td>
                                         <td style={{ padding: "12px 16px", color: "#4f6663", whiteSpace: "nowrap" }}>
                                             {new Date(u.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                                        </td>
+                                        <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
+                                            {u.role === "ADMIN" ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn2"
+                                                    style={{ minHeight: "30px", fontSize: "12px", color: "#991b1b", borderColor: "#fca5a5" }}
+                                                    disabled={promoting === u.id}
+                                                    onClick={() => setRole(u.id, "PATIENT")}
+                                                >
+                                                    {promoting === u.id ? "…" : "Remove admin"}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn2"
+                                                    style={{ minHeight: "30px", fontSize: "12px" }}
+                                                    disabled={promoting === u.id}
+                                                    onClick={() => setRole(u.id, "ADMIN")}
+                                                >
+                                                    {promoting === u.id ? "…" : "Make admin"}
+                                                </button>
+                                            )}
+                                            {roleErr?.id === u.id && (
+                                                <div style={{ font: "400 11px 'Figtree',sans-serif", color: "#991b1b", marginTop: "4px" }}>
+                                                    {roleErr.msg}
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

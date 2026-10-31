@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -9,8 +10,9 @@ import {
     Post,
     UseGuards,
 } from "@nestjs/common";
-import type { ExerciseUpsertInput } from "@physio/shared";
-import { exerciseUpsertSchema } from "@physio/shared";
+import type { ExerciseUpsertInput, SessionUser, SetUserRoleInput } from "@physio/shared";
+import { exerciseUpsertSchema, setUserRoleSchema } from "@physio/shared";
+import { CurrentUser } from "../common/current-user.decorator.js";
 import { ZodBody } from "../common/zod-validation.pipe.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { Roles, RolesGuard } from "../auth/roles.guard.js";
@@ -57,6 +59,24 @@ export class AdminController {
                 },
             },
             orderBy: { createdAt: "desc" },
+        });
+    }
+
+    @Patch("users/:id/role")
+    async setUserRole(
+        @Param("id") id: string,
+        @Body(new ZodBody(setUserRoleSchema)) body: SetUserRoleInput,
+        @CurrentUser() caller: SessionUser,
+    ) {
+        if (id === caller.id) {
+            throw new BadRequestException({ code: "SELF_ROLE_CHANGE", message: "You cannot change your own role." });
+        }
+        const user = await this.prisma.client.user.findUnique({ where: { id } });
+        if (!user) throw new NotFoundException({ code: "NOT_FOUND", message: "User not found" });
+        return this.prisma.client.user.update({
+            where: { id },
+            data: { role: body.role },
+            select: { id: true, name: true, email: true, role: true, status: true },
         });
     }
 
