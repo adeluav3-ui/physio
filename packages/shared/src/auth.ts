@@ -8,6 +8,7 @@ export const signUpSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
     name: z.string(),
+    isPro: z.boolean().optional(),
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
 

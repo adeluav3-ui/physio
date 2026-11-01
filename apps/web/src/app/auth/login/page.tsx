@@ -49,43 +49,35 @@ function LoginForm() {
             }
             const { accessToken, user } = await res.json();
 
-            if (user.role === "PHYSIO") {
-                // Set cookie then navigate — no extra API call needed
-                setStatus("Opening your dashboard…");
-                await fetch("/api/session", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: accessToken }),
-                });
-                router.push(next ?? "/pro");
-            } else if (user.role === "ADMIN") {
-                setStatus("Opening admin panel…");
-                await fetch("/api/session", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: accessToken }),
-                });
-                router.push(next ?? "/admin");
-            } else {
-                // PATIENT — run session write + physio profile check in parallel
-                setStatus("Opening your dashboard…");
-                const [, proRes] = await Promise.all([
-                    fetch("/api/session", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ token: accessToken }),
-                    }),
-                    // Only check for pending professional profile when next isn't already set
-                    !next
-                        ? fetch(`/api/proxy/physios/${user.id}`).catch(() => null)
-                        : Promise.resolve(null),
-                ]);
+            // Set session cookie first — all subsequent API calls depend on it
+            setStatus("Opening your dashboard…");
+            await fetch("/api/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: accessToken }),
+            });
 
-                if (!next && proRes?.ok) {
-                    router.push("/pro/onboarding/pending");
-                } else {
-                    router.push(next ?? "/app");
+            if (user.role === "ADMIN") {
+                router.push(next ?? "/admin");
+            } else if (user.role === "PHYSIO") {
+                // /pro page itself handles routing to pending/apply based on profile status
+                router.push(next ?? "/pro");
+            } else {
+                // PATIENT — check if they have a pending physio application (backwards compat
+                // for accounts created before the isPro signup flag was introduced)
+                if (!next) {
+                    const proRes = await fetch("/api/proxy/physios/me").catch(() => null);
+                    if (proRes?.ok) {
+                        const profile = await proRes.json().catch(() => null) as { licenceStatus?: string } | null;
+                        if (profile?.licenceStatus === "REJECTED") {
+                            router.push("/pro/onboarding/apply"); return;
+                        }
+                        if (profile?.licenceStatus) {
+                            router.push("/pro/onboarding/pending"); return;
+                        }
+                    }
                 }
+                router.push(next ?? "/app");
             }
         } catch (err) {
             setError((err as Error).message);

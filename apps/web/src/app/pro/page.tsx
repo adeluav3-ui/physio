@@ -20,7 +20,7 @@ export default async function ProHome() {
     const user = await requireSession(["PHYSIO"]);
 
     try {
-        const profile = await apiFetch<{ licenceStatus: string }>(`/physios/${user.id}`);
+        const profile = await apiFetch<{ licenceStatus: string }>("/physios/me");
         if (profile.licenceStatus !== "VERIFIED") {
             redirect(
                 profile.licenceStatus === "REJECTED" || profile.licenceStatus === "EXPIRED"
@@ -30,6 +30,8 @@ export default async function ProHome() {
         }
     } catch (err) {
         if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) throw err;
+        // No application found — send to onboarding
+        redirect("/pro/onboarding/apply");
     }
 
     let today: Appointment[] = [];

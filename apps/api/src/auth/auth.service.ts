@@ -39,9 +39,9 @@ export class AuthService {
                 email: input.email,
                 passwordHash,
                 name: input.name,
-                role: "PATIENT",
+                role: input.isPro ? "PHYSIO" : "PATIENT",
                 status: "PENDING",
-                patientProfile: { create: {} },
+                ...(input.isPro ? {} : { patientProfile: { create: {} } }),
             },
             select: { id: true, email: true, name: true, role: true },
         });

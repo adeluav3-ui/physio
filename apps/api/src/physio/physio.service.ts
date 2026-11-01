@@ -88,6 +88,15 @@ export class PhysioService {
         return PhysioService.toPublic(p);
     }
 
+    async getMyApplicationStatus(user: SessionUser) {
+        const p = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: user.id },
+            select: { licenceStatus: true },
+        });
+        if (!p) throw new NotFoundException({ code: "NO_PROFILE", message: "No application found" });
+        return p;
+    }
+
     async apply(user: SessionUser, input: PhysioApplyInput) {
         if (user.role !== "PATIENT" && user.role !== "PHYSIO") {
             throw new ForbiddenException({

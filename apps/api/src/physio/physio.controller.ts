@@ -15,6 +15,12 @@ export class PhysioController {
         return this.physio.listPublic();
     }
 
+    @UseGuards(JwtAuthGuard)
+    @Get("me")
+    getMyStatus(@CurrentUser() user: SessionUser) {
+        return this.physio.getMyApplicationStatus(user);
+    }
+
     @Get(":userId")
     getPublic(@Param("userId") userId: string) {
         return this.physio.getPublic(userId);
