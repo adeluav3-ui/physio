@@ -87,11 +87,14 @@ export default function AdminUsersPage() {
     };
 
     function displayRole(u: UserRow) {
-        if (u.role === "PHYSIO" && u.physioProfile) {
-            return DISCIPLINE_LABELS[u.physioProfile.discipline as keyof typeof DISCIPLINE_LABELS] ?? u.physioProfile.discipline;
+        if (u.role === "ADMIN") return "Admin";
+        if (u.role === "PHYSIO") {
+            if (u.physioProfile) {
+                return DISCIPLINE_LABELS[u.physioProfile.discipline as keyof typeof DISCIPLINE_LABELS] ?? u.physioProfile.discipline;
+            }
+            return "Professional";
         }
-        if (u.role === "PATIENT") return "Patient";
-        return "Admin";
+        return "Patient";
     }
 
     return (
@@ -138,8 +141,27 @@ export default function AdminUsersPage() {
             {/* Table */}
             <div className="card" style={{ marginTop: "20px", padding: 0, overflow: "hidden" }}>
                 {loading ? (
-                    <div style={{ padding: "40px", textAlign: "center", color: "#4f6663", font: "400 14px 'Figtree',sans-serif" }}>
-                        Loading users…
+                    <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", font: "400 14px 'Figtree',sans-serif" }}>
+                            <thead>
+                                <tr style={{ borderBottom: "1px solid #dbe5e2", background: "#f6f8f7" }}>
+                                    {["Name", "Email", "Role / Discipline", "Account", "Licence", "Joined", "Actions"].map(h => (
+                                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6663", whiteSpace: "nowrap" }}>{h}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <tr key={i} style={{ borderBottom: "1px solid #eef3f2" }}>
+                                        {[180, 220, 100, 70, 80, 90, 110].map((w, j) => (
+                                            <td key={j} style={{ padding: "14px 16px" }}>
+                                                <div className="skel" style={{ height: "14px", width: `${w}px`, maxWidth: "100%", borderRadius: "6px" }} />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 ) : visible.length === 0 ? (
                     <div style={{ padding: "40px", textAlign: "center", color: "#4f6663", font: "400 14px 'Figtree',sans-serif" }}>
