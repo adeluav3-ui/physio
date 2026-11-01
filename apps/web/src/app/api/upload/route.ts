@@ -28,10 +28,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: "File too large. Maximum size is 8 MB." }, { status: 400 });
     }
 
-    const blob = await put(file.name, file, {
-        access: "public",
-        addRandomSuffix: true,
-    });
+    let blob;
+    try {
+        blob = await put(file.name, file, { access: "public", addRandomSuffix: true });
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : "Upload failed";
+        return NextResponse.json({ message: msg }, { status: 500 });
+    }
 
     return NextResponse.json({ url: blob.url });
 }

@@ -137,6 +137,7 @@ export class PhysioService {
                     licenceNo: input.licenceNo,
                     licenceDocUrl: input.licenceDocUrl,
                     certificateUrl: input.certificateUrl,
+                    idType: input.idType,
                     ninNumber: input.ninNumber,
                     ninDocUrl: input.ninDocUrl,
                     photoUrl: input.photoUrl,

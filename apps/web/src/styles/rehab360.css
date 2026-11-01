@@ -390,6 +390,35 @@ a { color: #1b766e; }
   .shell-main { padding: 20px 16px; }
 }
 
+/* ── Professional onboarding layout ─────────────────────────────────────── */
+.ob-layout { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 24px; align-items: flex-start; }
+.ob-sidebar { flex: 0 1 280px; display: grid; gap: 6px; }
+.ob-card { flex: 999 1 560px; min-width: 0; }
+/* ID type pill selector */
+.id-type-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.id-type-pill {
+  flex: 1 1 calc(50% - 4px);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #c5d3cf;
+  background: #fff;
+  color: #12302c;
+  font: 600 13px 'Figtree', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.id-type-pill.on {
+  border-color: #1b766e;
+  background: #e3f1ef;
+  color: #14544e;
+  border-width: 2px;
+}
+@media (max-width: 767px) {
+  .ob-sidebar { display: none; }
+  .ob-card { flex: 1 1 100%; }
+}
+
 /* ── Landing nav: hamburger on mobile ───────────────────────────────────── */
 @media (max-width: 768px) {
   .landing-nav-desktop { display: none !important; }

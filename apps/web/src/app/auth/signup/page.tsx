@@ -126,23 +126,13 @@ export default function SignupPage() {
                             <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "10px" }}>
                                 Select your discipline
                             </label>
-                            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "8px" }}>
+                            <div className="id-type-pills">
                                 {DISCIPLINES.map(([key, label]) => (
                                     <button
                                         key={key}
                                         type="button"
                                         onClick={() => setDiscipline(key)}
-                                        style={{
-                                            flex: "1 1 140px",
-                                            padding: "12px 10px",
-                                            borderRadius: "12px",
-                                            border: discipline === key ? "2px solid #1b766e" : "1.5px solid #c5d3cf",
-                                            background: discipline === key ? "#e3f1ef" : "#fff",
-                                            color: discipline === key ? "#14544e" : "#12302c",
-                                            font: "600 13px 'Figtree',sans-serif",
-                                            cursor: "pointer",
-                                            textAlign: "center" as const,
-                                        }}
+                                        className={`id-type-pill${discipline === key ? " on" : ""}`}
                                     >
                                         {label}
                                     </button>

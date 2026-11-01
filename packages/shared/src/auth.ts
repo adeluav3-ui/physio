@@ -37,12 +37,22 @@ export const sessionUserSchema = z.object({
 export type SessionUser = z.infer<typeof sessionUserSchema>;
 
 // ── Physio onboarding ─────────────────────
+export const ID_TYPES = ["NIN", "DRIVERS_LICENSE", "INTL_PASSPORT", "VOTERS_CARD"] as const;
+export type IdType = typeof ID_TYPES[number];
+export const ID_TYPE_LABELS: Record<IdType, string> = {
+    NIN: "National ID (NIN)",
+    DRIVERS_LICENSE: "Driver's License",
+    INTL_PASSPORT: "International Passport",
+    VOTERS_CARD: "Voter's Card",
+};
+
 export const physioApplySchema = z.object({
     discipline: Discipline,
     licenceNo: z.string(),
     licenceDocUrl: z.string().url(),
     certificateUrl: z.string().url(),
-    ninNumber: z.string(),
+    idType: z.enum(ID_TYPES),
+    ninNumber: z.string(),  // the ID number (NIN / licence no. / passport no. / voter card no.)
     ninDocUrl: z.string().url(),
     photoUrl: z.string().url(),
     specialties: z.array(z.string()),

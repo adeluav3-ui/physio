@@ -193,7 +193,8 @@ model PhysioProfile {
   // Identity & credential documents (URLs from Vercel Blob)
   licenceDocUrl   String?
   certificateUrl  String?
-  ninNumber       String?       @unique  // 11-digit NIN; prevents same person registering twice
+  idType          String?       // "NIN" | "DRIVERS_LICENSE" | "INTL_PASSPORT" | "VOTERS_CARD"
+  ninNumber       String?       @unique  // ID number (NIN, licence, passport, or voter card)
   ninDocUrl       String?
 
   createdAt       DateTime      @default(now())

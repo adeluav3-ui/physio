@@ -27,7 +27,9 @@ export function FileUpload({ label, accept = ".pdf,.jpg,.jpeg,.png,.webp", value
         fd.append("file", file);
         try {
             const res = await fetch("/api/upload", { method: "POST", body: fd });
-            const body = await res.json();
+            const text = await res.text();
+            let body: { message?: string; url?: string } = {};
+            try { body = JSON.parse(text); } catch { body = { message: text.slice(0, 200) || "Upload failed" }; }
             if (!res.ok) throw new Error(body.message ?? "Upload failed");
             onChange(body.url as string);
             setFileName(file.name);
