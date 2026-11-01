@@ -86,7 +86,14 @@ export default function ProShell({
                     </SignOutButton>
                 </div>
 
-                {/* Nav — bottom bar on mobile, left sidebar on desktop */}
+                {/* Main content — sits between topbar and bottom nav */}
+                <div className="app-content">
+                    <div className="pro-content">
+                        {children}
+                    </div>
+                </div>
+
+                {/* Nav — bottom bar on mobile (last child), left sidebar on desktop (order:-1) */}
                 <nav className="tabs">
                     {/* Desktop only: logo + discipline */}
                     <div className="tabs-logo" aria-hidden="true">
@@ -121,11 +128,6 @@ export default function ProShell({
                         </SignOutButton>
                     </div>
                 </nav>
-
-                {/* Main content */}
-                <div className="app-content">
-                    {children}
-                </div>
             </div>
         </div>
     );

@@ -59,7 +59,7 @@ export default async function ProHome() {
             </div>
 
             {/* Stats row */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "14px", marginTop: "20px" }}>
+            <div className="stat-grid">
                 {[
                     { label: "Sessions today", value: today.length },
                     { label: "Unread messages", value: "—" },

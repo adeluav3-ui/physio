@@ -128,28 +128,6 @@ a { color: #1b766e; }
   overflow-y: auto;
 }
 
-/* ── Patient bottom tab bar ─────────────────────────────────────────────── */
-.tabs {
-  display: flex;
-  border-top: 1px solid #dbe5e2;
-  background: #fff;
-  padding: 6px 8px 14px;
-  position: sticky;
-  bottom: 0;
-}
-.tab {
-  flex: 1;
-  text-align: center;
-  font: 500 12px 'Figtree', sans-serif;
-  color: #4f6663;
-  padding: 6px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  text-decoration: none;
-}
-.tabon { color: #14544e; font-weight: 700; }
 .ic { width: 24px; height: 24px; }
 
 /* ── Progress bar track ─────────────────────────────────────────────────── */
@@ -295,53 +273,90 @@ a { color: #1b766e; }
 }
 
 /* ── Patient / Pro shell (responsive) ───────────────────────────────────── */
+/*
+ * Mobile layout (< 768px):
+ *   flex column: topbar → scrollable content → bottom nav bar
+ *   The shell is exactly 100dvh; only app-content scrolls.
+ *
+ * Desktop layout (≥ 768px):
+ *   flex row: [left sidebar nav] [scrollable content]
+ *   order: -1 on .tabs moves it before .app-content despite DOM order.
+ */
 .app-shell {
-  min-height: 100dvh;
+  height: 100dvh;
   background: #f6f8f7;
   display: flex;
   flex-direction: column;
   font-family: 'Figtree', system-ui, sans-serif;
   color: #12302c;
+  overflow: hidden;
 }
-/* Mobile: phone-width centred column */
 .app-shell-inner {
   max-width: 430px;
   width: 100%;
   margin: 0 auto;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 .app-topbar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
   background: #fff;
   border-bottom: 1px solid #dbe5e2;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
-.app-content { flex: 1; overflow-y: auto; }
+/* Scrollable content area — sits between topbar and bottom nav on mobile */
+.app-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Bottom nav bar — last child so it sits below content on mobile */
+.tabs {
+  flex-shrink: 0;
+  display: flex;
+  border-top: 1px solid #dbe5e2;
+  background: #fff;
+  /* Extra bottom padding for iPhone home-indicator safe area */
+  padding: 6px 8px max(14px, env(safe-area-inset-bottom, 14px));
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  font: 500 12px 'Figtree', sans-serif;
+  color: #4f6663;
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+}
+.tabon { color: #14544e; font-weight: 700; }
 
 /* Desktop: sidebar + content side by side */
 @media (min-width: 768px) {
-  .app-shell { flex-direction: row; }
-  .app-shell-inner { max-width: 100%; flex-direction: row; }
+  .app-shell { flex-direction: row; overflow: visible; }
+  .app-shell-inner { max-width: 100%; flex-direction: row; min-height: 0; }
   .app-topbar { display: none; }
-  /* Nav becomes left sidebar */
+  /* Nav becomes left sidebar — order: -1 pulls it before app-content */
   .tabs {
     flex-direction: column;
     align-items: stretch;
     position: sticky;
     top: 0;
     height: 100dvh;
+    min-height: 0;
     width: 220px;
     flex-shrink: 0;
     border-top: none;
     border-right: 1px solid #dbe5e2;
-    padding: 20px 12px 20px;
+    padding: 20px 12px;
     order: -1;
     overflow-y: auto;
     gap: 2px;
@@ -367,7 +382,7 @@ a { color: #1b766e; }
     text-align: left;
   }
   .tabon { background: #e3f1ef; }
-  .app-content { flex: 1; min-width: 0; }
+  .app-content { flex: 1; min-width: 0; overflow-y: auto; }
 }
 
 /* Extra sidebar-only nav items: hidden on mobile, visible on desktop */
@@ -376,12 +391,29 @@ a { color: #1b766e; }
   .pro-tab-desktop-only { display: flex; }
 }
 
-/* Desktop: tabs-logo and tabs-footer are hidden on mobile bottom bar */
+/* tabs-logo and tabs-footer: hidden inside the mobile bottom bar */
 .tabs-logo { display: none; }
 .tabs-footer { display: none; }
 @media (min-width: 768px) {
   .tabs-logo { display: block; }
   .tabs-footer { display: block; }
+}
+
+/* Pro content padding — applied by pro-shell around page content */
+.pro-content { padding: 20px 16px 28px; }
+@media (min-width: 768px) {
+  .pro-content { padding: 28px; }
+}
+
+/* Responsive stats grid (2 cols on mobile, 4 on desktop) */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+@media (min-width: 768px) {
+  .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 /* Responsive: sidebar collapses on phones (legacy .shell) ────────────────  */

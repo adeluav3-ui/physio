@@ -53,7 +53,12 @@ export default function PatientShell({ children }: { children: React.ReactNode }
                     </SignOutButton>
                 </div>
 
-                {/* Tab nav — sticky bottom on mobile, left sidebar on desktop */}
+                {/* Main content — sits between topbar and bottom nav */}
+                <div className="app-content">
+                    {children}
+                </div>
+
+                {/* Nav — bottom bar on mobile (last child), left sidebar on desktop (order:-1) */}
                 <nav className="tabs">
                     {/* Desktop only: logo */}
                     <span className="tabs-logo" aria-hidden="true">Rehab360</span>
@@ -72,11 +77,6 @@ export default function PatientShell({ children }: { children: React.ReactNode }
                         </SignOutButton>
                     </div>
                 </nav>
-
-                {/* Main content */}
-                <div className="app-content">
-                    {children}
-                </div>
             </div>
         </div>
     );
