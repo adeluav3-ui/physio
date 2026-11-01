@@ -5,8 +5,11 @@ import { DISCIPLINE_LABELS } from "@physio/shared";
 
 type Pending = {
     userId: string; discipline: string; licenceNo: string;
-    licensingBody: string | null; specialties: string[];
-    bio: string; serviceArea: string;
+    licensingBody: string | null; licenceDocUrl: string | null;
+    certificateUrl: string | null; idType: string | null;
+    ninNumber: string | null; ninDocUrl: string | null;
+    photoUrl: string | null; specialties: string[];
+    bio: string; serviceArea: string; sessionTypes: string[];
     user: { name: string; email: string; createdAt: string };
 };
 
@@ -86,9 +89,24 @@ export default async function AdminVerificationPage() {
                                 </div>
                             ))}
                         </div>
-                        <div style={{ marginTop: "18px", height: "180px", borderRadius: "12px", background: "#eef3f2", border: "1px dashed #b9c9c5", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
-                            <span style={{ font: "500 14px 'Figtree',sans-serif" }}>Uploaded licence document</span>
-                        </div>
+                        {first.licenceDocUrl ? (
+                            <div style={{ marginTop: "18px" }}>
+                                <div className="muted" style={{ font: "500 13px 'Figtree',sans-serif", marginBottom: "8px" }}>Licence document</div>
+                                {/\.(jpg|jpeg|png|webp)(\?|$)/i.test(first.licenceDocUrl) ? (
+                                    <img src={first.licenceDocUrl} alt="Licence" style={{ maxWidth: "100%", maxHeight: "180px", borderRadius: "10px", objectFit: "cover", border: "1px solid #dbe5e2", display: "block" }} />
+                                ) : (
+                                    <a href={first.licenceDocUrl} target="_blank" rel="noopener noreferrer"
+                                        style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#1b766e", font: "600 14px 'Figtree',sans-serif" }}>
+                                        Open licence document
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    </a>
+                                )}
+                            </div>
+                        ) : (
+                            <div style={{ marginTop: "18px", height: "80px", borderRadius: "12px", background: "#eef3f2", border: "1px dashed #b9c9c5", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
+                                <span style={{ font: "500 14px 'Figtree',sans-serif" }}>No licence document uploaded</span>
+                            </div>
+                        )}
                         <div style={{ marginTop: "18px" }}>
                             <Link href={`/admin/physios/${first.userId}`} className="btn">Review and decide</Link>
                         </div>

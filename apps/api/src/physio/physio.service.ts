@@ -182,6 +182,17 @@ export class PhysioService {
         });
     }
 
+    async findPendingById(userId: string) {
+        const profile = await this.prisma.client.physioProfile.findUnique({
+            where: { userId },
+            include: { user: { select: { id: true, name: true, email: true, createdAt: true } } },
+        });
+        if (!profile || profile.licenceStatus !== "UNVERIFIED") {
+            throw new NotFoundException({ code: "NOT_FOUND", message: "Pending application not found" });
+        }
+        return profile;
+    }
+
     async listAll() {
         return this.prisma.client.physioProfile.findMany({
             include: { user: { select: { id: true, name: true, email: true } } },

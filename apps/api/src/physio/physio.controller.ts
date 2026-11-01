@@ -41,6 +41,13 @@ export class PhysioController {
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get("admin/pending/:userId")
+    @Roles("ADMIN")
+    pendingById(@Param("userId") userId: string) {
+        return this.physio.findPendingById(userId);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Post("admin/verify")
     @Roles("ADMIN")
     verify(
