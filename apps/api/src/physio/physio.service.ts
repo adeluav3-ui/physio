@@ -139,6 +139,11 @@ export class PhysioService {
         }
 
         const profile = await this.prisma.client.$transaction(async (tx) => {
+            // Ensure the user has PHYSIO role — covers accounts created before the
+            // isPro signup flag was introduced (old PATIENT-role accounts).
+            if (user.role !== "PHYSIO") {
+                await tx.user.update({ where: { id: user.id }, data: { role: "PHYSIO" } });
+            }
             return tx.physioProfile.create({
                 data: {
                     userId: user.id,
@@ -152,7 +157,7 @@ export class PhysioService {
                     photoUrl: input.photoUrl,
                     specialties: input.specialties,
                     bio: input.bio,
-                    rateKobo: 0, // admin-controlled; set during verification
+                    rateKobo: 0,
                     serviceArea: input.serviceArea,
                     licenceStatus: "UNVERIFIED",
                 },

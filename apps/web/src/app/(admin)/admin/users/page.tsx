@@ -189,27 +189,42 @@ export default function AdminUsersPage() {
                                             {new Date(u.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                                         </td>
                                         <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
-                                            {u.role === "ADMIN" ? (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn2"
-                                                    style={{ minHeight: "30px", fontSize: "12px", color: "#991b1b", borderColor: "#fca5a5" }}
-                                                    disabled={promoting === u.id}
-                                                    onClick={() => setRole(u.id, "PATIENT")}
-                                                >
-                                                    {promoting === u.id ? "…" : "Remove admin"}
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn2"
-                                                    style={{ minHeight: "30px", fontSize: "12px" }}
-                                                    disabled={promoting === u.id}
-                                                    onClick={() => setRole(u.id, "ADMIN")}
-                                                >
-                                                    {promoting === u.id ? "…" : "Make admin"}
-                                                </button>
-                                            )}
+                                            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                                                {u.role === "ADMIN" ? (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn2"
+                                                        style={{ minHeight: "30px", fontSize: "12px", color: "#991b1b", borderColor: "#fca5a5" }}
+                                                        disabled={promoting === u.id}
+                                                        onClick={() => setRole(u.id, "PATIENT")}
+                                                    >
+                                                        {promoting === u.id ? "…" : "Remove admin"}
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        {u.role === "PATIENT" && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn2"
+                                                                style={{ minHeight: "30px", fontSize: "12px", color: "#1b766e", borderColor: "#1b766e" }}
+                                                                disabled={promoting === u.id}
+                                                                onClick={() => setRole(u.id, "PHYSIO")}
+                                                            >
+                                                                {promoting === u.id ? "…" : "Set as professional"}
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn2"
+                                                            style={{ minHeight: "30px", fontSize: "12px" }}
+                                                            disabled={promoting === u.id}
+                                                            onClick={() => setRole(u.id, "ADMIN")}
+                                                        >
+                                                            {promoting === u.id ? "…" : "Make admin"}
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                             {roleErr?.id === u.id && (
                                                 <div style={{ font: "400 11px 'Figtree',sans-serif", color: "#991b1b", marginTop: "4px" }}>
                                                     {roleErr.msg}
