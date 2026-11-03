@@ -42,9 +42,13 @@ export function AdminShell({ children, userName }: { children: React.ReactNode; 
 
     const sidebarContent = (
         <>
-            <div style={{ font: "700 20px 'Figtree',sans-serif", color: "#1b766e", padding: "0 10px 20px" }}>
-                Rehab360
-                <div style={{ font: "500 11px 'Figtree',sans-serif", color: "#4f6663", marginTop: "2px" }}>Admin panel</div>
+            {/* Logo on white badge + ADMIN CONSOLE label */}
+            <div style={{ padding: "0 0 18px" }}>
+                <div className="admin-logo-badge">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "34px", width: "auto", display: "block" }} />
+                </div>
+                <div className="admin-logo-label">ADMIN CONSOLE</div>
             </div>
             <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
                 {NAV.map(n => (
@@ -58,8 +62,8 @@ export function AdminShell({ children, userName }: { children: React.ReactNode; 
                     </Link>
                 ))}
             </nav>
-            <div style={{ paddingTop: "14px", borderTop: "1px solid #e6eeec" }}>
-                <div style={{ padding: "6px 12px 10px", font: "500 13px 'Figtree',sans-serif", color: "#4f6663" }}>
+            <div style={{ paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                <div style={{ padding: "6px 12px 10px", font: "500 13px 'Figtree',sans-serif", color: "#9fc1e0" }}>
                     {userName}
                 </div>
                 <SignOutButton className="btn btn2" style={{ width: "100%", minHeight: "38px", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -84,11 +88,12 @@ export function AdminShell({ children, userName }: { children: React.ReactNode; 
             {/* Right column: topbar (mobile only) + main content */}
             <div className="admin-body">
                 <div className="admin-topbar">
-                    <span style={{ font: "700 17px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360 Admin</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "30px", width: "auto" }} />
                     <button
                         type="button"
                         onClick={() => setOpen(v => !v)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#12302c", display: "flex", alignItems: "center", padding: "6px" }}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#022449", display: "flex", alignItems: "center", padding: "6px" }}
                         aria-label={open ? "Close menu" : "Open menu"}
                         aria-expanded={open}
                     >

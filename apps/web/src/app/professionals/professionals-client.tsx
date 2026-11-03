@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ const DISCIPLINE_LABELS: Record<string, string> = {
 const PILLS = ["All", "Physiotherapy", "Occupational therapy", "Speech therapy", "Prosthetics", "Orthotics"] as const;
 const SESSION_PILLS = ["Video", "Home visit", "Clinic"] as const;
 
-const AVATAR_COLORS = ["#cfe6e2", "#d9e6f2", "#efe3d3", "#dde9d5", "#e8dced"];
+const AVATAR_COLORS = ["#cfe3ee", "#d9e6f2", "#efe3d3", "#dde9d5", "#e8dced"];
 
 export default function ProfessionalsClient({ professionals }: { professionals: PublicProfessional[] }) {
     const [query, setQuery] = useState("");
@@ -68,7 +68,7 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
 
             <div style={{ display: "grid", gap: "14px", paddingBottom: "64px" }}>
                 {filtered.length === 0 && professionals.length > 0 ? (
-                    <div className="card" style={{ textAlign: "center", color: "#4f6663" }}>No professionals match your filters.</div>
+                    <div className="card" style={{ textAlign: "center", color: "#4f6478" }}>No professionals match your filters.</div>
                 ) : filtered.length === 0 ? (
                     /* Sample cards when API has no data */
                     [

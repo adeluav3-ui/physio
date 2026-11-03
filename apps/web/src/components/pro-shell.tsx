@@ -74,14 +74,17 @@ export default function ProShell({
 
     return (
         <div className="app-shell">
+            {/* 5 px brand strip */}
+            <div className="brand-strip" />
             <div className="app-shell-inner">
                 {/* Mobile top bar (hidden on desktop) */}
                 <div className="app-topbar">
                     <div>
-                        <div style={{ font: "700 18px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</div>
-                        {discipline && <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6663" }}>{discipline}</div>}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "28px", width: "auto", display: "block" }} />
+                        {discipline && <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6478", marginTop: "2px" }}>{discipline}</div>}
                     </div>
-                    <SignOutButton style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", font: "500 13px 'Figtree',sans-serif", color: "#4f6663", padding: "4px 0" }}>
+                    <SignOutButton style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", font: "500 13px 'Figtree',sans-serif", color: "#4f6478", padding: "4px 0" }}>
                         {IC_SIGNOUT} Sign out
                     </SignOutButton>
                 </div>
@@ -97,8 +100,9 @@ export default function ProShell({
                 <nav className="tabs">
                     {/* Desktop only: logo + discipline */}
                     <div className="tabs-logo" aria-hidden="true">
-                        <div>Rehab360</div>
-                        {discipline && <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6663", marginTop: "2px" }}>{discipline}</div>}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "38px", width: "auto", display: "block", marginBottom: "4px" }} />
+                        {discipline && <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6478", padding: "0 10px 12px" }}>{discipline}</div>}
                     </div>
 
                     {PRIMARY_TABS.map(t => (
@@ -119,7 +123,7 @@ export default function ProShell({
                     {/* Desktop only: user info + sign out */}
                     <div className="tabs-footer">
                         {userName && (
-                            <div style={{ padding: "4px 10px 10px", font: "500 13px 'Figtree',sans-serif", color: "#4f6663" }}>
+                            <div style={{ padding: "4px 10px 10px", font: "500 13px 'Figtree',sans-serif", color: "#4f6478" }}>
                                 {userName}
                             </div>
                         )}

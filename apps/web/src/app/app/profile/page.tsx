@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -54,7 +54,7 @@ export default function PatientProfilePage() {
     }
 
     if (loading) return (
-        <div style={{ padding: "32px 20px", textAlign: "center", font: "400 14px 'Figtree',sans-serif", color: "#4f6663" }}>Loading…</div>
+        <div style={{ padding: "32px 20px", textAlign: "center", font: "400 14px 'Figtree',sans-serif", color: "#4f6478" }}>Loading…</div>
     );
 
     return (

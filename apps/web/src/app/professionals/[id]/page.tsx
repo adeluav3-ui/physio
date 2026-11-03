@@ -43,10 +43,11 @@ export default async function PublicProfilePage({ params }: Props) {
     const price = p.rateKobo ? `₦${(p.rateKobo / 100).toLocaleString()}` : "₦[price]";
 
     return (
-        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7" }}>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb" }}>
             <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
                 <header style={{ display: "flex", flexWrap: "wrap" as const, gap: "16px", alignItems: "center", justifyContent: "space-between", padding: "20px 0" }}>
-                    <Link href="/" style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", textDecoration: "none" }}>Rehab360</Link>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <a href="/"><img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "46px", width: "auto", display: "block" }} /></a>
                     <Link href="/auth/login" className="btn btn2">Log in</Link>
                 </header>
 
@@ -55,7 +56,7 @@ export default async function PublicProfilePage({ params }: Props) {
                     <div style={{ flex: "999 1 560px", minWidth: 0, display: "grid", gap: "20px" }}>
                         {/* Hero card */}
                         <div className="card" style={{ display: "flex", flexWrap: "wrap" as const, gap: "24px" }}>
-                            <div style={{ width: "120px", height: "120px", borderRadius: "50%", background: "#cfe6e2", flexShrink: 0 }}></div>
+                            <div style={{ width: "120px", height: "120px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0 }}></div>
                             <div style={{ flex: "1 1 300px" }}>
                                 <h1 style={{ font: "700 30px 'Figtree',sans-serif", margin: 0 }}>{p.user.name}</h1>
                                 <div className="muted" style={{ font: "500 17px 'Figtree',sans-serif", marginTop: "4px" }}>{discipline}</div>
@@ -85,15 +86,15 @@ export default async function PublicProfilePage({ params }: Props) {
                             <h2 style={{ font: "700 20px 'Figtree',sans-serif", margin: 0 }}>How a session works</h2>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: "16px", marginTop: "14px" }}>
                                 <div>
-                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b766e" }}>1. Book</div>
+                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>1. Book</div>
                                     <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "4px" }}>Choose a time and answer a few safety questions.</p>
                                 </div>
                                 <div>
-                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b766e" }}>2. Meet</div>
+                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>2. Meet</div>
                                     <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "4px" }}>Join by video or receive a home visit.</p>
                                 </div>
                                 <div>
-                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b766e" }}>3. Follow your plan</div>
+                                    <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>3. Follow your plan</div>
                                     <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "4px" }}>Get exercises and goals on your phone.</p>
                                 </div>
                             </div>

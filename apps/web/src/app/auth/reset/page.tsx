@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, Card, Input } from "@physio/ui";
 
 function ResetContent() {
     const router = useRouter();
@@ -20,18 +19,9 @@ function ResetContent() {
         e.preventDefault();
         setError(null);
 
-        if (!token) {
-            setError("Missing reset token. Open the link from your email.");
-            return;
-        }
-        if (password !== confirm) {
-            setError("Passwords do not match");
-            return;
-        }
-        if (password.length < 10) {
-            setError("Password must be at least 10 characters");
-            return;
-        }
+        if (!token) { setError("Missing reset token. Open the link from your email."); return; }
+        if (password !== confirm) { setError("Passwords do not match"); return; }
+        if (password.length < 10) { setError("Password must be at least 10 characters"); return; }
 
         setLoading(true);
         try {
@@ -42,7 +32,7 @@ function ResetContent() {
             });
             if (!res.ok) {
                 const b = await res.json().catch(() => ({}));
-                throw new Error(b.message ?? "Reset failed");
+                throw new Error((b as { message?: string }).message ?? "Reset failed");
             }
             setDone(true);
             setTimeout(() => router.push("/auth/login"), 1500);
@@ -55,56 +45,53 @@ function ResetContent() {
 
     if (done) {
         return (
-            <div className="flex min-h-screen items-center justify-center p-4">
-                <Card className="w-full max-w-md p-8 text-center">
-                    <h1 className="text-2xl font-semibold">Password updated</h1>
-                    <p className="mt-3 text-sm text-text-muted">
-                        Redirecting to sign in…
-                    </p>
-                </Card>
+            <div className="card" style={{ textAlign: "center" }}>
+                <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Password updated</h1>
+                <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>
+                    Redirecting to log in…
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <Card className="w-full max-w-md p-8">
-                <h1 className="text-2xl font-semibold">Set a new password</h1>
-                <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-                    <Input
-                        label="New password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        hint="At least 10 characters, with a letter and a number"
-                        required
-                    />
-                    <Input
-                        label="Confirm new password"
-                        type="password"
-                        value={confirm}
-                        onChange={(e) => setConfirm(e.target.value)}
-                        required
-                    />
-                    {error && <p className="text-sm text-danger-700">{error}</p>}
-                    <Button type="submit" loading={loading} fullWidth>
-                        Save new password
-                    </Button>
-                </form>
-                <p className="mt-4 text-center text-sm text-text-muted">
-                    <Link href="/auth/login" className="text-primary-600 underline">
-                        Back to sign in
-                    </Link>
-                </p>
-            </Card>
+        <div className="card">
+            <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Set a new password</h1>
+            <form onSubmit={onSubmit} style={{ display: "grid", gap: "14px", marginTop: "20px" }}>
+                <div>
+                    <label className="flabel" htmlFor="r-pass">New password</label>
+                    <input className="in" id="r-pass" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 10 characters" required autoComplete="new-password" />
+                    <p className="muted" style={{ font: "400 13px 'Figtree',sans-serif", marginTop: "4px" }}>At least 10 characters, with a letter and a number</p>
+                </div>
+                <div>
+                    <label className="flabel" htmlFor="r-confirm">Confirm new password</label>
+                    <input className="in" id="r-confirm" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repeat your password" required autoComplete="new-password" />
+                </div>
+                {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
+                <button type="submit" className="btn" disabled={loading} style={{ width: "100%", opacity: loading ? 0.7 : 1 }}>
+                    {loading ? "Saving…" : "Save new password"}
+                </button>
+            </form>
+            <p style={{ textAlign: "center", font: "400 14px 'Figtree',sans-serif", marginTop: "16px", color: "#4f6478" }}>
+                <Link href="/auth/login">Back to log in</Link>
+            </p>
         </div>
     );
 }
 
 export default function ResetPage() {
     return (
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center p-4"><Card className="w-full max-w-md p-8 text-center"><p className="text-sm text-text-muted">Loading…</p></Card></div>}>
-            <ResetContent />
-        </Suspense>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
+            <div className="brand-strip" />
+            <div style={{ padding: "32px 24px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100dvh - 5px)" }}>
+                <div style={{ width: "100%", maxWidth: "440px" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "52px", width: "auto", display: "block", marginBottom: "24px" }} />
+                    <Suspense fallback={<div className="card" style={{ textAlign: "center", padding: "40px" }}>Loading…</div>}>
+                        <ResetContent />
+                    </Suspense>
+                </div>
+            </div>
+        </div>
     );
 }

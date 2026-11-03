@@ -44,11 +44,14 @@ export default function PatientShell({ children }: { children: React.ReactNode }
 
     return (
         <div className="app-shell">
+            {/* 5 px brand strip */}
+            <div className="brand-strip" />
             <div className="app-shell-inner">
                 {/* Mobile top bar (hidden on desktop) */}
                 <div className="app-topbar">
-                    <span style={{ font: "700 18px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</span>
-                    <SignOutButton style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", font: "500 13px 'Figtree',sans-serif", color: "#4f6663", padding: "4px 0" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "28px", width: "auto" }} />
+                    <SignOutButton style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", font: "500 13px 'Figtree',sans-serif", color: "#4f6478", padding: "4px 0" }}>
                         {IC_SIGNOUT} Sign out
                     </SignOutButton>
                 </div>
@@ -61,7 +64,10 @@ export default function PatientShell({ children }: { children: React.ReactNode }
                 {/* Nav — bottom bar on mobile (last child), left sidebar on desktop (order:-1) */}
                 <nav className="tabs">
                     {/* Desktop only: logo */}
-                    <span className="tabs-logo" aria-hidden="true">Rehab360</span>
+                    <div className="tabs-logo" aria-hidden="true">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "34px", width: "auto", display: "block" }} />
+                    </div>
 
                     {TABS.map(t => (
                         <Link key={t.href} href={t.href} className={`tab${isActive(t.href) ? " tabon" : ""}`}>

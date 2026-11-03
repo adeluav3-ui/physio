@@ -97,7 +97,7 @@ function LoginForm() {
                     <div style={{ position: "relative" }}>
                         <input className="in" id="l-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" autoComplete="current-password" required style={{ paddingRight: "44px" }} />
                         <button type="button" onClick={() => setShowPass(v => !v)} aria-label={showPass ? "Hide password" : "Show password"}
-                            style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6663", display: "flex", alignItems: "center", padding: 0 }}>
+                            style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6478", display: "flex", alignItems: "center", padding: 0 }}>
                             {IC_EYE(showPass)}
                         </button>
                     </div>
@@ -116,15 +116,19 @@ function LoginForm() {
 
 export default function LoginPage() {
     return (
-        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
-            <div style={{ maxWidth: "520px", margin: "0 auto" }}>
-                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
-                <Suspense fallback={<div className="card" style={{ textAlign: "center", padding: "40px" }}>Loading…</div>}>
-                    <LoginForm />
-                </Suspense>
-                <p style={{ textAlign: "center", font: "400 14px 'Figtree',sans-serif", marginTop: "16px", color: "#4f6663" }}>
-                    New here? <Link href="/auth/signup">Create an account</Link>
-                </p>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
+            <div className="brand-strip" />
+            <div style={{ padding: "32px 24px" }}>
+                <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "52px", width: "auto", display: "block", marginBottom: "24px" }} />
+                    <Suspense fallback={<div className="card" style={{ textAlign: "center", padding: "40px" }}>Loading…</div>}>
+                        <LoginForm />
+                    </Suspense>
+                    <p style={{ textAlign: "center", font: "400 14px 'Figtree',sans-serif", marginTop: "16px", color: "#4f6478" }}>
+                        New here? <Link href="/auth/signup">Create an account</Link>
+                    </p>
+                </div>
             </div>
         </div>
     );

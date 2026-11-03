@@ -109,7 +109,7 @@ export default function BookPage() {
     /* RED triage */
     if (intake?.triage?.level === "RED") {
         return (
-            <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f6f8f7", color: "#12302c" }}>
+            <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f4f8fb", color: "#022449" }}>
                 <div className="card" style={{ background: "#fde8e8", borderColor: "#f3b4b4" }}>
                     <div style={{ font: "700 17px 'Figtree',sans-serif", color: "#8f1d1d" }}>Urgent care recommended</div>
                     <p style={{ font: "400 15px/1.5 'Figtree',sans-serif", color: "#8f1d1d", marginTop: "8px" }}>
@@ -127,14 +127,14 @@ export default function BookPage() {
 
     if (intake === undefined) {
         return (
-            <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f6f8f7" }}>
+            <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f4f8fb" }}>
                 <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</div>
             </div>
         );
     }
 
     return (
-        <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f6f8f7", color: "#12302c" }}>
+        <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f4f8fb", color: "#022449" }}>
             <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Book a session</h1>
 
             {intake?.triage?.level === "AMBER" && (
@@ -145,7 +145,7 @@ export default function BookPage() {
 
             {/* Professional card */}
             <div className="card" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "#cfe6e2", flexShrink: 0 }}></div>
+                <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0 }}></div>
                 <div>
                     <div style={{ font: "700 16px 'Figtree',sans-serif" }}>{pro?.user.name ?? "[Professional name]"}</div>
                     <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Physiotherapist · Licence verified</div>
@@ -197,7 +197,7 @@ export default function BookPage() {
                     )}
                 </>
             ) : (
-                <div className="card" style={{ color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>
+                <div className="card" style={{ color: "#4f6478", font: "400 15px 'Figtree',sans-serif" }}>
                     No available slots in the next 14 days.
                 </div>
             )}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 
@@ -51,22 +51,22 @@ export function FileUpload({ label, accept = ".pdf,.jpg,.jpeg,.png,.webp", value
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
                 <label style={{ font: "600 13px 'Figtree',sans-serif" }}>{label}</label>
-                {hint && <span style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6663" }}>{hint}</span>}
+                {hint && <span style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6478" }}>{hint}</span>}
             </div>
 
             {/* Profile photo circular preview */}
             {preview && value && isImage && (
                 <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "10px" }}>
-                    <img src={value} alt="Profile preview" style={{ width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", border: "2px solid #dbe5e2" }} />
+                    <img src={value} alt="Profile preview" style={{ width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", border: "2px solid #d9e3ec" }} />
                 </div>
             )}
 
             <div
                 style={{
-                    border: `1.5px dashed ${status === "error" ? "#e53e3e" : status === "done" ? "#1b766e" : "#b9c9c5"}`,
+                    border: `1.5px dashed ${status === "error" ? "#e53e3e" : status === "done" ? "#1b7d0e" : "#b4c4d3"}`,
                     borderRadius: "10px",
                     padding: "14px 16px",
-                    background: status === "done" ? "#f1f9f7" : "#fff",
+                    background: status === "done" ? "#eef3f8" : "#fff",
                     display: "flex",
                     alignItems: "center",
                     gap: "12px",
@@ -83,7 +83,7 @@ export function FileUpload({ label, accept = ".pdf,.jpg,.jpeg,.png,.webp", value
                     {status === "uploading" ? "Uploading…" : status === "done" ? "Replace" : "Choose file"}
                 </button>
 
-                <span style={{ font: "400 13px 'Figtree',sans-serif", color: status === "error" ? "#8f1d1d" : status === "done" ? "#14544e" : "#4f6663", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ font: "400 13px 'Figtree',sans-serif", color: status === "error" ? "#8f1d1d" : status === "done" ? "#0f5a08" : "#4f6478", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {status === "uploading" && "Uploading…"}
                     {status === "done" && (fileName || "Uploaded ✓")}
                     {status === "error" && (errMsg || "Upload failed")}
@@ -91,7 +91,7 @@ export function FileUpload({ label, accept = ".pdf,.jpg,.jpeg,.png,.webp", value
                 </span>
 
                 {status === "done" && value && (
-                    <a href={value} target="_blank" rel="noopener noreferrer" style={{ font: "600 12px 'Figtree',sans-serif", color: "#1b766e", flexShrink: 0 }}>
+                    <a href={value} target="_blank" rel="noopener noreferrer" style={{ font: "600 12px 'Figtree',sans-serif", color: "#1b7d0e", flexShrink: 0 }}>
                         View
                     </a>
                 )}

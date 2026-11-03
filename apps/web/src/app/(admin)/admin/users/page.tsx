@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { DISCIPLINE_LABELS } from "@physio/shared";
@@ -101,7 +101,7 @@ export default function AdminUsersPage() {
         <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
                 <h1 style={{ font: "700 28px 'Figtree',sans-serif", margin: 0 }}>Users & professionals</h1>
-                <div style={{ font: "500 14px 'Figtree',sans-serif", color: "#4f6663" }}>
+                <div style={{ font: "500 14px 'Figtree',sans-serif", color: "#4f6478" }}>
                     {loading ? "Loading…" : `${users.length} total`}
                 </div>
             </div>
@@ -117,9 +117,9 @@ export default function AdminUsersPage() {
                             padding: "6px 14px",
                             borderRadius: "20px",
                             border: "1.5px solid",
-                            borderColor: filter === f ? "#1b766e" : "#dbe5e2",
-                            background: filter === f ? "#1b766e" : "#fff",
-                            color: filter === f ? "#fff" : "#4f6663",
+                            borderColor: filter === f ? "#1b7d0e" : "#d9e3ec",
+                            background: filter === f ? "#1b7d0e" : "#fff",
+                            color: filter === f ? "#fff" : "#4f6478",
                             font: "500 13px 'Figtree',sans-serif",
                             cursor: "pointer",
                         }}
@@ -144,15 +144,15 @@ export default function AdminUsersPage() {
                     <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", font: "400 14px 'Figtree',sans-serif" }}>
                             <thead>
-                                <tr style={{ borderBottom: "1px solid #dbe5e2", background: "#f6f8f7" }}>
+                                <tr style={{ borderBottom: "1px solid #d9e3ec", background: "#f4f8fb" }}>
                                     {["Name", "Email", "Role / Discipline", "Account", "Licence", "Joined", "Actions"].map(h => (
-                                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6663", whiteSpace: "nowrap" }}>{h}</th>
+                                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6478", whiteSpace: "nowrap" }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {Array.from({ length: 6 }).map((_, i) => (
-                                    <tr key={i} style={{ borderBottom: "1px solid #eef3f2" }}>
+                                    <tr key={i} style={{ borderBottom: "1px solid #eef3f8" }}>
                                         {[180, 220, 100, 70, 80, 90, 110].map((w, j) => (
                                             <td key={j} style={{ padding: "14px 16px" }}>
                                                 <div className="skel" style={{ height: "14px", width: `${w}px`, maxWidth: "100%", borderRadius: "6px" }} />
@@ -164,16 +164,16 @@ export default function AdminUsersPage() {
                         </table>
                     </div>
                 ) : visible.length === 0 ? (
-                    <div style={{ padding: "40px", textAlign: "center", color: "#4f6663", font: "400 14px 'Figtree',sans-serif" }}>
+                    <div style={{ padding: "40px", textAlign: "center", color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
                         No users match your filters.
                     </div>
                 ) : (
                     <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", font: "400 14px 'Figtree',sans-serif" }}>
                             <thead>
-                                <tr style={{ borderBottom: "1px solid #dbe5e2", background: "#f6f8f7" }}>
+                                <tr style={{ borderBottom: "1px solid #d9e3ec", background: "#f4f8fb" }}>
                                     {["Name", "Email", "Role / Discipline", "Account", "Licence", "Joined", "Actions"].map(h => (
-                                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6663", whiteSpace: "nowrap" }}>
+                                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", font: "600 13px 'Figtree',sans-serif", color: "#4f6478", whiteSpace: "nowrap" }}>
                                             {h}
                                         </th>
                                     ))}
@@ -181,11 +181,11 @@ export default function AdminUsersPage() {
                             </thead>
                             <tbody>
                                 {visible.map((u, i) => (
-                                    <tr key={u.id} style={{ borderBottom: i < visible.length - 1 ? "1px solid #eef3f2" : "none" }}>
-                                        <td style={{ padding: "12px 16px", font: "600 14px 'Figtree',sans-serif", color: "#12302c", whiteSpace: "nowrap" }}>
+                                    <tr key={u.id} style={{ borderBottom: i < visible.length - 1 ? "1px solid #eef3f8" : "none" }}>
+                                        <td style={{ padding: "12px 16px", font: "600 14px 'Figtree',sans-serif", color: "#022449", whiteSpace: "nowrap" }}>
                                             {u.name}
                                         </td>
-                                        <td style={{ padding: "12px 16px", color: "#4f6663" }}>
+                                        <td style={{ padding: "12px 16px", color: "#4f6478" }}>
                                             {u.email}
                                         </td>
                                         <td style={{ padding: "12px 16px" }}>
@@ -204,10 +204,10 @@ export default function AdminUsersPage() {
                                                     {u.physioProfile.licenceStatus.charAt(0) + u.physioProfile.licenceStatus.slice(1).toLowerCase()}
                                                 </span>
                                             ) : (
-                                                <span style={{ color: "#b9c9c5" }}>—</span>
+                                                <span style={{ color: "#b4c4d3" }}>—</span>
                                             )}
                                         </td>
-                                        <td style={{ padding: "12px 16px", color: "#4f6663", whiteSpace: "nowrap" }}>
+                                        <td style={{ padding: "12px 16px", color: "#4f6478", whiteSpace: "nowrap" }}>
                                             {new Date(u.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                                         </td>
                                         <td style={{ padding: "12px 16px", whiteSpace: "nowrap" }}>
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
                                                             <button
                                                                 type="button"
                                                                 className="btn btn2"
-                                                                style={{ minHeight: "30px", fontSize: "12px", color: "#1b766e", borderColor: "#1b766e" }}
+                                                                style={{ minHeight: "30px", fontSize: "12px", color: "#1b7d0e", borderColor: "#1b7d0e" }}
                                                                 disabled={promoting === u.id}
                                                                 onClick={() => setRole(u.id, "PHYSIO")}
                                                             >

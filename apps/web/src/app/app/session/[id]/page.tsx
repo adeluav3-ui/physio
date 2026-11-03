@@ -58,10 +58,10 @@ export default function PatientSessionPage() {
 
     /* Waiting room */
     return (
-        <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 24px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "16px", background: "#f6f8f7", color: "#12302c" }}>
+        <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 24px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "16px", background: "#f4f8fb", color: "#022449" }}>
             <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Almost time</h1>
             <p className="muted" style={{ font: "400 16px 'Figtree',sans-serif", marginTop: "-8px" }}>Your session with {proName} starts at {timeLabel}.</p>
-            <div style={{ height: "240px", borderRadius: "16px", background: "#cfe0dd", display: "flex", alignItems: "center", justifyContent: "center", color: "#4f6663" }}>
+            <div style={{ height: "240px", borderRadius: "16px", background: "#dbe8f1", display: "flex", alignItems: "center", justifyContent: "center", color: "#4f6478" }}>
                 <span style={{ font: "500 15px 'Figtree',sans-serif" }}>Your camera preview</span>
             </div>
             <div className="card" style={{ display: "grid", gap: "10px", font: "500 15px 'Figtree',sans-serif" }}>
