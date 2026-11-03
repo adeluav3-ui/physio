@@ -95,10 +95,11 @@ export default function LandingPage() {
 
             {/* ── Five disciplines ─────────────────────────────────────── */}
             <section id="pros" style={{ maxWidth: "1160px", margin: "0 auto", padding: "64px 24px" }}>
-                <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>Five kinds of rehabilitation care, one place</h2>
+                <h2 style={{ font: "700 34px 'Figtree',sans-serif" }}>Five different rehabilitation care, all in one place</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px", marginTop: "28px" }}>
-                    {DISCIPLINES.map(d => (
+                    {DISCIPLINES.map((d, i) => (
                         <div key={d.key} className="card" style={{ padding: "20px" }}>
+                            <div style={{ font: "700 13px 'Figtree',sans-serif", color: "#1b7d0e", marginBottom: "6px" }}>{i + 1}</div>
                             <h3 style={{ font: "700 17px 'Figtree',sans-serif" }}>{d.label}</h3>
                             <p className="muted" style={{ font: "400 14px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>{d.desc}</p>
                         </div>
