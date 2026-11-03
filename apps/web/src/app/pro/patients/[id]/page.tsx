@@ -73,11 +73,11 @@ export default function PatientRecordPage() {
             {/* Patient header */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#cfe6e2", flexShrink: 0 }}></div>
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0 }}></div>
                     <div>
                         <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Patient record</h1>
                         <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>
-                            {appointments.length} sessions · <Link href="/pro/patients" style={{ color: "#1b766e" }}>All patients</Link>
+                            {appointments.length} sessions · <Link href="/pro/patients" style={{ color: "#1b7d0e" }}>All patients</Link>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@ export default function PatientRecordPage() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: "flex", flexWrap: "wrap", borderBottom: "1px solid #dbe5e2", marginTop: "20px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", borderBottom: "1px solid #d9e3ec", marginTop: "20px" }}>
                 {TABS.map(t => (
                     <button key={t} type="button" className={`rtab${tab === t ? " rtabon" : ""}`} onClick={() => setTab(t)}>{t}</button>
                 ))}
@@ -101,7 +101,7 @@ export default function PatientRecordPage() {
             {tab === "Timeline" && (
                 <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
                     {appointments.length === 0 ? (
-                        <div className="card" style={{ color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>No sessions yet.</div>
+                        <div className="card" style={{ color: "#4f6478", font: "400 15px 'Figtree',sans-serif" }}>No sessions yet.</div>
                     ) : appointments.map(a => (
                         <div key={a.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                             <div>
@@ -133,7 +133,7 @@ export default function PatientRecordPage() {
                         </div>
 
                         {items.length === 0 ? (
-                            <div className="card" style={{ color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>
+                            <div className="card" style={{ color: "#4f6478", font: "400 15px 'Figtree',sans-serif" }}>
                                 No exercises yet. Add from the library on the right.
                             </div>
                         ) : items.map(item => (
@@ -191,7 +191,7 @@ export default function PatientRecordPage() {
                                         <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{ex.name}</div>
                                         <div className="muted" style={{ font: "400 12px 'Figtree',sans-serif" }}>{ex.region}</div>
                                     </div>
-                                    <span style={{ color: "#14544e", font: "700 14px 'Figtree',sans-serif", cursor: "pointer" }}>Add</span>
+                                    <span style={{ color: "#0f5a08", font: "700 14px 'Figtree',sans-serif", cursor: "pointer" }}>Add</span>
                                 </div>
                             ))}
                             {filteredLib.length === 0 && (
@@ -207,7 +207,7 @@ export default function PatientRecordPage() {
 
             {/* Remaining tabs — placeholder */}
             {(tab === "Notes" || tab === "Messages" || tab === "Documents" || tab === "Referrals") && (
-                <div className="card" style={{ marginTop: "20px", color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>
+                <div className="card" style={{ marginTop: "20px", color: "#4f6478", font: "400 15px 'Figtree',sans-serif" }}>
                     {tab} — coming soon.
                 </div>
             )}

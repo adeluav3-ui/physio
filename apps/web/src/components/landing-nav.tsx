@@ -60,19 +60,20 @@ export default function LandingNav() {
 
     return (
         <>
-            <header style={{ borderBottom: "1px solid #dbe5e2", background: "#f6f8f7", position: "sticky", top: 0, zIndex: 100 }}>
+            <header style={{ borderBottom: "1px solid #d9e3ec", background: "#f4f8fb", position: "sticky", top: 0, zIndex: 100 }}>
                 <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px" }}>
                         {/* Logo */}
-                        <a href="/" style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", textDecoration: "none" }}>Rehab360</a>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <a href="/"><img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "46px", width: "auto", display: "block" }} /></a>
 
                         {/* Desktop nav */}
                         <nav className="landing-nav-desktop" style={{ display: "flex", gap: "24px", alignItems: "center", font: "500 15px 'Figtree',sans-serif" }}>
                             {LINKS.map(l => (
-                                <a key={l.href} href={l.href} style={{ color: "#12302c", textDecoration: "none" }}>{l.label}</a>
+                                <a key={l.href} href={l.href} style={{ color: "#022449", textDecoration: "none" }}>{l.label}</a>
                             ))}
                             <button type="button" onClick={() => openModal("login")}
-                                style={{ background: "none", border: "none", cursor: "pointer", font: "500 15px 'Figtree',sans-serif", color: "#12302c", padding: 0 }}>
+                                style={{ background: "none", border: "none", cursor: "pointer", font: "500 15px 'Figtree',sans-serif", color: "#022449", padding: 0 }}>
                                 Log in
                             </button>
                             <button type="button" onClick={() => openModal("signup")} className="btn btn2"
@@ -86,7 +87,7 @@ export default function LandingNav() {
                         <button type="button" aria-label={menuOpen ? "Close menu" : "Open menu"}
                             className="landing-nav-burger"
                             onClick={() => setMenuOpen(v => !v)}
-                            style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: "6px", color: "#12302c" }}>
+                            style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: "6px", color: "#022449" }}>
                             {menuOpen ? (
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -102,15 +103,15 @@ export default function LandingNav() {
 
                 {/* Mobile dropdown */}
                 {menuOpen && (
-                    <div className="landing-nav-mobile" style={{ background: "#fff", borderTop: "1px solid #dbe5e2", padding: "16px 24px 24px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div className="landing-nav-mobile" style={{ background: "#fff", borderTop: "1px solid #d9e3ec", padding: "16px 24px 24px", display: "flex", flexDirection: "column", gap: "4px" }}>
                         {LINKS.map(l => (
                             <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)}
-                                style={{ display: "block", padding: "12px 0", font: "500 16px 'Figtree',sans-serif", color: "#12302c", textDecoration: "none", borderBottom: "1px solid #f0f4f3" }}>
+                                style={{ display: "block", padding: "12px 0", font: "500 16px 'Figtree',sans-serif", color: "#022449", textDecoration: "none", borderBottom: "1px solid #f4f8fb" }}>
                                 {l.label}
                             </a>
                         ))}
                         <a href="#join" onClick={() => setMenuOpen(false)}
-                            style={{ display: "block", padding: "12px 0", font: "500 16px 'Figtree',sans-serif", color: "#12302c", textDecoration: "none", borderBottom: "1px solid #f0f4f3" }}>
+                            style={{ display: "block", padding: "12px 0", font: "500 16px 'Figtree',sans-serif", color: "#022449", textDecoration: "none", borderBottom: "1px solid #f4f8fb" }}>
                             Join waitlist
                         </a>
                         <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
@@ -126,12 +127,12 @@ export default function LandingNav() {
                 <div
                     role="dialog" aria-modal="true" aria-labelledby="modal-title"
                     onClick={e => { if (e.target === e.currentTarget) closeModal(); }}
-                    style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(18,48,44,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-                    <div style={{ background: "#fff", borderRadius: "20px", padding: "36px 32px", width: "100%", maxWidth: "420px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+                    style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(2,36,73,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+                    <div style={{ background: "#fff", borderRadius: "20px", padding: "36px 32px", width: "100%", maxWidth: "420px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
                         <div style={{ font: "700 22px 'Figtree',sans-serif" }} id="modal-title">
                             {modal === "login" ? "Log in to Rehab360" : "Create your account"}
                         </div>
-                        <p style={{ font: "400 15px/1.55 'Figtree',sans-serif", color: "#4f6663", marginTop: "8px" }}>
+                        <p style={{ font: "400 15px/1.55 'Figtree',sans-serif", color: "#4f6478", marginTop: "8px" }}>
                             Rehab360 is in early access. Enter the access code to continue.
                         </p>
 

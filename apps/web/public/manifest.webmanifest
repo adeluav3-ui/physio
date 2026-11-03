@@ -3,16 +3,16 @@
     "short_name": "Rehab360",
     "start_url": "/app",
     "display": "standalone",
-    "background_color": "#f6f8f7",
-    "theme_color": "#1b766e",
+    "background_color": "#f4f8fb",
+    "theme_color": "#1b7d0e",
     "icons": [
         {
-            "src": "/icons/icon-192.png",
+            "src": "/brand/app-icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/icons/icon-512.png",
+            "src": "/brand/app-icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }

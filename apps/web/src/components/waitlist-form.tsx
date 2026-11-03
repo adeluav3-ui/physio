@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -40,8 +40,8 @@ export default function WaitlistForm() {
 
     if (submitted) {
         return (
-            <div className="card" style={{ flex: "1 1 420px", color: "#12302c", textAlign: "center", padding: "40px 32px" }}>
-                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e" }}>You're on the list!</div>
+            <div className="card" style={{ flex: "1 1 420px", color: "#022449", textAlign: "center", padding: "40px 32px" }}>
+                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b7d0e" }}>You're on the list!</div>
                 <p className="muted" style={{ font: "400 15px/1.55 'Figtree',sans-serif", marginTop: "10px" }}>
                     {mode === "patient"
                         ? "We'll invite you when your city opens. Check your WhatsApp group for updates."
@@ -55,20 +55,20 @@ export default function WaitlistForm() {
     }
 
     return (
-        <div className="card" style={{ flex: "1 1 420px", color: "#12302c" }}>
+        <div className="card" style={{ flex: "1 1 420px", color: "#022449" }}>
             {/* Toggle */}
             <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
                 <button
                     type="button"
                     onClick={() => setMode("patient")}
-                    style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", border: "none", cursor: "pointer", background: mode === "patient" ? "#1b766e" : "#f1f6f5", color: mode === "patient" ? "#fff" : "#12302c", font: "600 15px 'Figtree',sans-serif", transition: "background .15s" }}
+                    style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", border: "none", cursor: "pointer", background: mode === "patient" ? "#1b7d0e" : "#eef3f8", color: mode === "patient" ? "#fff" : "#022449", font: "600 15px 'Figtree',sans-serif", transition: "background .15s" }}
                 >
                     I need care
                 </button>
                 <button
                     type="button"
                     onClick={() => setMode("pro")}
-                    style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", border: "none", cursor: "pointer", background: mode === "pro" ? "#1b766e" : "#f1f6f5", color: mode === "pro" ? "#fff" : "#12302c", font: "600 15px 'Figtree',sans-serif", transition: "background .15s" }}
+                    style={{ flex: 1, padding: "12px", textAlign: "center", borderRadius: "10px", border: "none", cursor: "pointer", background: mode === "pro" ? "#1b7d0e" : "#eef3f8", color: mode === "pro" ? "#fff" : "#022449", font: "600 15px 'Figtree',sans-serif", transition: "background .15s" }}
                 >
                     I provide care
                 </button>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { DISCIPLINE_LABELS } from "@physio/shared";
@@ -106,7 +106,7 @@ export default function ProReferralsPage() {
         <>
             <h1 style={{ font: "700 28px 'Figtree',sans-serif", margin: 0 }}>Referrals</h1>
             <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                <span className="chip" style={{ background: "#1b766e", color: "#fff", padding: "8px 14px" }}>Sent {sent.length}</span>
+                <span className="chip" style={{ background: "#1b7d0e", color: "#fff", padding: "8px 14px" }}>Sent {sent.length}</span>
                 <span className="chip" style={{ padding: "8px 14px" }}>Received {received.length}</span>
             </div>
 
@@ -161,7 +161,7 @@ export default function ProReferralsPage() {
                                 ))}
                             </div>
                         </div>
-                        <div style={{ padding: "12px", borderRadius: "10px", background: "#f1f6f5", font: "400 14px/1.5 'Figtree',sans-serif" }} className="muted">
+                        <div style={{ padding: "12px", borderRadius: "10px", background: "#eef3f8", font: "400 14px/1.5 'Figtree',sans-serif" }} className="muted">
                             The patient will be asked to agree before anything is shared.
                         </div>
                         {sendError && <div style={{ color: "#8f1d1d", font: "400 13px 'Figtree',sans-serif" }}>{sendError}</div>}
@@ -215,7 +215,7 @@ export default function ProReferralsPage() {
                                     return (
                                         <div key={step} style={{ display: "flex", gap: "12px", alignItems: "flex-start", font: "500 15px 'Figtree',sans-serif" }}>
                                             <span className={`tldot${done ? " tldone" : isCur ? " tlcur" : ""}`}></span>
-                                            <div style={!done && !isCur ? { color: "#4f6663" } : {}}>
+                                            <div style={!done && !isCur ? { color: "#4f6478" } : {}}>
                                                 {step}
                                                 {isCur && <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>Waiting. A reminder goes out if there is no reply in time.</div>}
                                             </div>

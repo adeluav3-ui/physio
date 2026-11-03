@@ -67,26 +67,30 @@ export default function SignupPage() {
             ? `/pro/onboarding/apply?discipline=${discipline}`
             : "/app";
         return (
-            <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
-                <div style={{ maxWidth: "520px", margin: "0 auto" }}>
-                    <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
-                    <div className="card">
-                        <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Check your email</h1>
-                        <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>
-                            We sent a verification link to <strong>{email}</strong>. Click it to activate your account, then log in.
-                        </p>
-                        <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
-                            <button
-                                type="button"
-                                className="btn"
-                                style={{ width: "100%" }}
-                                onClick={() => router.push(`/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`)}
-                            >
-                                Verify now (dev)
-                            </button>
-                            <Link href={`/auth/login?next=${encodeURIComponent(nextPath)}`} className="btn btn2" style={{ width: "100%", textAlign: "center" }}>
-                                Go to log in
-                            </Link>
+            <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
+                <div className="brand-strip" />
+                <div style={{ padding: "32px 24px" }}>
+                    <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "52px", width: "auto", display: "block", marginBottom: "24px" }} />
+                        <div className="card">
+                            <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Check your email</h1>
+                            <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "10px" }}>
+                                We sent a verification link to <strong>{email}</strong>. Click it to activate your account, then log in.
+                            </p>
+                            <div style={{ display: "grid", gap: "12px", marginTop: "20px" }}>
+                                <button
+                                    type="button"
+                                    className="btn"
+                                    style={{ width: "100%" }}
+                                    onClick={() => router.push(`/auth/verify?email=${encodeURIComponent(email)}&dev=1&next=${encodeURIComponent(nextPath)}`)}
+                                >
+                                    Verify now (dev)
+                                </button>
+                                <Link href={`/auth/login?next=${encodeURIComponent(nextPath)}`} className="btn btn2" style={{ width: "100%", textAlign: "center" }}>
+                                    Go to log in
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -95,9 +99,12 @@ export default function SignupPage() {
     }
 
     return (
-        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
+            <div className="brand-strip" />
+            <div style={{ padding: "32px 24px" }}>
             <div style={{ maxWidth: "520px", margin: "0 auto" }}>
-                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "52px", width: "auto", display: "block", marginBottom: "24px" }} />
                 <div className="card">
                     <h1 style={{ font: "700 28px 'Figtree',sans-serif" }}>Create your account</h1>
                     <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>We send appointment reminders and messages to your email.</p>
@@ -107,14 +114,14 @@ export default function SignupPage() {
                         <button
                             type="button"
                             onClick={() => setRole("patient")}
-                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "patient" ? "#1b766e" : "#f1f6f5", color: role === "patient" ? "#fff" : "#12302c", font: "600 14px 'Figtree',sans-serif" }}
+                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "patient" ? "#1b7d0e" : "#eef3f8", color: role === "patient" ? "#fff" : "#022449", font: "600 14px 'Figtree',sans-serif" }}
                         >
                             I need care
                         </button>
                         <button
                             type="button"
                             onClick={() => setRole("pro")}
-                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "pro" ? "#1b766e" : "#f1f6f5", color: role === "pro" ? "#fff" : "#12302c", font: "600 14px 'Figtree',sans-serif" }}
+                            style={{ flex: 1, padding: "11px", textAlign: "center", borderRadius: "10px", border: 0, cursor: "pointer", background: role === "pro" ? "#1b7d0e" : "#eef3f8", color: role === "pro" ? "#fff" : "#022449", font: "600 14px 'Figtree',sans-serif" }}
                         >
                             I provide care
                         </button>
@@ -149,7 +156,7 @@ export default function SignupPage() {
                             <div style={{ position: "relative" }}>
                                 <input className="in" id="s-pass" type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Choose a password" required style={{ paddingRight: "44px" }} />
                                 <button type="button" onClick={() => setShowPass(v => !v)} aria-label={showPass ? "Hide password" : "Show password"}
-                                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6663", display: "flex", alignItems: "center", padding: 0 }}>
+                                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#4f6478", display: "flex", alignItems: "center", padding: 0 }}>
                                     {IC_EYE(showPass)}
                                 </button>
                             </div>
@@ -167,6 +174,7 @@ export default function SignupPage() {
                         </p>
                     </form>
                 </div>
+            </div>
             </div>
         </div>
     );

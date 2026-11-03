@@ -32,10 +32,10 @@ export default function MessageThreadPage() {
     const proName = thread?.professional.user.name ?? "[Professional name]";
 
     return (
-        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100dvh", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb" }}>
             {/* Header */}
-            <div style={{ padding: "18px 20px", borderBottom: "1px solid #dbe5e2", background: "#fff", display: "flex", gap: "12px", alignItems: "center", flexShrink: 0 }}>
-                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#cfe6e2", flexShrink: 0 }}></div>
+            <div style={{ padding: "18px 20px", borderBottom: "1px solid #d9e3ec", background: "#fff", display: "flex", gap: "12px", alignItems: "center", flexShrink: 0 }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0 }}></div>
                 <div>
                     <div style={{ font: "700 16px 'Figtree',sans-serif" }}>{proName}</div>
                     <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>Physiotherapist</div>
@@ -50,7 +50,7 @@ export default function MessageThreadPage() {
                 {thread?.messages?.map(msg => {
                     const isMine = msg.senderId === me;
                     return (
-                        <div key={msg.id} className="msg" style={{ background: isMine ? "#1b766e" : "#fff", color: isMine ? "#fff" : "#12302c", border: isMine ? "none" : "1px solid #dbe5e2", alignSelf: isMine ? "flex-end" : "flex-start" }}>
+                        <div key={msg.id} className="msg" style={{ background: isMine ? "#1b7d0e" : "#fff", color: isMine ? "#fff" : "#022449", border: isMine ? "none" : "1px solid #d9e3ec", alignSelf: isMine ? "flex-end" : "flex-start" }}>
                             {msg.body}
                         </div>
                     );
@@ -60,8 +60,8 @@ export default function MessageThreadPage() {
             </div>
 
             {/* Input */}
-            <form onSubmit={send} style={{ padding: "12px 16px", borderTop: "1px solid #dbe5e2", background: "#fff", display: "flex", gap: "10px", flexShrink: 0 }}>
-                <input aria-label="Write a message" placeholder="Write a message" value={text} onChange={e => setText(e.target.value)} style={{ flex: 1, minHeight: "46px", border: "1px solid #b9c9c5", borderRadius: "23px", padding: "0 16px", font: "15px 'Figtree',sans-serif", outline: "none" }} />
+            <form onSubmit={send} style={{ padding: "12px 16px", borderTop: "1px solid #d9e3ec", background: "#fff", display: "flex", gap: "10px", flexShrink: 0 }}>
+                <input aria-label="Write a message" placeholder="Write a message" value={text} onChange={e => setText(e.target.value)} style={{ flex: 1, minHeight: "46px", border: "1px solid #b4c4d3", borderRadius: "23px", padding: "0 16px", font: "15px 'Figtree',sans-serif", outline: "none" }} />
                 <button type="submit" className="btn" style={{ width: "70px", minHeight: "46px", borderRadius: "23px" }}>Send</button>
             </form>
         </div>

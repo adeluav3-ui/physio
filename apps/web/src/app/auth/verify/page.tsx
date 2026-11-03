@@ -88,14 +88,18 @@ function VerifyContent() {
 
 export default function VerifyPage() {
     return (
-        <div style={{ width: "100%", padding: "32px 24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
+            <div className="brand-strip" />
+            <div style={{ padding: "32px 24px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100dvh - 5px)" }}>
             <div style={{ width: "100%", maxWidth: "440px" }}>
-                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", marginBottom: "24px" }}>Rehab360</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "52px", width: "auto", display: "block", marginBottom: "24px" }} />
                 <div className="card" style={{ textAlign: "center" }}>
                     <Suspense fallback={<p className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</p>}>
                         <VerifyContent />
                     </Suspense>
                 </div>
+            </div>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,16 +27,17 @@ export default function PhysioPendingPage() {
 
     if (checking) {
         return (
-            <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif", background: "#f6f8f7" }}>
+            <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif", background: "#f4f8fb" }}>
                 <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</div>
             </div>
         );
     }
 
     return (
-        <div style={{ width: "100%", padding: "24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh" }}>
+        <div style={{ width: "100%", padding: "24px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh" }}>
             <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
-                <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "46px", width: "auto", display: "block" }} />
                 <div style={{ maxWidth: "520px", margin: "80px auto 0", textAlign: "center" }}>
                     <div className="card" style={{ padding: "48px 32px" }}>
                         <div style={{ font: "700 26px 'Figtree',sans-serif" }}>Application received</div>

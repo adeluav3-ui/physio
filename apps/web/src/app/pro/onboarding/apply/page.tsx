@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -154,32 +154,33 @@ export default function ProfessionalApplyPage() {
 
     if (checking) {
         return (
-            <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif", background: "#f6f8f7" }}>
+            <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif", background: "#f4f8fb" }}>
                 <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</div>
             </div>
         );
     }
 
     return (
-        <div style={{ width: "100%", padding: "20px 16px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7", minHeight: "100dvh", boxSizing: "border-box" }}>
+        <div style={{ width: "100%", padding: "20px 16px", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", minHeight: "100dvh", boxSizing: "border-box" }}>
             <div style={{ maxWidth: "1160px", margin: "0 auto" }}>
                 {/* Header */}
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
-                    <div style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e" }}>Rehab360</div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "46px", width: "auto", display: "block" }} />
                     <span className="chip warn">Not yet visible to patients</span>
                 </div>
                 <h1 style={{ font: "700 28px/1.2 'Figtree',sans-serif", marginTop: "20px" }}>Set up your practice</h1>
                 <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>Complete all steps and submit for verification. This takes about 15 minutes.</p>
 
                 {/* Progress bar */}
-                <div style={{ height: "6px", borderRadius: "99px", background: "#dbe5e2", marginTop: "16px", maxWidth: "520px" }}>
-                    <div style={{ width: `${progress}%`, height: "6px", borderRadius: "99px", background: "#1b766e", transition: "width .3s" }} />
+                <div style={{ height: "6px", borderRadius: "99px", background: "#d9e3ec", marginTop: "16px", maxWidth: "520px" }}>
+                    <div style={{ width: `${progress}%`, height: "6px", borderRadius: "99px", background: "#1b7d0e", transition: "width .3s" }} />
                 </div>
                 <div className="muted" style={{ font: "600 13px 'Figtree',sans-serif", marginTop: "6px" }}>{step} of {STEPS.length} steps done</div>
 
                 {/* Mobile step name */}
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "12px" }}>
-                    <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#1b766e", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 12px 'Figtree',sans-serif", flexShrink: 0 }}>
+                    <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#1b7d0e", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 12px 'Figtree',sans-serif", flexShrink: 0 }}>
                         {step + 1}
                     </span>
                     <span style={{ font: "600 15px 'Figtree',sans-serif" }}>{STEPS[step]}</span>
@@ -192,8 +193,8 @@ export default function ProfessionalApplyPage() {
                             const done = i < step;
                             const cur = i === step;
                             return (
-                                <div key={s} className="step" style={cur ? { background: "#e3f1ef", fontWeight: 600 } : {}}>
-                                    <span className="dot" style={done ? { background: "#1b766e", borderColor: "#1b766e", color: "#fff" } : cur ? { borderColor: "#1b766e", color: "#1b766e" } : {}}>
+                                <div key={s} className="step" style={cur ? { background: "#e6f4e1", fontWeight: 600 } : {}}>
+                                    <span className="dot" style={done ? { background: "#1b7d0e", borderColor: "#1b7d0e", color: "#fff" } : cur ? { borderColor: "#1b7d0e", color: "#1b7d0e" } : {}}>
                                         {done ? "✓" : i + 1}
                                     </span>
                                     {s}
@@ -335,23 +336,23 @@ export default function ProfessionalApplyPage() {
                                     {DAYS.map(day => {
                                         const slot = avail[day]!;
                                         return (
-                                            <div key={day} style={{ padding: "12px 14px", border: `1px solid ${slot.enabled ? "#1b766e" : "#dbe5e2"}`, borderRadius: "12px", background: slot.enabled ? "#f1f9f7" : "#fff" }}>
+                                            <div key={day} style={{ padding: "12px 14px", border: `1px solid ${slot.enabled ? "#1b7d0e" : "#d9e3ec"}`, borderRadius: "12px", background: slot.enabled ? "#eef3f8" : "#fff" }}>
                                                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                                                     <span style={{ width: "90px", font: "600 14px 'Figtree',sans-serif", flexShrink: 0 }}>{day}</span>
                                                     {!slot.enabled && <span className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>Not available</span>}
                                                     <button type="button" onClick={() => toggleDay(day)}
-                                                        style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", font: "600 13px 'Figtree',sans-serif", color: slot.enabled ? "#8f1d1d" : "#1b766e", padding: 0, flexShrink: 0 }}>
+                                                        style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", font: "600 13px 'Figtree',sans-serif", color: slot.enabled ? "#8f1d1d" : "#1b7d0e", padding: 0, flexShrink: 0 }}>
                                                         {slot.enabled ? "Remove" : "Add hours"}
                                                     </button>
                                                 </div>
                                                 {slot.enabled && (
                                                     <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px", marginTop: "10px", alignItems: "center" }}>
                                                         <div>
-                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6663" }}>From</label>
+                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6478" }}>From</label>
                                                             <input type="time" className="in" value={slot.start} onChange={e => setDayTime(day, "start", e.target.value)} style={{ minHeight: "38px", width: "120px" }} />
                                                         </div>
                                                         <div>
-                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6663" }}>To</label>
+                                                            <label style={{ display: "block", font: "600 12px 'Figtree',sans-serif", marginBottom: "4px", color: "#4f6478" }}>To</label>
                                                             <input type="time" className="in" value={slot.end} onChange={e => setDayTime(day, "end", e.target.value)} style={{ minHeight: "38px", width: "120px" }} />
                                                         </div>
                                                     </div>
@@ -403,7 +404,7 @@ export default function ProfessionalApplyPage() {
                                 <ReviewSection title="Profile">
                                     {photoUrl && (
                                         <div style={{ marginBottom: "8px" }}>
-                                            <img src={photoUrl} alt="Profile" style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", border: "2px solid #dbe5e2" }} />
+                                            <img src={photoUrl} alt="Profile" style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", border: "2px solid #d9e3ec" }} />
                                         </div>
                                     )}
                                     <ReviewRow label="Specialties" value={specialties} />
@@ -431,7 +432,7 @@ export default function ProfessionalApplyPage() {
                                     <ReviewRow label="Account number" value={accountNo} />
                                 </ReviewSection>
 
-                                <div style={{ marginTop: "16px", padding: "12px 14px", borderRadius: "12px", background: "#e3f1ef", border: "1px solid #b3d9d4", font: "400 14px/1.5 'Figtree',sans-serif", color: "#14544e" }}>
+                                <div style={{ marginTop: "16px", padding: "12px 14px", borderRadius: "12px", background: "#e6f4e1", border: "1px solid #c3d1de", font: "400 14px/1.5 'Figtree',sans-serif", color: "#0f5a08" }}>
                                     By submitting, you confirm all documents are authentic and the details above are accurate.
                                 </div>
                             </>
@@ -472,7 +473,7 @@ export default function ProfessionalApplyPage() {
 function ReviewSection({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <div style={{ marginTop: "20px" }}>
-            <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b766e", borderBottom: "1px solid #dbe5e2", paddingBottom: "6px", marginBottom: "10px" }}>{title}</div>
+            <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#1b7d0e", borderBottom: "1px solid #d9e3ec", paddingBottom: "6px", marginBottom: "10px" }}>{title}</div>
             {children}
         </div>
     );
@@ -483,7 +484,7 @@ function ReviewRow({ label, value, isUrl }: { label: string; value: string; isUr
         <div style={{ display: "flex", gap: "8px", font: "400 14px 'Figtree',sans-serif", marginBottom: "6px", flexWrap: "wrap" as const }}>
             <span className="muted" style={{ minWidth: "140px", flexShrink: 0 }}>{label}:</span>
             {isUrl && value ? (
-                <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: "#1b766e", wordBreak: "break-all" }}>View document</a>
+                <a href={value} target="_blank" rel="noopener noreferrer" style={{ color: "#1b7d0e", wordBreak: "break-all" }}>View document</a>
             ) : (
                 <span style={{ wordBreak: "break-word" }}>{value || <span className="muted">—</span>}</span>
             )}

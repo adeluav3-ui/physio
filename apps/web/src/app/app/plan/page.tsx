@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -68,7 +68,7 @@ export default function PlanPage() {
             {(tab === "exercises" || !hasGoals) && (
                 <>
                     {!hasExercises ? (
-                        <div className="card" style={{ color: "#4f6663", font: "400 15px/1.5 'Figtree',sans-serif" }}>
+                        <div className="card" style={{ color: "#4f6478", font: "400 15px/1.5 'Figtree',sans-serif" }}>
                             No exercise plan yet. Your specialist will add exercises after your first session.
                         </div>
                     ) : (
@@ -79,7 +79,7 @@ export default function PlanPage() {
                                     {(() => {
                                         const vid = extractYouTubeId(current.exercise.videoUrl);
                                         return vid ? (
-                                            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #dbe5e2", aspectRatio: "16/9" }}>
+                                            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #d9e3ec", aspectRatio: "16/9" }}>
                                                 <iframe
                                                     src={`https://www.youtube.com/embed/${vid}?rel=0`}
                                                     title={current.exercise.name}
@@ -89,7 +89,7 @@ export default function PlanPage() {
                                                 />
                                             </div>
                                         ) : (
-                                            <div style={{ height: "130px", borderRadius: "12px", background: "#dbe9e6", display: "flex", alignItems: "center", justifyContent: "center", font: "500 14px 'Figtree',sans-serif", color: "#4f6663" }}>
+                                            <div style={{ height: "130px", borderRadius: "12px", background: "#eef3f8", display: "flex", alignItems: "center", justifyContent: "center", font: "500 14px 'Figtree',sans-serif", color: "#4f6478" }}>
                                                 No video for this exercise
                                             </div>
                                         );
@@ -129,7 +129,7 @@ export default function PlanPage() {
             {(tab === "goals" || !hasExercises) && (
                 <>
                     {!hasGoals ? (
-                        <div className="card" style={{ color: "#4f6663", font: "400 15px/1.5 'Figtree',sans-serif" }}>
+                        <div className="card" style={{ color: "#4f6478", font: "400 15px/1.5 'Figtree',sans-serif" }}>
                             No goal plan yet. Your specialist will add goals after your first session.
                         </div>
                     ) : (
@@ -141,7 +141,7 @@ export default function PlanPage() {
                                         <span className="chip-sm">On track</span>
                                     </div>
                                     <div className="bar" style={{ marginTop: "12px" }}>
-                                        <div style={{ width: `${goal.progress ?? 0}%`, height: "8px", borderRadius: "99px", background: "#1b766e" }}></div>
+                                        <div style={{ width: `${goal.progress ?? 0}%`, height: "8px", borderRadius: "99px", background: "#1b7d0e" }}></div>
                                     </div>
                                     <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "6px" }}>
                                         {goal.tasks?.filter(t => t.logs?.some(l => l.date === todayStr && l.completed)).length ?? 0} of {goal.tasks?.length ?? 0} tasks done today
@@ -157,13 +157,13 @@ export default function PlanPage() {
                                             const done = task.logs?.some(l => l.date === todayStr && l.completed);
                                             return (
                                                 <div key={task.id} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                    <span style={{ width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0, background: done ? "#1b766e" : "transparent", border: done ? "none" : "2px solid #b9c9c5" }}></span>
+                                                    <span style={{ width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0, background: done ? "#1b7d0e" : "transparent", border: done ? "none" : "2px solid #b4c4d3" }}></span>
                                                     {task.title}
                                                 </div>
                                             );
                                         })}
                                     </div>
-                                    <button type="button" className="btn" style={{ marginTop: "14px", width: "100%", display: "flex", background: "#fff", color: "#14544e", border: "1.5px solid #1b766e" }}>
+                                    <button type="button" className="btn" style={{ marginTop: "14px", width: "100%", display: "flex", background: "#fff", color: "#0f5a08", border: "1.5px solid #1b7d0e" }}>
                                         Add a note or recording
                                     </button>
                                 </div>

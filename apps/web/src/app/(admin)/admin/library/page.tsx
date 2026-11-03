@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -187,9 +187,9 @@ export default function AdminLibraryPage() {
                                 padding: "5px 12px",
                                 borderRadius: "16px",
                                 border: "1.5px solid",
-                                borderColor: catFilter === c ? "#1b766e" : "#dbe5e2",
-                                background: catFilter === c ? "#1b766e" : "#fff",
-                                color: catFilter === c ? "#fff" : "#4f6663",
+                                borderColor: catFilter === c ? "#1b7d0e" : "#d9e3ec",
+                                background: catFilter === c ? "#1b7d0e" : "#fff",
+                                color: catFilter === c ? "#fff" : "#4f6478",
                                 font: "500 12px 'Figtree',sans-serif",
                                 cursor: "pointer",
                             }}
@@ -258,7 +258,7 @@ export default function AdminLibraryPage() {
                             onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
                         />
                         {videoId && (
-                            <div style={{ marginTop: "12px", borderRadius: "12px", overflow: "hidden", border: "1px solid #dbe5e2", aspectRatio: "16/9", maxWidth: "480px" }}>
+                            <div style={{ marginTop: "12px", borderRadius: "12px", overflow: "hidden", border: "1px solid #d9e3ec", aspectRatio: "16/9", maxWidth: "480px" }}>
                                 <iframe
                                     src={`https://www.youtube.com/embed/${videoId}?rel=0`}
                                     title="Exercise video preview"
@@ -298,7 +298,7 @@ export default function AdminLibraryPage() {
                     <label style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "18px", cursor: "pointer" }}>
                         <input type="checkbox" checked={form.clinicalReview}
                             onChange={e => setForm(f => ({ ...f, clinicalReview: e.target.checked }))}
-                            style={{ width: "16px", height: "16px", accentColor: "#1b766e" }} />
+                            style={{ width: "16px", height: "16px", accentColor: "#1b7d0e" }} />
                         <span style={{ font: "500 14px 'Figtree',sans-serif" }}>
                             Clinically reviewed — safe to display to patients without therapist oversight
                         </span>
@@ -324,11 +324,11 @@ export default function AdminLibraryPage() {
             {/* Exercise list */}
             <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
                 {loading ? (
-                    <div className="card" style={{ padding: "40px", textAlign: "center", color: "#4f6663", font: "400 14px 'Figtree',sans-serif" }}>
+                    <div className="card" style={{ padding: "40px", textAlign: "center", color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
                         Loading exercises…
                     </div>
                 ) : visible.length === 0 ? (
-                    <div className="card" style={{ padding: "40px", textAlign: "center", color: "#4f6663", font: "400 14px 'Figtree',sans-serif" }}>
+                    <div className="card" style={{ padding: "40px", textAlign: "center", color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
                         {exercises.length === 0 ? "No exercises yet. Add your first one above." : "No exercises match your filters."}
                     </div>
                 ) : visible.map(ex => {
@@ -340,28 +340,28 @@ export default function AdminLibraryPage() {
                                 <img
                                     src={`https://img.youtube.com/vi/${vid}/mqdefault.jpg`}
                                     alt={ex.name}
-                                    style={{ width: "120px", height: "68px", objectFit: "cover", borderRadius: "8px", flexShrink: 0, border: "1px solid #dbe5e2" }}
+                                    style={{ width: "120px", height: "68px", objectFit: "cover", borderRadius: "8px", flexShrink: 0, border: "1px solid #d9e3ec" }}
                                 />
                             ) : (
-                                <div style={{ width: "120px", height: "68px", borderRadius: "8px", background: "#eef3f2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #dbe5e2" }}>
-                                    <span style={{ font: "500 11px 'Figtree',sans-serif", color: "#b9c9c5" }}>No video</span>
+                                <div style={{ width: "120px", height: "68px", borderRadius: "8px", background: "#eef3f8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "1px solid #d9e3ec" }}>
+                                    <span style={{ font: "500 11px 'Figtree',sans-serif", color: "#b4c4d3" }}>No video</span>
                                 </div>
                             )}
 
                             {/* Info */}
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: "flex", gap: "8px", alignItems: "baseline", flexWrap: "wrap" }}>
-                                    <span style={{ font: "700 16px 'Figtree',sans-serif", color: "#12302c" }}>{ex.name}</span>
+                                    <span style={{ font: "700 16px 'Figtree',sans-serif", color: "#022449" }}>{ex.name}</span>
                                     <span className="chip" style={{ fontSize: "11px" }}>{ex.category}</span>
                                     <span className="chip" style={{ fontSize: "11px" }}>{ex.region}</span>
                                     {ex.clinicalReview && <span className="chip ok" style={{ fontSize: "11px" }}>Reviewed</span>}
                                 </div>
-                                <div style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6663", marginTop: "4px" }}>
+                                <div style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6478", marginTop: "4px" }}>
                                     Difficulty {ex.difficulty} · {ex.defaultSets} sets × {ex.defaultReps} reps
                                     {ex.defaultHoldSeconds > 0 && ` · hold ${ex.defaultHoldSeconds}s`}
                                 </div>
                                 {ex.cues && (
-                                    <div style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6663", marginTop: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "480px" }}>
+                                    <div style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6478", marginTop: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "480px" }}>
                                         {ex.cues}
                                     </div>
                                 )}

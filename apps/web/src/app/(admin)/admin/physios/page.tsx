@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { requireSession } from "@/lib/session";
 import { DISCIPLINE_LABELS } from "@physio/shared";
@@ -52,7 +52,7 @@ export default async function AdminVerificationPage() {
                             style={{ display: "block", textDecoration: "none" }}
                             className="row">
                             <div style={{ flex: "1 1 160px" }}>
-                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#12302c" }}>{p.user.name}</div>
+                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>{p.user.name}</div>
                                 <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>
                                     {DISCIPLINE_LABELS[p.discipline as keyof typeof DISCIPLINE_LABELS] ?? p.discipline}
                                 </div>
@@ -93,17 +93,17 @@ export default async function AdminVerificationPage() {
                             <div style={{ marginTop: "18px" }}>
                                 <div className="muted" style={{ font: "500 13px 'Figtree',sans-serif", marginBottom: "8px" }}>Licence document</div>
                                 {/\.(jpg|jpeg|png|webp)(\?|$)/i.test(first.licenceDocUrl) ? (
-                                    <img src={first.licenceDocUrl} alt="Licence" style={{ maxWidth: "100%", maxHeight: "180px", borderRadius: "10px", objectFit: "cover", border: "1px solid #dbe5e2", display: "block" }} />
+                                    <img src={first.licenceDocUrl} alt="Licence" style={{ maxWidth: "100%", maxHeight: "180px", borderRadius: "10px", objectFit: "cover", border: "1px solid #d9e3ec", display: "block" }} />
                                 ) : (
                                     <a href={first.licenceDocUrl} target="_blank" rel="noopener noreferrer"
-                                        style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#1b766e", font: "600 14px 'Figtree',sans-serif" }}>
+                                        style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#1b7d0e", font: "600 14px 'Figtree',sans-serif" }}>
                                         Open licence document
                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                     </a>
                                 )}
                             </div>
                         ) : (
-                            <div style={{ marginTop: "18px", height: "80px", borderRadius: "12px", background: "#eef3f2", border: "1px dashed #b9c9c5", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
+                            <div style={{ marginTop: "18px", height: "80px", borderRadius: "12px", background: "#eef3f8", border: "1px dashed #b4c4d3", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
                                 <span style={{ font: "500 14px 'Figtree',sans-serif" }}>No licence document uploaded</span>
                             </div>
                         )}
@@ -112,7 +112,7 @@ export default async function AdminVerificationPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="card" style={{ flex: "2 1 420px", color: "#4f6663", font: "400 15px 'Figtree',sans-serif" }}>
+                    <div className="card" style={{ flex: "2 1 420px", color: "#4f6478", font: "400 15px 'Figtree',sans-serif" }}>
                         Select a professional from the list to review their details.
                     </div>
                 )}

@@ -1,4 +1,4 @@
-export default function PatientLoading() {
+﻿export default function PatientLoading() {
     return (
         <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
             {/* Greeting */}
@@ -8,7 +8,7 @@ export default function PatientLoading() {
             </div>
 
             {/* Next session card */}
-            <div className="skel-card" style={{ background: "#1b766e", border: "none", display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div className="skel-card" style={{ background: "#1b7d0e", border: "none", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div className="skel" style={{ height: "14px", width: "90px", background: "rgba(255,255,255,0.25)" }} />
                 <div className="skel" style={{ height: "22px", width: "180px", background: "rgba(255,255,255,0.25)" }} />
                 <div className="skel" style={{ height: "16px", width: "140px", background: "rgba(255,255,255,0.2)" }} />

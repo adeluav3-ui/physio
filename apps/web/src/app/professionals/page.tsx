@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api";
@@ -35,10 +35,11 @@ async function ProfessionalsList() {
 
 export default function FindProfessionalsPage() {
     return (
-        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#12302c", background: "#f6f8f7" }}>
+        <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb" }}>
             <div style={{ maxWidth: "1160px", margin: "0 auto", padding: "0 24px" }}>
                 <header style={{ display: "flex", flexWrap: "wrap" as const, gap: "16px", alignItems: "center", justifyContent: "space-between", padding: "20px 0" }}>
-                    <Link href="/" style={{ font: "700 22px 'Figtree',sans-serif", color: "#1b766e", textDecoration: "none" }}>Rehab360</Link>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <a href="/"><img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "46px", width: "auto", display: "block" }} /></a>
                     <div style={{ display: "flex", gap: "12px" }}>
                         <Link href="/auth/login" className="btn btn2">Log in</Link>
                         <Link href="/auth/signup" className="btn">Sign up</Link>

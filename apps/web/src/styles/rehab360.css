@@ -1,69 +1,73 @@
 /*
  * Rehab360 shared design-system classes.
- * Source of truth: design/rehab360-design/reference/*.dc.html
- * All class names, colours, font values and spacing are copied verbatim.
- * Conflicts between files are resolved with suffix variants noted inline.
+ * Source of truth: design/rehab360-design/rehab360-design/reference/*.dc.html
+ * Colours come exclusively from tokens.css (imported before this file).
  */
 
-/* ── Reset / base (mirrors every reference file) ───────────────────────── */
-.r360 *, .r360 *::before, .r360 *::after { box-sizing: border-box; }
-.r360 h1,.r360 h2,.r360 h3,.r360 p { margin: 0; }
+/* ── Reset / base ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+h1, h2, h3, p { margin: 0; }
 
-/* ── Buttons ────────────────────────────────────────────────────────────── */
-/* Primary green button — all files */
+/* ── Brand strip — 5 px gradient at top of every page ───────────────────── */
+.brand-strip {
+  width: 100%;
+  height: 5px;
+  flex-shrink: 0;
+  background: var(--brand-strip);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
   padding: 0 22px;
-  border-radius: 10px;
-  background: #1b766e;
+  border-radius: var(--radius-control);
+  background: var(--green);
   color: #fff;
   font: 600 15px 'Figtree', sans-serif;
   border: 0;
   text-decoration: none;
   cursor: pointer;
 }
-/* White outline button */
+/* White outline / secondary */
 .btn2 {
-  background: #fff;
-  color: #12302c;
-  border: 1px solid #c5d3cf;
+  background: var(--surface);
+  color: var(--navy);
+  border: 1px solid #c3d1de;
 }
-/* Danger outline button (Admin only) */
+/* Danger outline */
 .btn3 {
-  background: #fff;
+  background: var(--surface);
   color: #9b1c1c;
   border: 1px solid #e3b4b4;
 }
 
-/* ── Cards ──────────────────────────────────────────────────────────────── */
+/* ── Cards ───────────────────────────────────────────────────────────────── */
 .card {
-  background: #fff;
-  border: 1px solid #dbe5e2;
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
   padding: 24px;
 }
-/* Pro/Admin card variant (14px radius, 20px padding) */
-.card14 {
-  background: #fff;
-  border: 1px solid #dbe5e2;
-  border-radius: 14px;
-  padding: 20px;
-}
 
-/* ── Form controls ──────────────────────────────────────────────────────── */
+/* ── Form controls ───────────────────────────────────────────────────────── */
 .in {
   display: block;
   width: 100%;
   min-height: 46px;
-  border: 1px solid #b9c9c5;
-  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
   padding: 0 12px;
   font: 15px 'Figtree', sans-serif;
-  background: #fff;
-  color: #12302c;
+  background: var(--surface);
+  color: var(--navy);
+}
+.in:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-tint);
 }
 label.flabel {
   display: block;
@@ -71,166 +75,154 @@ label.flabel {
   margin-bottom: 6px;
 }
 
-/* ── Chips / badges ─────────────────────────────────────────────────────── */
+/* ── Chips / badges ──────────────────────────────────────────────────────── */
+/* Default chip: blue tint (info) */
 .chip {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 99px;
-  font: 600 13px 'Figtree', sans-serif;
-  background: #e3f1ef;
-  color: #14544e;
-}
-/* Find page chip is slightly smaller */
-.chip-sm {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 99px;
   font: 600 12px 'Figtree', sans-serif;
-  background: #e3f1ef;
-  color: #14544e;
+  background: var(--blue-tint);
+  color: var(--blue-dark);
 }
-.ok   { background: #e3f4e8; color: #1d5c34; }
-.warn { background: #fdf1d8; color: #7a4f00; }
-.bad  { background: #fde8e8; color: #8f1d1d; }
+/* Green-tint chip for success / selected */
+.ok  { background: var(--ok-bg);     color: var(--ok-text); }
+/* Warning */
+.warn { background: var(--warn-bg);  color: var(--warn-text); }
+/* Danger / bad */
+.bad  { background: var(--danger-bg); color: var(--danger-text); }
+/* Aliases used in admin pages */
+.chip.ok   { background: var(--ok-bg);     color: var(--ok-text); }
+.chip.warn { background: var(--warn-bg);   color: var(--warn-text); }
+.chip.bad  { background: var(--danger-bg); color: var(--danger-text); }
+/* Legacy .err alias */
+.err { background: var(--danger-bg); color: var(--danger-text); }
 
-/* ── Filter pills (Find page) ───────────────────────────────────────────── */
-.pill   { display: inline-block; padding: 8px 14px; border-radius: 99px; border: 1px solid #b9c9c5; background: #fff; font: 500 14px 'Figtree', sans-serif; }
-.pillon { background: #1b766e; color: #fff; border-color: #1b766e; }
+/* ── Filter pills (Find / Professionals page) ───────────────────────────── */
+.pill   { display: inline-block; padding: 8px 14px; border-radius: 99px; border: 1px solid var(--line-strong); background: var(--surface); font: 500 14px 'Figtree', sans-serif; }
+.pillon { background: var(--green); color: #fff; border-color: var(--green); }
 
-/* ── Time slot buttons ──────────────────────────────────────────────────── */
-.slot { display: inline-block; padding: 10px 14px; border-radius: 10px; border: 1px solid #1b766e; color: #14544e; font: 600 14px 'Figtree', sans-serif; background: #fff; cursor: pointer; }
-.on   { background: #1b766e; color: #fff; }
+/* ── Time slot buttons ───────────────────────────────────────────────────── */
+.slot { display: inline-block; padding: 11px 14px; border-radius: var(--radius-control); border: 1px solid var(--green); color: var(--green-dark); font: 600 14px 'Figtree', sans-serif; background: var(--surface); cursor: pointer; }
+.on   { background: var(--green); color: #fff; border-color: var(--green); }
 
-/* ── Text utilities ─────────────────────────────────────────────────────── */
-.muted { color: #4f6663; }
-a { color: #1b766e; }
+/* ── Text utilities ──────────────────────────────────────────────────────── */
+.muted { color: var(--muted); }
+a { color: var(--green); }
 
-/* ── Patient phone layout ───────────────────────────────────────────────── */
-/*
- * The reference uses a 390x844 phone frame for mockup purposes only.
- * In the real app the phone frame is NOT rendered. Instead we use
- * a centred max-width container with the bottom tabbar.
- */
-.phone-wrap {
-  max-width: 430px;
-  margin: 0 auto;
-  min-height: 100dvh;
-  background: #f6f8f7;
-  display: flex;
-  flex-direction: column;
+/* ── Skeleton / loading states ───────────────────────────────────────────── */
+@keyframes r360-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
 }
-.phone-body {
-  flex: 1;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
-}
-
-.ic { width: 24px; height: 24px; }
-
-/* ── Progress bar track ─────────────────────────────────────────────────── */
-.bar { height: 8px; border-radius: 99px; background: #dbe5e2; }
-
-/* ── Pro / Admin sidebar shell ──────────────────────────────────────────── */
-.shell { display: flex; flex-wrap: wrap; width: 100%; min-height: 100dvh; }
-.sidebar {
-  flex: 0 0 240px;
-  background: #fff;
-  border-right: 1px solid #dbe5e2;
-  padding: 20px 16px;
-}
-.sidebar-logo {
-  font: 700 20px 'Figtree', sans-serif;
-  color: #1b766e;
-  padding: 0 12px 16px;
-}
-.nav {
+.skel {
+  background: var(--line);
+  border-radius: 6px;
+  animation: r360-pulse 1.4s ease-in-out infinite;
   display: block;
-  padding: 10px 12px;
-  border-radius: 10px;
-  font: 500 15px 'Figtree', sans-serif;
-  color: #12302c;
-  text-decoration: none;
 }
-.navon { background: #e3f1ef; font-weight: 600; color: #14544e; }
-.shell-main { flex: 999 1 560px; min-width: 0; padding: 28px; }
+.skel-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 24px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; opacity: 0.6; }
+}
 
-/* ── Row separator ──────────────────────────────────────────────────────── */
+/* ── Button disabled ─────────────────────────────────────────────────────── */
+.btn:disabled, .btn2:disabled, .btn3:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  pointer-events: none;
+}
+
+/* ── Progress bar track ──────────────────────────────────────────────────── */
+.bar { height: 8px; border-radius: 99px; background: var(--line); }
+
+/* ── Rows / separators ───────────────────────────────────────────────────── */
 .row {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   padding: 12px 0;
-  border-top: 1px solid #e6eeec;
+  border-top: 1px solid var(--line);
 }
 
-/* ── Record content tabs (PlanBuilder, patient record) ──────────────────── */
-/* Note: using .rtab/.rtabon to avoid conflict with phone nav .tab/.tabon */
-.rtab { padding: 10px 14px; font: 500 15px 'Figtree', sans-serif; color: #4f6663; border-bottom: 3px solid transparent; cursor: pointer; }
-.rtabon { color: #14544e; font-weight: 700; border-color: #1b766e; }
+/* ── Record content tabs (PlanBuilder, patient record) ───────────────────── */
+.rtab  { padding: 10px 14px; font: 500 15px 'Figtree', sans-serif; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+.rtabon { color: var(--navy); font-weight: 700; border-color: var(--green); }
 
-/* ── Exercise row ───────────────────────────────────────────────────────── */
-.ex { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; border: 1px solid #dbe5e2; border-radius: 12px; background: #fff; }
-.thumb { width: 64px; height: 48px; border-radius: 8px; background: #dbe9e6; flex: none; }
+/* ── Exercise row ────────────────────────────────────────────────────────── */
+.ex    { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.thumb { width: 64px; height: 48px; border-radius: 8px; background: var(--line); flex: none; }
 
-/* ── Onboarding steps (ProOnboarding) ───────────────────────────────────── */
+/* ── Onboarding steps ────────────────────────────────────────────────────── */
 .step { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; font: 500 15px 'Figtree', sans-serif; }
-.dot  { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 700 13px 'Figtree', sans-serif; flex: none; border: 2px solid #b9c9c5; color: #4f6663; }
+.dot  { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 700 13px 'Figtree', sans-serif; flex: none; border: 2px solid var(--line-strong); color: var(--muted); }
 
-/* ── Referral timeline dots (avoids conflict with .dot above) ───────────── */
-.tldot  { width: 14px; height: 14px; border-radius: 50%; margin-top: 4px; flex: none; border: 2px solid #b9c9c5; background: #fff; }
-.tldone { background: #1b766e; border-color: #1b766e; }
-.tlcur  { border-color: #1b766e; }
+/* ── Referral timeline dots ──────────────────────────────────────────────── */
+.tldot  { width: 14px; height: 14px; border-radius: 50%; margin-top: 4px; flex: none; border: 2px solid var(--line-strong); background: var(--surface); }
+.tldone { background: var(--green); border-color: var(--green); }
+.tlcur  { border-color: var(--green); }
 
-/* ── Admin stat ─────────────────────────────────────────────────────────── */
+/* ── Admin stat ──────────────────────────────────────────────────────────── */
 .stat { font: 700 30px 'Figtree', sans-serif; }
 
-/* ── Device case pipeline stages ────────────────────────────────────────── */
-.stage  { flex: 1 1 150px; padding: 12px; border-radius: 12px; border: 1px solid #dbe5e2; background: #fff; font: 600 14px 'Figtree', sans-serif; }
-.stdone { background: #e3f4e8; border-color: #b6dcc2; color: #1d5c34; }
-.stcur  { background: #1b766e; color: #fff; border-color: #1b766e; }
+/* ── Device case pipeline stages ─────────────────────────────────────────── */
+.stage  { flex: 1 1 150px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font: 600 14px 'Figtree', sans-serif; }
+.stdone { background: var(--ok-bg); border-color: #b6dcc2; color: var(--ok-text); }
+.stcur  { background: var(--green); color: #fff; border-color: var(--green); }
 
-/* ── Device case Kanban columns ─────────────────────────────────────────── */
-.kcol, .col { flex: 1 1 200px; min-width: 0; background: #eef3f2; border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
-.mini { background: #fff; border: 1px solid #dbe5e2; border-radius: 12px; padding: 12px; }
+/* ── Device case Kanban columns ──────────────────────────────────────────── */
+.kcol, .col { flex: 1 1 200px; min-width: 0; background: var(--ground); border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
+.mini { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
 
-/* ── Session / messages ─────────────────────────────────────────────────── */
+/* ── Session / messages ──────────────────────────────────────────────────── */
 .msg   { max-width: 78%; padding: 12px 14px; border-radius: 16px; font: 400 15px/1.4 'Figtree', sans-serif; }
-.round { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; color: #12302c; border: 1px solid #c5d3cf; font: 600 12px 'Figtree', sans-serif; text-align: center; cursor: pointer; }
+.round { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--navy); border: 1px solid #c3d1de; font: 600 12px 'Figtree', sans-serif; text-align: center; cursor: pointer; }
 
-/* ── Patient onboarding option buttons ──────────────────────────────────── */
-.opt   { display: block; padding: 16px; border: 1.5px solid #c5d3cf; border-radius: 14px; background: #fff; font: 600 16px 'Figtree', sans-serif; color: #12302c; text-decoration: none; cursor: pointer; }
-.opton { border-color: #1b766e; background: #e3f1ef; }
+/* ── Patient onboarding option buttons ───────────────────────────────────── */
+.opt   { display: block; padding: 16px; border: 1.5px solid #c3d1de; border-radius: 14px; background: var(--surface); font: 600 16px 'Figtree', sans-serif; color: var(--navy); text-decoration: none; cursor: pointer; }
+.opton { border-color: var(--green); background: var(--green-tint); }
 
-/* ── Caption label (above phone mockup screens in reference) ────────────── */
-.cap { font: 600 13px 'Figtree', sans-serif; color: #4f6663; margin-bottom: 10px; }
+/* ── Caption label ───────────────────────────────────────────────────────── */
+.cap { font: 600 13px 'Figtree', sans-serif; color: var(--muted); margin-bottom: 10px; }
 
-/* ── Waitlist section dark green background ─────────────────────────────── */
-.dark-band { background: #14544e; color: #fff; }
-
-/* ── Admin shell (responsive) ───────────────────────────────────────────── */
+/* ── Admin shell (responsive) ────────────────────────────────────────────── */
 .admin-shell {
   display: flex;
   width: 100%;
   min-height: 100dvh;
   font-family: 'Figtree', system-ui, sans-serif;
-  color: #12302c;
-  background: #f6f8f7;
+  color: var(--navy);
+  background: var(--ground);
 }
 .admin-sidebar {
   flex: 0 0 240px;
-  background: #fff;
-  border-right: 1px solid #dbe5e2;
-  padding: 24px 16px;
+  background: var(--navy);
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100dvh;
   overflow-y: auto;
+}
+/* Logo badge inside navy sidebar */
+.admin-logo-badge {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: inline-block;
+}
+.admin-logo-label {
+  font: 600 12px 'Figtree', sans-serif;
+  color: #9fc1e0;
+  margin-top: 10px;
+  letter-spacing: .08em;
 }
 .admin-body {
   flex: 1;
@@ -243,8 +235,8 @@ a { color: #1b766e; }
   align-items: center;
   justify-content: space-between;
   padding: 13px 16px;
-  background: #fff;
-  border-bottom: 1px solid #dbe5e2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -256,6 +248,38 @@ a { color: #1b766e; }
   background: rgba(0,0,0,0.35);
   z-index: 44;
 }
+
+/* Admin nav links — on navy sidebar */
+.nav {
+  display: block;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  font: 500 15px 'Figtree', sans-serif;
+  color: #c9d9ec;
+  text-decoration: none;
+}
+.navon {
+  background: #0b3a6b;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--bright-green);
+}
+
+/* Pro/Admin sidebar shell (legacy) */
+.shell { display: flex; flex-wrap: wrap; width: 100%; min-height: 100dvh; }
+.sidebar {
+  flex: 0 0 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 20px 16px;
+}
+.sidebar-logo {
+  font: 700 20px 'Figtree', sans-serif;
+  color: var(--green);
+  padding: 0 12px 16px;
+}
+.shell-main { flex: 999 1 560px; min-width: 0; padding: 28px; }
+
 @media (max-width: 767px) {
   .admin-topbar { display: flex; }
   .admin-sidebar {
@@ -265,14 +289,16 @@ a { color: #1b766e; }
     height: 100dvh;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.22);
     padding-top: 20px;
   }
   .admin-sidebar-open { transform: translateX(0); }
   .admin-main { padding: 16px; }
+  .shell-main { padding: 20px 16px; }
+  .sidebar { flex: 0 0 100%; border-right: none; border-bottom: 1px solid var(--line); }
 }
 
-/* ── Patient / Pro shell (responsive) ───────────────────────────────────── */
+/* ── Patient / Pro shell (responsive) ────────────────────────────────────── */
 /*
  * Mobile layout (< 768px):
  *   flex column: topbar → scrollable content → bottom nav bar
@@ -284,11 +310,11 @@ a { color: #1b766e; }
  */
 .app-shell {
   height: 100dvh;
-  background: #f6f8f7;
+  background: var(--ground);
   display: flex;
   flex-direction: column;
   font-family: 'Figtree', system-ui, sans-serif;
-  color: #12302c;
+  color: var(--navy);
   overflow: hidden;
 }
 .app-shell-inner {
@@ -306,10 +332,10 @@ a { color: #1b766e; }
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid #dbe5e2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
-/* Scrollable content area — sits between topbar and bottom nav on mobile */
+/* Scrollable content area */
 .app-content {
   flex: 1;
   min-height: 0;
@@ -320,16 +346,15 @@ a { color: #1b766e; }
 .tabs {
   flex-shrink: 0;
   display: flex;
-  border-top: 1px solid #dbe5e2;
-  background: #fff;
-  /* Extra bottom padding for iPhone home-indicator safe area */
+  border-top: 1px solid var(--line);
+  background: var(--surface);
   padding: 6px 8px max(14px, env(safe-area-inset-bottom, 14px));
 }
 .tab {
   flex: 1;
   text-align: center;
   font: 500 12px 'Figtree', sans-serif;
-  color: #4f6663;
+  color: var(--muted);
   padding: 6px 0;
   display: flex;
   flex-direction: column;
@@ -337,7 +362,8 @@ a { color: #1b766e; }
   gap: 3px;
   text-decoration: none;
 }
-.tabon { color: #14544e; font-weight: 700; }
+/* Active tab: green-dark text */
+.tabon { color: var(--green-dark); font-weight: 700; }
 
 /* Desktop: sidebar + content side by side */
 @media (min-width: 768px) {
@@ -355,33 +381,34 @@ a { color: #1b766e; }
     width: 220px;
     flex-shrink: 0;
     border-top: none;
-    border-right: 1px solid #dbe5e2;
+    border-right: 1px solid var(--line);
     padding: 20px 12px;
     order: -1;
     overflow-y: auto;
     gap: 2px;
+    background: var(--surface);
   }
   .tabs-logo {
-    font: 700 18px 'Figtree', sans-serif;
-    color: #1b766e;
-    padding: 4px 10px 16px;
+    padding: 0 10px 4px;
     display: block;
   }
   .tabs-footer {
     margin-top: auto;
     padding-top: 12px;
-    border-top: 1px solid #e6eeec;
+    border-top: 1px solid var(--line);
   }
   .tab {
     flex-direction: row;
     justify-content: flex-start;
     gap: 10px;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-control);
     font-size: 14px;
     text-align: left;
+    color: var(--navy);
   }
-  .tabon { background: #e3f1ef; }
+  /* Active: green-tint background + green-dark text */
+  .tabon { background: var(--green-tint); color: var(--green-dark); }
   .app-content { flex: 1; min-width: 0; overflow-y: auto; }
 }
 
@@ -392,20 +419,20 @@ a { color: #1b766e; }
 }
 
 /* tabs-logo and tabs-footer: hidden inside the mobile bottom bar */
-.tabs-logo { display: none; }
+.tabs-logo  { display: none; }
 .tabs-footer { display: none; }
 @media (min-width: 768px) {
-  .tabs-logo { display: block; }
+  .tabs-logo  { display: block; }
   .tabs-footer { display: block; }
 }
 
-/* Pro content padding — applied by pro-shell around page content */
+/* Pro content padding */
 .pro-content { padding: 20px 16px 28px; }
 @media (min-width: 768px) {
   .pro-content { padding: 28px; }
 }
 
-/* Responsive stats grid (2 cols on mobile, 4 on desktop) */
+/* Responsive stats grid */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -416,42 +443,37 @@ a { color: #1b766e; }
   .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* Responsive: sidebar collapses on phones (legacy .shell) ────────────────  */
-@media (max-width: 640px) {
-  .sidebar { flex: 0 0 100%; border-right: none; border-bottom: 1px solid #dbe5e2; }
-  .shell-main { padding: 20px 16px; }
+/* ── Professional onboarding layout ──────────────────────────────────────── */
+.ob-layout  { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 24px; align-items: flex-start; }
+.ob-sidebar { flex: 0 1 280px; display: grid; gap: 6px; }
+.ob-card    { flex: 999 1 560px; min-width: 0; }
+@media (max-width: 767px) {
+  .ob-sidebar { display: none; }
+  .ob-card    { flex: 1 1 100%; }
 }
 
-/* ── Professional onboarding layout ─────────────────────────────────────── */
-.ob-layout { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 24px; align-items: flex-start; }
-.ob-sidebar { flex: 0 1 280px; display: grid; gap: 6px; }
-.ob-card { flex: 999 1 560px; min-width: 0; }
-/* ID type pill selector */
+/* ── ID type pill selector ────────────────────────────────────────────────── */
 .id-type-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .id-type-pill {
   flex: 1 1 calc(50% - 4px);
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1.5px solid #c5d3cf;
-  background: #fff;
-  color: #12302c;
+  border-radius: var(--radius-control);
+  border: 1.5px solid #c3d1de;
+  background: var(--surface);
+  color: var(--navy);
   font: 600 13px 'Figtree', sans-serif;
   cursor: pointer;
   text-align: center;
   transition: border-color .15s, background .15s;
 }
 .id-type-pill.on {
-  border-color: #1b766e;
-  background: #e3f1ef;
-  color: #14544e;
+  border-color: var(--green);
+  background: var(--green-tint);
+  color: var(--green-dark);
   border-width: 2px;
 }
-@media (max-width: 767px) {
-  .ob-sidebar { display: none; }
-  .ob-card { flex: 1 1 100%; }
-}
 
-/* ── Landing nav: hamburger on mobile ───────────────────────────────────── */
+/* ── Landing nav: hamburger on mobile ────────────────────────────────────── */
 @media (max-width: 768px) {
   .landing-nav-desktop { display: none !important; }
   .landing-nav-burger  { display: flex !important; align-items: center; }
@@ -460,35 +482,10 @@ a { color: #1b766e; }
   .landing-nav-mobile  { display: none !important; }
 }
 
-/* ── Skeleton / loading states ───────────────────────────────────────────── */
-@keyframes r360-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
-}
-/* Base skeleton block — add inline height/width as needed */
-.skel {
-  background: #dbe5e2;
-  border-radius: 6px;
-  animation: r360-pulse 1.4s ease-in-out infinite;
-  display: block;
-}
-/* Full card placeholder */
-.skel-card {
-  background: #fff;
-  border: 1px solid #dbe5e2;
-  border-radius: 16px;
-  padding: 24px;
-}
+/* ── Waitlist section (dark navy band) ───────────────────────────────────── */
+.dark-band { background: var(--navy); color: #fff; }
 
-/* Button disabled/loading — cursor changes, opacity drops */
-.btn:disabled,
-.btn2:disabled,
-.btn3:disabled {
-  opacity: 0.65;
-  cursor: wait;
-  pointer-events: none;
-}
+/* ── Discipline dot markers ──────────────────────────────────────────────── */
+.disc-dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
 
-@media (prefers-reduced-motion: reduce) {
-  .skel { animation: none; opacity: 0.6; }
-}
+.ic { width: 24px; height: 24px; }

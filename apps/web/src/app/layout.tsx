@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     description: BRAND.tagline,
     manifest: "/manifest.webmanifest",
     metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
+    icons: { icon: "/brand/favicon-32.png" },
     openGraph: {
         siteName: BRAND.name,
         type: "website",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
-    themeColor: "#1b766e",
+    themeColor: "#1b7d0e",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

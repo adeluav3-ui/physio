@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
@@ -80,7 +80,7 @@ export default async function ProHome() {
                     {today.length === 0 ? (
                         <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "12px" }}>
                             No sessions scheduled today.{" "}
-                            <Link href="/pro/appointments" style={{ color: "#1b766e", textDecoration: "underline" }}>View calendar</Link>
+                            <Link href="/pro/appointments" style={{ color: "#1b7d0e", textDecoration: "underline" }}>View calendar</Link>
                         </div>
                     ) : (
                         today.map(a => (

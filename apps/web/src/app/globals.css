@@ -1,83 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "../styles/tokens.css";
 @import "../styles/rehab360.css";
 
 /* Font is set via next/font in layout.tsx — CSS variable --font-sans is injected there */
 
 :root {
-    /* ── Core palette ─────────────────────────────────────────────────────── */
-    --color-primary-50: #e3f1ef;   /* accent-tint */
-    --color-primary-100: #c2e3e0;
-    --color-primary-200: #99ceca;
-    --color-primary-300: #66b4ae;
-    --color-primary-400: #3d968f;
-    --color-primary-500: #1b766e;  /* accent */
-    --color-primary-600: #165f58;
-    --color-primary-700: #14544e;  /* accent-dark */
-    --color-primary-800: #0f3e3a;
-    --color-primary-900: #0a2926;
-
-    --color-neutral-0:   #ffffff;
-    --color-neutral-50:  #f6f8f7;  /* ground */
-    --color-neutral-100: #edf0ef;
-    --color-neutral-200: #dbe5e2;  /* line */
-    --color-neutral-300: #bfceca;
-    --color-neutral-400: #8aa49f;
-    --color-neutral-500: #4f6663;  /* muted */
-    --color-neutral-600: #3a504d;
-    --color-neutral-700: #2a3e3b;
-    --color-neutral-800: #1c2d2a;
-    --color-neutral-900: #12302c;  /* ink */
-
-    /* ── Semantic status colors ──────────────────────────────────────────── */
-    --color-ok-bg:      #e3f4e8;
-    --color-ok-text:    #1d5c34;
-    --color-warn-bg:    #fdf1d8;
-    --color-warn-text:  #7a4f00;
-    --color-danger-bg:  #fde8e8;
-    --color-danger-text:#8f1d1d;
-
-    /* legacy semantic aliases kept for backward compat */
-    --color-success-50:  var(--color-ok-bg);
-    --color-success-500: #22c55e;
-    --color-success-700: var(--color-ok-text);
-    --color-warning-50:  var(--color-warn-bg);
-    --color-warning-500: #f59e0b;
-    --color-warning-700: var(--color-warn-text);
-    --color-danger-50:   var(--color-danger-bg);
-    --color-danger-500:  #ef4444;
-    --color-danger-700:  var(--color-danger-text);
-
-    /* ── Surface & text ──────────────────────────────────────────────────── */
-    --color-bg:           var(--color-neutral-50);
-    --color-surface:      var(--color-neutral-0);
-    --color-border:       var(--color-neutral-200);
-    --color-text:         var(--color-neutral-900);
-    --color-text-muted:   var(--color-neutral-500);
-    --color-text-inverse: var(--color-neutral-0);
-
-    /* ── Semantic shortcuts ───────────────────────────────────────────────── */
-    --ground:       var(--color-bg);
-    --surface:      var(--color-surface);
-    --ink:          var(--color-text);
-    --muted-color:  var(--color-text-muted);
-    --line:         var(--color-border);
-    --accent:       var(--color-primary-500);
-    --accent-tint:  var(--color-primary-50);
-    --accent-dark:  var(--color-primary-700);
-
-    /* ── Radius ──────────────────────────────────────────────────────────── */
+    /* ── Focus ring ─────────────────────────────────────────────────────── */
     --radius-sm: 6px;
-    --radius-md: 10px;   /* controls */
-    --radius-lg: 14px;   /* cards */
-    --radius-xl: 20px;
-
-    /* ── Shadows ─────────────────────────────────────────────────────────── */
-    --shadow-sm: 0 1px 2px rgba(18, 48, 44, 0.06);
-    --shadow-md: 0 4px 12px rgba(18, 48, 44, 0.08);
-    --shadow-lg: 0 12px 32px rgba(18, 48, 44, 0.12);
-
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ export default function OnboardingPage() {
 
     if (step === "emergency") {
         return (
-            <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f6f8f7", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f4f8fb", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ padding: "20px", borderRadius: "16px", background: "#fde8e8", border: "1.5px solid #e3a3a3" }}>
                     <div style={{ font: "700 13px 'Figtree',sans-serif", color: "#8f1d1d" }}>PLEASE ACT NOW</div>
                     <h1 style={{ font: "700 26px/1.2 'Figtree',sans-serif", marginTop: "8px", color: "#5c1010" }}>What you described needs urgent medical care.</h1>
@@ -56,10 +56,10 @@ export default function OnboardingPage() {
 
     if (step === 2) {
         return (
-            <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f6f8f7", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column" }}>
+            <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f4f8fb", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column" }}>
                 {/* Progress bar */}
-                <div style={{ height: "6px", borderRadius: "99px", background: "#dbe5e2" }}>
-                    <div style={{ width: progStep2, height: "6px", borderRadius: "99px", background: "#1b766e" }}></div>
+                <div style={{ height: "6px", borderRadius: "99px", background: "#d9e3ec" }}>
+                    <div style={{ width: progStep2, height: "6px", borderRadius: "99px", background: "#1b7d0e" }}></div>
                 </div>
                 <h1 style={{ font: "700 28px/1.2 'Figtree',sans-serif", marginTop: "32px" }}>What do you need help with?</h1>
                 <p className="muted" style={{ font: "400 16px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>Pick the closest. We will match you with the right kind of specialist.</p>
@@ -85,10 +85,10 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f6f8f7", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column" }}>
+        <div style={{ maxWidth: "430px", margin: "0 auto", minHeight: "100dvh", background: "#f4f8fb", fontFamily: "'Figtree',system-ui,sans-serif", padding: "28px 24px", display: "flex", flexDirection: "column" }}>
             {/* Progress bar */}
-            <div style={{ height: "6px", borderRadius: "99px", background: "#dbe5e2" }}>
-                <div style={{ width: progStep1, height: "6px", borderRadius: "99px", background: "#1b766e" }}></div>
+            <div style={{ height: "6px", borderRadius: "99px", background: "#d9e3ec" }}>
+                <div style={{ width: progStep1, height: "6px", borderRadius: "99px", background: "#1b7d0e" }}></div>
             </div>
             <h1 style={{ font: "700 28px/1.2 'Figtree',sans-serif", marginTop: "32px" }}>Who needs care?</h1>
             <p className="muted" style={{ font: "400 16px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>You can book for yourself or for someone you look after.</p>

@@ -21,7 +21,7 @@ export default async function ProLayout({ children }: { children: React.ReactNod
     const user = await requireSession(["PATIENT", "PHYSIO"]);
     let discipline = "";
     try {
-        const pro = await apiFetch<{ discipline: string }>(`/physios/${user.id}`);
+        const pro = await apiFetch<{ discipline: string }>(`/physios/me`);
         discipline = DISCIPLINE_MAP[pro.discipline] ?? pro.discipline;
     } catch { /* not yet profiled */ }
     return (

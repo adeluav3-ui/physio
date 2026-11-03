@@ -83,7 +83,7 @@ export default function DeviceCasePage() {
                             </div>
                         ))}
                     </div>
-                    <div style={{ marginTop: "14px", height: "110px", borderRadius: "12px", border: "1px dashed #b9c9c5", background: "#eef3f2", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
+                    <div style={{ marginTop: "14px", height: "110px", borderRadius: "12px", border: "1px dashed #b4c4d3", background: "#eef3f8", display: "flex", alignItems: "center", justifyContent: "center" }} className="muted">
                         <span style={{ font: "500 14px 'Figtree',sans-serif" }}>Photos of the limb and the cast</span>
                     </div>
                 </div>
@@ -122,7 +122,7 @@ export default function DeviceCasePage() {
                     <div key={s} className="col" style={{ flex: "1 1 200px", minWidth: 0 }}>
                         <div className="muted" style={{ font: "700 13px 'Figtree',sans-serif" }}>{s} · {(kanban[s] ?? []).length}</div>
                         {(kanban[s] ?? []).map((item, i) => (
-                            <div key={i} className="mini" style={item.active ? { borderColor: "#1b766e" } : {}}>
+                            <div key={i} className="mini" style={item.active ? { borderColor: "#1b7d0e" } : {}}>
                                 <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{item.patientName}</div>
                                 <div className="muted" style={{ font: "400 12px 'Figtree',sans-serif" }}>{item.deviceType}</div>
                             </div>
