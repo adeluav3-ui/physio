@@ -12,10 +12,7 @@ services:
       - key: PORT
         value: 4000
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: physio-redis
-          property: connectionString
+        sync: false
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
@@ -49,8 +46,3 @@ services:
     preDeployCommand: >-
       cd /app && pnpm --filter @physio/db exec prisma migrate deploy && pnpm --filter @physio/db seed
 
-  - type: redis
-    name: physio-redis
-    region: frankfurt
-    plan: starter
-    ipAllowList: []
