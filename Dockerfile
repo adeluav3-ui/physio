@@ -1,5 +1,6 @@
 FROM node:22-slim AS base
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
 FROM base AS build
@@ -25,4 +26,4 @@ ENV NODE_ENV=production
 COPY --from=build /app /app
 WORKDIR /app/apps/api
 EXPOSE 4000
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "cd /app && pnpm --filter @physio/db exec prisma migrate deploy && pnpm --filter @physio/db seed && node /app/apps/api/dist/main.js"]
