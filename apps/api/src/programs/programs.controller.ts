@@ -68,4 +68,14 @@ export class ProgramsController {
     sendPlan(@CurrentUser() user: SessionUser, @Param("id") id: string) {
         return this.programs.sendPlan(user, id);
     }
+
+    @Post(":id/discharge")
+    @Roles("PHYSIO")
+    discharge(
+        @CurrentUser() user: SessionUser,
+        @Param("id") id: string,
+        @Body() body: { dischargeSummary: string; maintenancePlan?: string },
+    ) {
+        return this.programs.discharge(user, id, body);
+    }
 }

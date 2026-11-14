@@ -290,6 +290,38 @@ export class ProgramsService {
         return { sent: true, exerciseCount: program.items.length };
     }
 
+    async discharge(user: SessionUser, programId: string, input: { dischargeSummary: string; maintenancePlan?: string }) {
+        if (user.role !== "PHYSIO") throw new ForbiddenException({ code: "FORBIDDEN", message: "Physio only" });
+
+        const program = await this.prisma.client.program.findUnique({ where: { id: programId } });
+        if (!program) throw new NotFoundException({ code: "NOT_FOUND", message: "Program not found" });
+        if (program.physioId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your programme" });
+        }
+        if (program.status === "DISCHARGED") {
+            throw new BadRequestException({ code: "ALREADY_DISCHARGED", message: "Programme is already discharged" });
+        }
+
+        const updated = await this.prisma.client.program.update({
+            where: { id: programId },
+            data: {
+                status: "DISCHARGED",
+                endsAt: new Date(),
+                dischargeSummary: input.dischargeSummary,
+                maintenancePlan: input.maintenancePlan ?? null,
+            },
+        });
+
+        await this.audit.record({ actorId: user.id, action: "record.update", entity: "Program", entityId: programId });
+        this.events.emit("program.discharged", {
+            programId,
+            patientId: program.patientId,
+            physioId: user.id,
+        });
+
+        return updated;
+    }
+
     async listForPatient(user: SessionUser, patientId: string) {
         if (user.role === "PATIENT" && user.id !== patientId) {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your records" });

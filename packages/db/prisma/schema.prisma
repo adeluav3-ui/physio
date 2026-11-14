@@ -467,14 +467,16 @@ model Exercise {
 }
 
 model Program {
-  id         String   @id @default(uuid())
-  patientId  String
-  physioId   String
-  startsAt   DateTime
-  endsAt     DateTime?
-  status     String   @default("ACTIVE")
-  version    Int      @default(1)
-  createdAt  DateTime @default(now())
+  id                String    @id @default(uuid())
+  patientId         String
+  physioId          String
+  startsAt          DateTime
+  endsAt            DateTime?
+  status            String    @default("ACTIVE")
+  version           Int       @default(1)
+  dischargeSummary  String?
+  maintenancePlan   String?
+  createdAt         DateTime  @default(now())
 
   patient    PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
   physio     PhysioProfile   @relation(fields: [physioId], references: [userId])

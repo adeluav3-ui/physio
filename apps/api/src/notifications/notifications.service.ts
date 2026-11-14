@@ -281,6 +281,52 @@ ${reasonLine}
         this.logger.log(`Patient summary email sent for appointment ${payload.appointmentId}`);
     }
 
+    @OnEvent("message.red-flag")
+    async onMessageRedFlag(payload: {
+        threadId: string;
+        messageId: string;
+        patientId: string;
+        physioId: string;
+        body: string;
+    }) {
+        const physio = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: payload.physioId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!physio) return;
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        await this.mail.sendRaw(
+            physio.user.email,
+            "Urgent: patient may need immediate help",
+            `<p>Hi ${escapeHtml(physio.user.name)},</p>
+<p>A patient has sent a message that may indicate a medical emergency. Please check their message and follow up immediately.</p>
+<p>If this is a life-threatening emergency, the patient should contact emergency services.</p>
+<p><a href="${appUrl}/pro/messages/${payload.threadId}">Open message thread</a></p>`,
+            `Hi ${physio.user.name},\n\nA patient may need urgent help. Review their message: ${appUrl}/pro/messages/${payload.threadId}\n\nIf life-threatening: advise patient to call emergency services.`,
+        );
+        this.logger.warn(`Red-flag message in thread ${payload.threadId}`);
+    }
+
+    @OnEvent("program.discharged")
+    async onProgramDischarged(payload: { programId: string; patientId: string; physioId: string }) {
+        const patient = await this.prisma.client.patientProfile.findUnique({
+            where: { userId: payload.patientId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!patient) return;
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        await this.mail.sendRaw(
+            patient.user.email,
+            "Your programme has been completed",
+            `<p>Hi ${escapeHtml(patient.user.name)},</p>
+<p>Your physiotherapist has completed your rehabilitation programme and prepared a discharge summary for you.</p>
+<p><a href="${appUrl}/app/plan">View your discharge summary and maintenance plan</a></p>`,
+            `Hi ${patient.user.name},\n\nYour rehabilitation programme is complete. Your physiotherapist has prepared a discharge summary.\n\nView it here: ${appUrl}/app/plan`,
+        );
+    }
+
     @OnEvent("program.send")
     async onProgramSend(payload: { programId: string; patientId: string }) {
         const patient = await this.prisma.client.patientProfile.findUnique({

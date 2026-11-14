@@ -78,3 +78,13 @@ export const INACTIVITY_NUDGE_DAYS = 3;
 
 /** Pain score (1–10) at or above which an alert is sent to the professional. */
 export const PAIN_ALERT_THRESHOLD = 8;
+
+// ── Messaging ─────────────────────────────────────────────────────────────────
+
+/** Hours within which a professional is expected to reply to a patient message. */
+export const MESSAGE_REPLY_EXPECTED_HOURS = 24;
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+/** Minimum number of verified reviews before a rating is shown on the public profile. */
+export const MIN_REVIEWS_TO_SHOW_RATING = 3;
