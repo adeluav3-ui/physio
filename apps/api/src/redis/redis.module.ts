@@ -16,9 +16,10 @@ const logger = new Logger("RedisModule");
                 if (!url) throw new Error("REDIS_URL is required");
                 return new Redis(url, {
                     lazyConnect: true,
-                    connectTimeout: 3000,
+                    connectTimeout: 5000,
                     maxRetriesPerRequest: null,
                     enableOfflineQueue: false,
+                    ...(url.startsWith("rediss://") && { tls: { rejectUnauthorized: false } }),
                     retryStrategy: (times) => {
                         if (times > 5) {
                             logger.error(
