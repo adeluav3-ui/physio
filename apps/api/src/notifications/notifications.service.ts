@@ -126,6 +126,141 @@ export class NotificationsService {
         );
     }
 
+    @OnEvent("referral.sent")
+    async onReferralSent(payload: {
+        referralId: string;
+        fromProfessionalId: string;
+        toProfessionalId: string | null;
+        patientId: string;
+        toDiscipline: string;
+        urgency: string;
+    }) {
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
+        // Email the patient — they need to consent before anything is shared
+        const patient = await this.prisma.client.patientProfile.findUnique({
+            where: { userId: payload.patientId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (patient) {
+            const disciplineLabel = payload.toDiscipline.replace(/_/g, " ").toLowerCase();
+            await this.mail.sendRaw(
+                patient.user.email,
+                "Your specialist has referred you",
+                `<p>Hi ${escapeHtml(patient.user.name)},</p>
+<p>Your physiotherapist has referred you to a ${escapeHtml(disciplineLabel)} specialist.</p>
+<p>Your consent is needed before any of your information is shared. Please review the referral and choose whether to proceed.</p>
+<p><a href="${appUrl}/app/referrals">Review referral</a></p>`,
+                `Hi ${patient.user.name},\n\nYou have been referred to a ${disciplineLabel} specialist. Your consent is needed.\n\nReview: ${appUrl}/app/referrals`,
+            );
+        }
+
+        // If a specific receiver is named, notify them too
+        if (payload.toProfessionalId) {
+            const receiver = await this.prisma.client.physioProfile.findUnique({
+                where: { userId: payload.toProfessionalId },
+                include: { user: { select: { email: true, name: true } } },
+            });
+            if (receiver) {
+                await this.mail.sendRaw(
+                    receiver.user.email,
+                    "You have received a referral",
+                    `<p>Hi ${escapeHtml(receiver.user.name)},</p>
+<p>A colleague has referred a patient to you. The patient must consent before you can view the details.</p>
+<p><a href="${appUrl}/pro/referrals">View referrals</a></p>`,
+                    `Hi ${receiver.user.name},\n\nA referral is waiting for you at ${appUrl}/pro/referrals`,
+                );
+            }
+        }
+    }
+
+    @OnEvent("referral.patient-consented")
+    async onReferralPatientConsented(payload: {
+        referralId: string;
+        toProfessionalId: string | null;
+        fromProfessionalId: string;
+        patientId: string;
+        toDiscipline: string;
+    }) {
+        if (!payload.toProfessionalId) return; // no named receiver to notify
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const receiver = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: payload.toProfessionalId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!receiver) return;
+
+        await this.mail.sendRaw(
+            receiver.user.email,
+            "Patient has consented — referral packet is ready",
+            `<p>Hi ${escapeHtml(receiver.user.name)},</p>
+<p>The patient has consented to sharing their information. You can now review the referral packet and accept or decline.</p>
+<p><a href="${appUrl}/pro/referrals">Open referral</a></p>`,
+            `Hi ${receiver.user.name},\n\nThe patient has consented. Review the referral: ${appUrl}/pro/referrals`,
+        );
+    }
+
+    @OnEvent("referral.responded")
+    async onReferralResponded(payload: {
+        referralId: string;
+        fromProfessionalId: string;
+        receiverProfessionalId: string;
+        patientId: string;
+        decision: string;
+        reason?: string;
+    }) {
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const sender = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: payload.fromProfessionalId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!sender) return;
+
+        if (payload.decision === "ACCEPTED") {
+            await this.mail.sendRaw(
+                sender.user.email,
+                "Your referral has been accepted",
+                `<p>Hi ${escapeHtml(sender.user.name)},</p>
+<p>The specialist has accepted your referral. The patient can now book their first appointment.</p>
+<p><a href="${appUrl}/pro/referrals">View referral</a></p>`,
+                `Hi ${sender.user.name},\n\nYour referral was accepted. ${appUrl}/pro/referrals`,
+            );
+        } else {
+            const reasonLine = payload.reason ? `<p>Reason: ${escapeHtml(payload.reason)}</p>` : "";
+            await this.mail.sendRaw(
+                sender.user.email,
+                "Your referral was declined",
+                `<p>Hi ${escapeHtml(sender.user.name)},</p>
+<p>The specialist has declined your referral.</p>
+${reasonLine}
+<p>You may refer to another specialist from your referrals page.</p>
+<p><a href="${appUrl}/pro/referrals">View referrals</a></p>`,
+                `Hi ${sender.user.name},\n\nYour referral was declined${payload.reason ? `: ${payload.reason}` : ""}.\n\nView referrals: ${appUrl}/pro/referrals`,
+            );
+        }
+    }
+
+    @OnEvent("referral.stalled")
+    async onReferralStalled(payload: { referralId: string; fromProfessionalId: string }) {
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const sender = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: payload.fromProfessionalId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!sender) return;
+
+        await this.mail.sendRaw(
+            sender.user.email,
+            "A referral has expired with no response",
+            `<p>Hi ${escapeHtml(sender.user.name)},</p>
+<p>A referral you sent has expired because no response was received within the expected time.</p>
+<p>You may send a new referral if the patient still needs specialist care.</p>
+<p><a href="${appUrl}/pro/referrals">View referrals</a></p>`,
+            `Hi ${sender.user.name},\n\nA referral expired with no response. View referrals: ${appUrl}/pro/referrals`,
+        );
+    }
+
     @OnEvent("patient-summary.approved")
     async onPatientSummaryApproved(payload: { appointmentId: string; patientId: string }) {
         const patient = await this.prisma.client.patientProfile.findUnique({

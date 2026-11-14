@@ -12,6 +12,7 @@ type JoinData = {
 
 type SessionData = {
     id: string;
+    patientId: string;
     type: string;
     mode: string;
     startsAt: string;
@@ -96,6 +97,14 @@ export default function PhysioSessionPage() {
     const [exercisesLoaded, setExercisesLoaded] = useState(false);
     const [exSearch, setExSearch] = useState("");
     const [exRegion, setExRegion] = useState("");
+    const [referDiscipline, setReferDiscipline] = useState<string>("PHYSIOTHERAPY");
+    const [referReason, setReferReason] = useState("");
+    const [referUrgency, setReferUrgency] = useState<"ROUTINE" | "SOON" | "URGENT">("ROUTINE");
+    const [referShareNote, setReferShareNote] = useState(false);
+    const [referSharePlan, setReferSharePlan] = useState(false);
+    const [referSent, setReferSent] = useState(false);
+    const [referSending, setReferSending] = useState(false);
+    const [referError, setReferError] = useState<string | null>(null);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
     // Join + load session data in parallel
@@ -481,9 +490,161 @@ export default function PhysioSessionPage() {
 
                         {/* Refer tab */}
                         {activeTab === "refer" && (
-                            <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                                <p style={{ font: "500 15px 'Figtree', sans-serif", color: NAV, textAlign: "center" }}>Referrals</p>
-                                <p style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, textAlign: "center" }}>Refer this patient to another specialist after the session note is complete.</p>
+                            <div style={{ padding: 16, flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 12 }}>
+                                {referSent ? (
+                                    <div style={{ background: "#e3f4e8", border: "1px solid #a3d9b1", borderRadius: 12, padding: 16 }}>
+                                        <p style={{ font: "600 14px 'Figtree', sans-serif", color: "#1d5c34", margin: 0 }}>Referral sent</p>
+                                        <p style={{ font: "400 13px 'Figtree', sans-serif", color: "#1d5c34", margin: "4px 0 0" }}>
+                                            The patient will be notified and must consent before their information is shared.
+                                        </p>
+                                        <button
+                                            onClick={() => { setReferSent(false); setReferReason(""); setReferError(null); }}
+                                            style={{ marginTop: 10, font: "600 13px 'Figtree', sans-serif", color: GREEN, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                                        >
+                                            Send another referral
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p style={{ font: "600 14px 'Figtree', sans-serif", color: NAV, margin: 0 }}>Refer to specialist</p>
+
+                                        {/* Discipline */}
+                                        <div>
+                                            <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, marginBottom: 6 }}>Discipline</div>
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                                {([
+                                                    ["PHYSIOTHERAPY", "Physio"],
+                                                    ["OCCUPATIONAL_THERAPY", "OT"],
+                                                    ["SPEECH_THERAPY", "Speech"],
+                                                    ["PROSTHETICS", "Prosthetics"],
+                                                    ["ORTHOTICS", "Orthotics"],
+                                                ] as [string, string][]).map(([val, label]) => (
+                                                    <button
+                                                        key={val}
+                                                        onClick={() => setReferDiscipline(val)}
+                                                        style={{
+                                                            padding: "5px 10px",
+                                                            borderRadius: 8,
+                                                            border: referDiscipline === val ? `1.5px solid ${GREEN}` : "1.5px solid #c3d1de",
+                                                            background: referDiscipline === val ? "#e6f4e1" : "#fff",
+                                                            font: "600 12px 'Figtree', sans-serif",
+                                                            color: referDiscipline === val ? "#0f5a08" : NAV,
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        {label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Urgency */}
+                                        <div>
+                                            <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, marginBottom: 6 }}>Urgency</div>
+                                            <div style={{ display: "flex", gap: 6 }}>
+                                                {(["ROUTINE", "SOON", "URGENT"] as const).map((u) => (
+                                                    <button
+                                                        key={u}
+                                                        onClick={() => setReferUrgency(u)}
+                                                        style={{
+                                                            padding: "5px 10px",
+                                                            borderRadius: 8,
+                                                            border: referUrgency === u ? `1.5px solid ${u === "URGENT" ? "#b91c1c" : GREEN}` : "1.5px solid #c3d1de",
+                                                            background: referUrgency === u ? (u === "URGENT" ? "#fce4e4" : "#e6f4e1") : "#fff",
+                                                            font: "600 12px 'Figtree', sans-serif",
+                                                            color: referUrgency === u ? (u === "URGENT" ? "#7f1d1d" : "#0f5a08") : NAV,
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        {u}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Reason */}
+                                        <div>
+                                            <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, marginBottom: 6 }}>Reason *</div>
+                                            <textarea
+                                                value={referReason}
+                                                onChange={(e) => setReferReason(e.target.value)}
+                                                rows={4}
+                                                placeholder="Clinical reason for referral (min 10 characters)"
+                                                style={{ display: "block", width: "100%", border: "1px solid #b4c4d3", borderRadius: 10, padding: "8px 10px", font: "13px/1.4 'Figtree', sans-serif", color: NAV, background: "#fff", resize: "vertical" }}
+                                            />
+                                        </div>
+
+                                        {/* Share toggles */}
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                            <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED }}>Share with specialist (patient must consent)</div>
+                                            {[
+                                                { key: "note", label: "Assessment note", checked: referShareNote, set: setReferShareNote },
+                                                { key: "plan", label: "Exercise plan", checked: referSharePlan, set: setReferSharePlan },
+                                            ].map(({ key, label, checked, set }) => (
+                                                <label key={key} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        onChange={(e) => set(e.target.checked)}
+                                                        style={{ width: 16, height: 16, accentColor: GREEN }}
+                                                    />
+                                                    <span style={{ font: "400 13px 'Figtree', sans-serif", color: NAV }}>{label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {referError && (
+                                            <p style={{ font: "400 13px 'Figtree', sans-serif", color: "#b91c1c", margin: 0 }}>{referError}</p>
+                                        )}
+
+                                        <button
+                                            disabled={referReason.trim().length < 10 || referSending || !session}
+                                            onClick={async () => {
+                                                if (!session) return;
+                                                setReferSending(true);
+                                                setReferError(null);
+                                                try {
+                                                    const res = await fetch("/api/proxy/referrals", {
+                                                        method: "POST",
+                                                        headers: { "Content-Type": "application/json" },
+                                                        body: JSON.stringify({
+                                                            patientId: session.patientId,
+                                                            toDiscipline: referDiscipline,
+                                                            reason: referReason,
+                                                            urgency: referUrgency,
+                                                            shareAssessmentNote: referShareNote,
+                                                            sharePlan: referSharePlan,
+                                                        }),
+                                                    });
+                                                    if (!res.ok) {
+                                                        const b = await res.json().catch(() => ({}));
+                                                        throw new Error((b as { message?: string }).message ?? "Failed to send referral");
+                                                    }
+                                                    setReferSent(true);
+                                                } catch (e) {
+                                                    setReferError((e as Error).message);
+                                                } finally {
+                                                    setReferSending(false);
+                                                }
+                                            }}
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                width: "100%",
+                                                minHeight: 44,
+                                                borderRadius: 10,
+                                                background: referReason.trim().length >= 10 && !referSending ? GREEN : "#9db8a0",
+                                                color: "#fff",
+                                                font: "600 14px 'Figtree', sans-serif",
+                                                border: 0,
+                                                cursor: referReason.trim().length >= 10 && !referSending ? "pointer" : "not-allowed",
+                                            }}
+                                        >
+                                            {referSending ? "Sending…" : "Send referral"}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>

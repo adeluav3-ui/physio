@@ -5,7 +5,8 @@ import { INACTIVITY_NUDGE_DAYS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { MailService } from "../mail/mail.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
-import { JOB_INACTIVITY_NUDGE, JOB_PAYMENT_RELEASE, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
+import { ReferralsService } from "../referrals/referrals.service.js";
+import { JOB_INACTIVITY_NUDGE, JOB_PAYMENT_RELEASE, JOB_REFERRAL_STALL, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
 
 @Processor(REMINDERS_QUEUE)
 export class RemindersProcessor extends WorkerHost {
@@ -15,6 +16,7 @@ export class RemindersProcessor extends WorkerHost {
         private readonly prisma: PrismaService,
         private readonly mail: MailService,
         private readonly payments: PaymentsService,
+        private readonly referrals: ReferralsService,
     ) {
         super();
     }
@@ -26,7 +28,14 @@ export class RemindersProcessor extends WorkerHost {
             await this.handleInactivityNudge();
         } else if (job.name === JOB_PAYMENT_RELEASE) {
             await this.handlePaymentRelease(job as Job<{ appointmentId: string }>);
+        } else if (job.name === JOB_REFERRAL_STALL) {
+            await this.handleReferralStall();
         }
+    }
+
+    private async handleReferralStall() {
+        const count = await this.referrals.markStalled();
+        this.logger.log(`Referral stall check: expired ${count} referral(s)`);
     }
 
     private async handlePaymentRelease(job: Job<{ appointmentId: string }>) {

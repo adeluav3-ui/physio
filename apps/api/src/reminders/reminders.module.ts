@@ -6,6 +6,7 @@ import { RemindersProcessor } from "./reminders.processor.js";
 import { RemindersScheduler } from "./reminders.scheduler.js";
 import { REMINDERS_QUEUE } from "./reminders.constants.js";
 import { PaymentsModule } from "../payments/payments.module.js";
+import { ReferralsModule } from "../referrals/referrals.module.js";
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { PaymentsModule } from "../payments/payments.module.js";
         }),
         BullModule.registerQueue({ name: REMINDERS_QUEUE }),
         PaymentsModule,
+        ReferralsModule,
     ],
     providers: [RemindersService, RemindersProcessor, RemindersScheduler],
     exports: [RemindersService],

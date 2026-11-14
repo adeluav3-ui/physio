@@ -27,6 +27,8 @@ export class RemindersScheduler implements OnApplicationBootstrap {
 
             // Register daily inactivity nudge as a repeatable job (runs every 24 h).
             await this.reminders.scheduleInactivityNudge();
+            // Register daily referral stall check.
+            await this.reminders.scheduleReferralStallCheck();
         } catch (err) {
             this.logger.warn(
                 `Boot reminder reschedule skipped — Redis unavailable: ${(err as Error).message}`,
