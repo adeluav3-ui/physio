@@ -2,6 +2,7 @@ import { Global, Logger, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { REDIS } from "./redis.constants.js";
+import { redisConnectionOptions } from "./redis.options.js";
 
 const logger = new Logger("RedisModule");
 
@@ -14,12 +15,9 @@ const logger = new Logger("RedisModule");
             useFactory: (config: ConfigService) => {
                 const url = config.get<string>("REDIS_URL");
                 if (!url) throw new Error("REDIS_URL is required");
+                const opts = redisConnectionOptions(url);
                 return new Redis(url, {
-                    lazyConnect: true,
-                    connectTimeout: 5000,
-                    maxRetriesPerRequest: null,
-                    enableOfflineQueue: false,
-                    ...(url.startsWith("rediss://") && { tls: { rejectUnauthorized: false } }),
+                    ...opts,
                     retryStrategy: (times) => {
                         if (times > 5) {
                             logger.error(

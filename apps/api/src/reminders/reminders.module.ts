@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
 import { ConfigService } from "@nestjs/config";
+import { redisConnectionOptions } from "../redis/redis.options.js";
 import { RemindersService } from "./reminders.service.js";
 import { RemindersProcessor } from "./reminders.processor.js";
 import { RemindersScheduler } from "./reminders.scheduler.js";
@@ -12,17 +13,10 @@ import { ReferralsModule } from "../referrals/referrals.module.js";
     imports: [
         BullModule.forRootAsync({
             inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                connection: {
-                    url: config.getOrThrow<string>("REDIS_URL"),
-                    lazyConnect: true,
-                    connectTimeout: 3000,
-                    retryStrategy: (times: number) => {
-                        if (times > 5) return null;
-                        return Math.min(times * 500, 2000);
-                    },
-                },
-            }),
+            useFactory: (config: ConfigService) => {
+                const url = config.getOrThrow<string>("REDIS_URL");
+                return { connection: { url, ...redisConnectionOptions(url) } };
+            },
         }),
         BullModule.registerQueue({ name: REMINDERS_QUEUE }),
         PaymentsModule,
