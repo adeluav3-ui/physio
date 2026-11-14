@@ -34,8 +34,6 @@ services:
         sync: false
       - key: DAILY_DOMAIN
         sync: false
-      - key: VIDEO_PROVIDER
-        sync: false
       - key: PAYSTACK_SECRET_KEY
         sync: false
       - key: PAYSTACK_PUBLIC_KEY
