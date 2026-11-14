@@ -1,14 +1,11 @@
 import type { RedisOptions } from "ioredis";
 
-/** Options shared by all Redis/BullMQ connections. */
+/** Options for BullMQ connections — retries indefinitely so the app never crashes when Redis is slow/unavailable. */
 export function redisConnectionOptions(url: string): RedisOptions {
     return {
         maxRetriesPerRequest: null,
-        connectTimeout: 5000,
+        connectTimeout: 10000,
         ...(url.startsWith("rediss://") && { tls: { rejectUnauthorized: false } }),
-        retryStrategy: (times) => {
-            if (times > 5) return null;
-            return Math.min(times * 500, 2000);
-        },
+        retryStrategy: (times) => Math.min(times * 500, 30_000),
     };
 }
