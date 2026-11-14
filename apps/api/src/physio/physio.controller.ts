@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { physioApplySchema, physioVerifySchema, type PhysioApplyInput, type SessionUser } from "@physio/shared";
 import { PhysioService } from "./physio.service.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
@@ -11,8 +11,20 @@ export class PhysioController {
     constructor(private readonly physio: PhysioService) { }
 
     @Get()
-    listPublic() {
-        return this.physio.listPublic();
+    listPublic(
+        @Query("discipline") discipline?: string,
+        @Query("language") language?: string,
+        @Query("mode") mode?: string,
+        @Query("maxRate") maxRate?: string,
+        @Query("specialty") specialty?: string,
+    ) {
+        return this.physio.listPublic({
+            ...(discipline && { discipline }),
+            ...(language && { language }),
+            ...(mode && { mode }),
+            ...(maxRate && { maxRateKobo: Number(maxRate) * 100 }),
+            ...(specialty && { specialtyKeyword: specialty }),
+        });
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

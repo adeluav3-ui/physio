@@ -43,9 +43,23 @@ export class PhysioService {
         };
     }
 
-    async listPublic() {
+    async listPublic(filters?: {
+        discipline?: string;
+        language?: string;
+        mode?: string;
+        maxRateKobo?: number;
+        specialtyKeyword?: string;
+    }) {
+        type Where = NonNullable<Parameters<typeof this.prisma.client.physioProfile.findMany>[0]>["where"];
+        const where: Where = {
+            licenceStatus: "VERIFIED",
+            acceptingPatients: true,
+        };
+        if (filters?.discipline) where!.discipline = filters.discipline as import("@physio/db").Discipline;
+        if (filters?.maxRateKobo) where!.rateKobo = { lte: filters.maxRateKobo };
+
         const rows = await this.prisma.client.physioProfile.findMany({
-            where: { licenceStatus: "VERIFIED" },
+            where,
             select: {
                 userId: true,
                 discipline: true,
@@ -57,11 +71,27 @@ export class PhysioService {
                 photoUrl: true,
                 languages: true,
                 sessionTypes: true,
+                sessionMinutes: true,
                 user: { select: { id: true, name: true } },
             },
             orderBy: { createdAt: "desc" },
         });
-        return rows.map(PhysioService.toPublic);
+
+        let list = rows
+            .filter((r) => !filters?.language || r.languages.includes(filters.language))
+            .filter((r) => !filters?.mode || r.sessionTypes.includes(filters.mode));
+
+        // keyword match against specialties
+        if (filters?.specialtyKeyword) {
+            const kw = filters.specialtyKeyword.toLowerCase();
+            list = list.sort((a, b) => {
+                const aMatch = a.specialties.some((s) => s.toLowerCase().includes(kw)) ? 0 : 1;
+                const bMatch = b.specialties.some((s) => s.toLowerCase().includes(kw)) ? 0 : 1;
+                return aMatch - bMatch;
+            });
+        }
+
+        return list.map(PhysioService.toPublic);
     }
 
     async getPublic(userId: string) {
