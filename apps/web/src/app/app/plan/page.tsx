@@ -1,181 +1,212 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 type ExerciseItem = {
-    id: string; sets: number | null; reps: number | null; frequency: string;
-    exercise: { id: string; name: string; region: string; videoUrl: string | null };
+    id: string;
+    sets: number;
+    reps: number;
+    holdSeconds: number;
+    frequency: string;
+    notes: string | null;
+    exercise: { id: string; name: string; region: string; cues: string };
+    todayLog: { completed: boolean; notes: string | null } | null;
 };
 
-function extractYouTubeId(url: string | null): string | null {
-    if (!url) return null;
-    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/);
-    return m?.[1] ?? null;
-}
-type Program = { id: string; startsAt: string; items: ExerciseItem[]; };
-type PracticeTask = { id: string; title: string; schedule: string; logs: { date: string; completed: boolean }[]; };
-type Goal = { id: string; title: string; status: string; progress: number; tasks: PracticeTask[]; };
-type GoalPlan = { id: string; title: string; goals: Goal[]; };
+type TodayData = {
+    programId: string;
+    items: ExerciseItem[];
+    streak: number;
+    doneToday: number;
+    total: number;
+};
 
-export default function PlanPage() {
-    const [programs, setPrograms] = useState<Program[]>([]);
-    const [goalPlan, setGoalPlan] = useState<GoalPlan | null>(null);
-    const [activeEx, setActiveEx] = useState<ExerciseItem | null>(null);
-    const [feeling, setFeeling] = useState<string | null>(null);
-    const [tab, setTab] = useState<"exercises" | "goals">("exercises");
+type Feel = "easy" | "okay" | "painful";
+
+const NAV = "#022449";
+const GREEN = "#1b7d0e";
+const MUTED = "#4f6478";
+const BORDER = "#d9e3ec";
+
+export default function PatientPlanPage() {
+    const [data, setData] = useState<TodayData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [logging, setLogging] = useState<string | null>(null);
+    const [expanded, setExpanded] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/proxy/exercise-programs/me").then(r => r.ok ? r.json() : null)
-            .then(d => { if (d) { setPrograms(Array.isArray(d) ? d : [d]); } }).catch(() => {});
-        fetch("/api/proxy/goal-plans/me").then(r => r.ok ? r.json() : null)
-            .then(d => { if (d) setGoalPlan(Array.isArray(d) ? d[0] ?? null : d); }).catch(() => {});
+        fetch("/api/proxy/programs/today")
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d: TodayData | null) => {
+                setData(d);
+                // Auto-expand the first incomplete exercise
+                if (d?.items) {
+                    const first = d.items.find((i) => !i.todayLog?.completed);
+                    if (first) setExpanded(first.id);
+                }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
     }, []);
 
-    const prog = programs[0] ?? null;
-    const items = prog?.items ?? [];
-    const current = activeEx ?? items[0] ?? null;
+    async function markDone(itemId: string, feel: Feel) {
+        setLogging(itemId);
+        try {
+            await fetch(`/api/proxy/programs/items/${itemId}/log`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ completed: true, feel }),
+            });
+            setData((prev) => {
+                if (!prev) return prev;
+                const items = prev.items.map((i) =>
+                    i.id === itemId ? { ...i, todayLog: { completed: true, notes: feel } } : i,
+                );
+                const doneToday = items.filter((i) => i.todayLog?.completed).length;
+                return { ...prev, items, doneToday };
+            });
+            // Auto-expand next incomplete
+            setExpanded((cur) => {
+                const remaining = data?.items.filter((i) => !i.todayLog?.completed && i.id !== itemId) ?? [];
+                return cur === itemId ? (remaining[0]?.id ?? null) : cur;
+            });
+        } finally {
+            setLogging(null);
+        }
+    }
 
-    const goals = goalPlan?.goals ?? [];
-    const hasGoals = goals.length > 0;
-    const hasExercises = items.length > 0;
+    if (loading) {
+        return (
+            <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree', system-ui, sans-serif" }}>
+                <p style={{ fontSize: 14, color: MUTED }}>Loading your plan…</p>
+            </div>
+        );
+    }
 
-    /* If there are goal plans but no exercises, show goals by default */
-    const showTab = hasExercises || hasGoals;
+    if (!data || data.items.length === 0) {
+        return (
+            <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 480, margin: "0 auto" }}>
+                <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your exercises</h1>
+                <div style={{ marginTop: 24, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 20, textAlign: "center" }}>
+                    <p style={{ font: "500 15px 'Figtree', sans-serif", color: MUTED }}>No exercise plan yet.</p>
+                    <p style={{ font: "400 14px 'Figtree', sans-serif", color: MUTED, marginTop: 4 }}>
+                        Your professional will add exercises after your first session.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const pct = data.total > 0 ? Math.round((data.doneToday / data.total) * 100) : 0;
 
     return (
-        <div style={{ padding: "24px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
-            <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>
-                {tab === "exercises" ? "Your exercises" : "Your goals"}
-            </h1>
-            {prog && (
-                <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif", marginTop: "-8px" }}>
-                    {tab === "exercises" ? `Week 1` : goalPlan?.title ?? "Current plan"}
-                </div>
-            )}
+        <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", gap: 14 }}>
+            <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your exercises</h1>
+            <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: 0, marginTop: -8 }}>
+                {data.doneToday} of {data.total} done today
+            </p>
 
-            {/* Tab toggle if both types exist */}
-            {hasExercises && hasGoals && (
-                <div style={{ display: "flex", gap: "8px" }}>
-                    <button type="button" className={`slot${tab === "exercises" ? " on" : ""}`} onClick={() => setTab("exercises")}>Exercises</button>
-                    <button type="button" className={`slot${tab === "goals" ? " on" : ""}`} onClick={() => setTab("goals")}>Goals</button>
-                </div>
-            )}
+            {/* Progress bar */}
+            <div style={{ height: 8, borderRadius: 99, background: "#d9e3ec" }}>
+                <div style={{ width: `${pct}%`, height: 8, borderRadius: 99, background: GREEN, transition: "width 0.4s" }} />
+            </div>
 
-            {/* ── Exercises tab ───────────────────────────────────────── */}
-            {(tab === "exercises" || !hasGoals) && (
-                <>
-                    {!hasExercises ? (
-                        <div className="card" style={{ color: "#4f6478", font: "400 15px/1.5 'Figtree',sans-serif" }}>
-                            No exercise plan yet. Your specialist will add exercises after your first session.
-                        </div>
-                    ) : (
-                        <>
-                            {/* Active exercise card */}
-                            {current && (
-                                <div className="card">
-                                    {(() => {
-                                        const vid = extractYouTubeId(current.exercise.videoUrl);
-                                        return vid ? (
-                                            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #d9e3ec", aspectRatio: "16/9" }}>
-                                                <iframe
-                                                    src={`https://www.youtube.com/embed/${vid}?rel=0`}
-                                                    title={current.exercise.name}
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                    allowFullScreen
-                                                    style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div style={{ height: "130px", borderRadius: "12px", background: "#eef3f8", display: "flex", alignItems: "center", justifyContent: "center", font: "500 14px 'Figtree',sans-serif", color: "#4f6478" }}>
-                                                No video for this exercise
-                                            </div>
-                                        );
-                                    })()}
-                                    <h2 style={{ font: "700 18px 'Figtree',sans-serif", marginTop: "12px" }}>{current.exercise.name}</h2>
-                                    <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif", marginTop: "2px" }}>
-                                        {current.reps ? `${current.reps} reps` : ""}{current.sets ? ` · ${current.sets} sets` : ""}{current.frequency ? ` · ${current.frequency}` : ""}
-                                    </div>
-                                    <div style={{ font: "600 13px 'Figtree',sans-serif", marginTop: "14px" }}>How did it feel?</div>
-                                    <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                                        {["Easy", "Okay", "Painful"].map(f => (
-                                            <button key={f} type="button" className={`slot${feeling === f ? " on" : ""}`} onClick={() => setFeeling(f)}>{f}</button>
-                                        ))}
-                                    </div>
-                                    <button type="button" className="btn" style={{ marginTop: "14px", width: "100%", display: "flex" }}>Mark as done</button>
+            {/* Exercise cards */}
+            {data.items.map((item) => {
+                const done = item.todayLog?.completed ?? false;
+                const isOpen = expanded === item.id;
+
+                return (
+                    <div
+                        key={item.id}
+                        style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", opacity: done ? 0.7 : 1 }}
+                    >
+                        {/* Collapsed row */}
+                        <button
+                            onClick={() => setExpanded(isOpen ? null : item.id)}
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+                        >
+                            <span style={{ font: "600 16px 'Figtree', sans-serif" }}>{item.exercise.name}</span>
+                            <span style={{ font: "400 14px 'Figtree', sans-serif", color: done ? GREEN : MUTED, fontWeight: done ? 600 : 400 }}>
+                                {done ? "Done" : `${item.sets} × ${item.reps}`}
+                            </span>
+                        </button>
+
+                        {/* Expanded card */}
+                        {isOpen && (
+                            <div style={{ padding: "0 16px 16px" }}>
+                                {/* Video placeholder */}
+                                <div style={{ height: 130, borderRadius: 12, background: "#dbe8f1", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED, marginBottom: 12 }}>
+                                    <span style={{ font: "500 14px 'Figtree', sans-serif" }}>Exercise video</span>
                                 </div>
-                            )}
 
-                            {/* Remaining items */}
-                            {items.slice(1).map(item => (
-                                <button key={item.id} type="button" className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", cursor: "pointer" }} onClick={() => setActiveEx(item)}>
-                                    <span style={{ font: "600 16px 'Figtree',sans-serif" }}>{item.exercise.name}</span>
-                                    <span className="muted">{item.sets && item.reps ? `${item.sets} x ${item.reps}` : item.frequency}</span>
-                                </button>
-                            ))}
+                                <h2 style={{ font: "700 18px 'Figtree', sans-serif", margin: 0 }}>{item.exercise.name}</h2>
+                                <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: "4px 0 14px" }}>
+                                    {item.reps} reps · {item.sets} sets{item.frequency ? ` · ${item.frequency}` : ""}
+                                </p>
 
-                            {/* Warning card */}
-                            <div className="card" style={{ font: "400 14px/1.4 'Figtree',sans-serif", background: "#fdf1d8", borderColor: "#ecd49b", color: "#5f3f00" }}>
-                                Sharp pain, new numbness or swelling? Stop and message your specialist.
+                                {item.exercise.cues && (
+                                    <p style={{ font: "400 14px/1.5 'Figtree', sans-serif", color: MUTED, marginBottom: 14 }}>
+                                        {item.exercise.cues}
+                                    </p>
+                                )}
+
+                                {!done && (
+                                    <>
+                                        <div style={{ font: "600 13px 'Figtree', sans-serif", marginBottom: 8 }}>How did it feel?</div>
+                                        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                                            {(["easy", "okay", "painful"] as Feel[]).map((f) => (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => markDone(item.id, f)}
+                                                    disabled={logging === item.id}
+                                                    style={{
+                                                        padding: "11px 14px",
+                                                        borderRadius: 10,
+                                                        border: `1px solid ${GREEN}`,
+                                                        color: "#0f5a08",
+                                                        font: "600 14px 'Figtree', sans-serif",
+                                                        background: "#fff",
+                                                        cursor: logging === item.id ? "not-allowed" : "pointer",
+                                                        opacity: logging === item.id ? 0.6 : 1,
+                                                    }}
+                                                >
+                                                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => markDone(item.id, "okay")}
+                                            disabled={logging === item.id}
+                                            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", minHeight: 50, borderRadius: 12, background: logging === item.id ? "#999" : GREEN, color: "#fff", font: "600 16px 'Figtree', sans-serif", border: 0, cursor: logging === item.id ? "not-allowed" : "pointer" }}
+                                        >
+                                            {logging === item.id ? "Saving…" : "Mark as done"}
+                                        </button>
+                                    </>
+                                )}
+
+                                {done && (
+                                    <div style={{ display: "inline-block", padding: "4px 10px", borderRadius: 99, font: "600 12px 'Figtree', sans-serif", background: "#e3f4e8", color: "#1d5c34" }}>
+                                        Completed today
+                                    </div>
+                                )}
                             </div>
-                        </>
-                    )}
-                </>
-            )}
+                        )}
+                    </div>
+                );
+            })}
 
-            {/* ── Goals tab ───────────────────────────────────────────── */}
-            {(tab === "goals" || !hasExercises) && (
-                <>
-                    {!hasGoals ? (
-                        <div className="card" style={{ color: "#4f6478", font: "400 15px/1.5 'Figtree',sans-serif" }}>
-                            No goal plan yet. Your specialist will add goals after your first session.
-                        </div>
-                    ) : (
-                        <>
-                            {goals.map(goal => (
-                                <div key={goal.id} className="card">
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: 0 }}>{goal.title}</h2>
-                                        <span className="chip-sm">On track</span>
-                                    </div>
-                                    <div className="bar" style={{ marginTop: "12px" }}>
-                                        <div style={{ width: `${goal.progress ?? 0}%`, height: "8px", borderRadius: "99px", background: "#1b7d0e" }}></div>
-                                    </div>
-                                    <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "6px" }}>
-                                        {goal.tasks?.filter(t => t.logs?.some(l => l.date === todayStr && l.completed)).length ?? 0} of {goal.tasks?.length ?? 0} tasks done today
-                                    </div>
-                                </div>
-                            ))}
+            {/* Safety warning */}
+            <div style={{ background: "#fdf1d8", border: "1px solid #ecd49b", borderRadius: 16, padding: 16, font: "400 14px/1.4 'Figtree', sans-serif", color: "#5f3f00" }}>
+                Sharp pain, new numbness or swelling? Stop and message your specialist.
+            </div>
 
-                            {(goals[0]?.tasks?.length ?? 0) > 0 && (
-                                <div className="card">
-                                    <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: 0 }}>{"This week's practice"}</h2>
-                                    <div style={{ display: "grid", gap: "12px", marginTop: "12px", font: "500 15px 'Figtree',sans-serif" }}>
-                                        {(goals[0]?.tasks ?? []).map(task => {
-                                            const done = task.logs?.some(l => l.date === todayStr && l.completed);
-                                            return (
-                                                <div key={task.id} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                                    <span style={{ width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0, background: done ? "#1b7d0e" : "transparent", border: done ? "none" : "2px solid #b4c4d3" }}></span>
-                                                    {task.title}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    <button type="button" className="btn" style={{ marginTop: "14px", width: "100%", display: "flex", background: "#fff", color: "#0f5a08", border: "1.5px solid #1b7d0e" }}>
-                                        Add a note or recording
-                                    </button>
-                                </div>
-                            )}
-
-                            <div className="card">
-                                <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: 0 }}>Tips for the helper</h2>
-                                <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "6px" }}>Wait a few seconds before helping. Praise every try.</p>
-                            </div>
-                        </>
-                    )}
-                </>
+            {/* Streak */}
+            {data.streak > 0 && (
+                <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
+                    <div style={{ font: "500 13px 'Figtree', sans-serif", color: MUTED }}>Streak</div>
+                    <div style={{ font: "700 22px 'Figtree', sans-serif", marginTop: 2 }}>{data.streak} day{data.streak === 1 ? "" : "s"} in a row</div>
+                </div>
             )}
         </div>
     );

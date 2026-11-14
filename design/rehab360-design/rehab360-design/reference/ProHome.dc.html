@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Professional home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#f4f8fb}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:10px;background:#1b7d0e;color:#fff;font:600 14px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:14px;padding:20px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.warn{background:#fdf1d8;color:#7a4f00}
+.bad{background:#fde8e8;color:#8f1d1d}
+.muted{color:#4f6478}
+.nav{display:block;padding:10px 12px;border-radius:10px;font:500 15px 'Figtree',sans-serif;color:#022449;text-decoration:none}
+.navon{background:#e6f4e1;font-weight:600;color:#0f5a08}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #e4ebf2}
+h2{font:700 18px 'Figtree',sans-serif}
+</style>
+</helmet>
+<div style="flex:0 0 100%;width:100%;height:5px;background:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%)"></div>
+<div style="display:flex;flex-wrap:wrap;width:100%">
+<aside style="flex:0 0 240px;background:#fff;border-right:1px solid #d9e3ec;padding:20px 16px">
+<div style="padding:0 12px 18px"><img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:38px;width:auto;display:block"></div>
+<a class="nav navon" href="#">Home</a>
+<a class="nav" href="#">Patients</a>
+<a class="nav" href="#">Calendar</a>
+<a class="nav" href="#">Referrals</a>
+<a class="nav" href="#">Messages</a>
+<a class="nav" href="#">Earnings</a>
+<a class="nav" href="#">Profile</a>
+<div style="margin-top:24px;padding:12px;border-radius:12px;background:#eef3f8"><div style="font:600 14px 'Figtree',sans-serif">[Professional name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Occupational therapist</div></div>
+</aside>
+<main style="flex:999 1 560px;min-width:0;padding:28px">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center"><h1 style="font:700 28px 'Figtree',sans-serif">Good afternoon, [Name]</h1><a class="btn" href="#">Start next session</a></div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px">
+<div class="card"><div class="muted" style="font:500 13px 'Figtree',sans-serif">Sessions today</div><div style="font:700 30px 'Figtree',sans-serif">4</div></div>
+<div class="card"><div class="muted" style="font:500 13px 'Figtree',sans-serif">Unread messages</div><div style="font:700 30px 'Figtree',sans-serif">3</div></div>
+<div class="card"><div class="muted" style="font:500 13px 'Figtree',sans-serif">New referrals</div><div style="font:700 30px 'Figtree',sans-serif">2</div></div>
+<div class="card"><div class="muted" style="font:500 13px 'Figtree',sans-serif">Off track</div><div style="font:700 30px 'Figtree',sans-serif">5</div></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:20px;align-items:flex-start">
+<div class="card" style="flex:1 1 380px"><h2>Needs attention</h2>
+<div class="row" style="margin-top:10px"><div style="flex:1 1 200px"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">No tasks logged for 4 days</div></div><span class="chip warn">Off track</span><a class="btn btn2" href="#">Message</a></div>
+<div class="row"><div style="flex:1 1 200px"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Reported sharp pain in a task log</div></div><span class="chip bad">Review</span><a class="btn btn2" href="#">Open</a></div>
+<div class="row"><div style="flex:1 1 200px"><div style="font:600 15px 'Figtree',sans-serif">Referral from [Physiotherapist]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Daily living limits after stroke · urgent</div></div><span class="chip warn">Reply due</span><a class="btn" href="#">Review</a></div>
+<div class="row"><div style="flex:1 1 200px"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Intake form not completed</div></div><span class="chip">Reminder sent</span></div></div>
+<div class="card" style="flex:1 1 300px"><h2>Today</h2>
+<div class="row" style="margin-top:10px"><span style="width:64px;font:700 15px 'Figtree',sans-serif">9:00</span><div style="flex:1"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Video · follow-up</div></div></div>
+<div class="row"><span style="width:64px;font:700 15px 'Figtree',sans-serif">11:00</span><div style="flex:1"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Home visit · assessment</div></div></div>
+<div class="row"><span style="width:64px;font:700 15px 'Figtree',sans-serif">2:00 pm</span><div style="flex:1"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Video · new patient</div></div></div>
+<div class="row"><span style="width:64px;font:700 15px 'Figtree',sans-serif">4:00 pm</span><div style="flex:1"><div style="font:600 15px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Video · follow-up</div></div></div></div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

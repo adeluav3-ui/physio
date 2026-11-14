@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Consultation room: chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#f4f8fb}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:10px;background:#1b7d0e;color:#fff;font:600 14px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:14px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.warn{background:#fdf1d8;color:#7a4f00}
+.ok{background:#e3f4e8;color:#1d5c34}
+.muted{color:#4f6478}
+.lab{font:600 12px 'Figtree',sans-serif;color:#4f6478;letter-spacing:.04em;text-transform:uppercase}
+.tab{flex:1;text-align:center;padding:12px 4px;font:600 14px 'Figtree',sans-serif;color:#4f6478;text-decoration:none;border-bottom:3px solid transparent}
+.tabon{color:#0f5a08;border-bottom-color:#1b7d0e}
+.msg{max-width:72%;padding:12px 14px;border-radius:16px;font:400 15px/1.45 'Figtree',sans-serif}
+.field{display:block;width:100%;border:1px solid #b4c4d3;border-radius:10px;padding:10px 12px;font:14px/1.45 'Figtree',sans-serif;background:#fff;color:#022449}
+</style>
+</helmet>
+<div style="width:1280px;height:900px;display:flex;flex-direction:column">
+<div style="height:5px;background:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%);flex:none"></div>
+<div style="height:64px;flex:none;background:#fff;border-bottom:1px solid #d9e3ec;display:flex;align-items:center;gap:16px;padding:0 20px">
+<img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:34px;width:auto;display:block">
+<div style="width:1px;height:28px;background:#d9e3ec"></div>
+<div><div style="font:700 16px 'Figtree',sans-serif">Chat consultation with [Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">New patient · Live chat · 30 minutes</div></div>
+<span class="chip ok" style="margin-left:8px">Patient is online</span>
+<div style="margin-left:auto;display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="lab">Time left</div><div style="font:700 20px 'Figtree',sans-serif">19:05</div></div><a class="btn btn2" href="#">Switch to video</a><a class="btn" href="#" style="background:#b42318">End session</a></div>
+</div>
+
+<div style="flex:1;display:flex;gap:16px;padding:16px;min-height:0">
+
+<aside class="card" style="flex:0 0 300px;padding:18px;overflow:hidden">
+<div style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;border-radius:50%;background:#cfe3ee"></div><div><div style="font:700 17px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">58 · Male · Ibadan</div></div></div>
+<div class="lab" style="margin-top:20px">Reason for visit</div>
+<p style="font:500 15px/1.4 'Figtree',sans-serif;margin-top:4px">Low back pain after lifting, spreading to the left leg, 5 days.</p>
+<div class="lab" style="margin-top:18px">Safety check</div>
+<div style="margin-top:6px"><span class="chip ok">No warning signs</span></div>
+<div class="lab" style="margin-top:18px">Intake answers</div>
+<div style="display:grid;gap:8px;margin-top:6px;font:400 14px 'Figtree',sans-serif">
+<div style="display:flex;justify-content:space-between"><span class="muted">Pain now</span><b>7 / 10</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Numbness</span><b>No</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Bladder change</span><b>No</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Works as</span><b>Driver</b></div></div>
+<div class="lab" style="margin-top:18px">Why chat</div>
+<p class="muted" style="font:400 13px/1.4 'Figtree',sans-serif;margin-top:4px">Patient chose chat to save data. Photos and voice notes are allowed.</p>
+</aside>
+
+<main class="card" style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+<div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+<div class="muted" style="font:400 12px 'Figtree',sans-serif;text-align:center">Today, 4:00 pm · Session started</div>
+<div class="msg" style="background:#eef3f8">Good afternoon. I have read your answers. Tell me how the pain behaves when you sit and when you walk.</div>
+<div class="msg" style="background:#1b7d0e;color:#fff;align-self:flex-end">Sitting is worse. After 20 minutes it pulls down my left leg. Walking eases it.</div>
+<div class="msg" style="background:#eef3f8">Understood. Can you send a photo of how you stand, from the side?</div>
+<div style="align-self:flex-end;width:240px;height:150px;border-radius:14px;background:#cdddea;display:flex;align-items:center;justify-content:center" class="muted"><span style="font:500 13px 'Figtree',sans-serif">Photo from patient</span></div>
+<div class="msg" style="background:#1b7d0e;color:#fff;align-self:flex-end">Here. I lean a little to the right.</div>
+<div style="align-self:flex-start;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:#e3f1f6"><span style="width:28px;height:28px;border-radius:50%;background:#076889;display:inline-block"></span><span style="font:600 13px 'Figtree',sans-serif;color:#07506b">Voice note 0:24</span></div>
+</div>
+<div style="flex:none;padding:12px 16px;border-top:1px solid #d9e3ec;display:flex;gap:10px;align-items:center">
+<a class="btn btn2" href="#">Photo</a><a class="btn btn2" href="#">Voice</a>
+<input aria-label="Write a message" placeholder="Write a message" style="flex:1;min-height:44px;border:1px solid #b4c4d3;border-radius:22px;padding:0 16px;font:15px 'Figtree',sans-serif">
+<a class="btn" href="#" style="min-height:44px;border-radius:22px;padding:0 22px">Send</a></div>
+</main>
+
+<aside class="card" style="flex:0 0 400px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;border-bottom:1px solid #d9e3ec;padding:0 8px;flex:none"><a class="tab tabon" href="#">Notes</a><a class="tab" href="#">Exercises</a><a class="tab" href="#">Plan (0)</a><a class="tab" href="#">Refer</a></div>
+<div style="padding:16px;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:12px;min-height:0">
+<div style="display:flex;justify-content:space-between;align-items:center"><span class="lab">Physiotherapy note</span><span class="chip ok">Saved just now</span></div>
+<div><label class="lab" for="s">Subjective</label><div id="s" class="field" style="margin-top:4px;min-height:92px">Low back pain after lifting 5 days ago. Pulls into the left leg after 20 minutes of sitting. Eases with walking. No numbness. No bladder change.</div></div>
+<div><label class="lab" for="o">Objective</label><div id="o" class="field" style="margin-top:4px;min-height:70px">Leans to the right in standing (photo). Observation only in a chat session.</div></div>
+<div><label class="lab" for="a">Assessment</label><div id="a" class="field muted" style="margin-top:4px;min-height:56px">Start typing</div></div>
+<div><label class="lab" for="p">Plan</label><div id="p" class="field muted" style="margin-top:4px;min-height:56px">Start typing</div></div>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

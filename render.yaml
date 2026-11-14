@@ -34,8 +34,6 @@ services:
         sync: false
       - key: DAILY_DOMAIN
         sync: false
-      - key: VIDEO_PROVIDER
-        sync: false
       - key: PAYSTACK_SECRET_KEY
         sync: false
       - key: PAYSTACK_PUBLIC_KEY
@@ -48,8 +46,6 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      - key: DEV_VERIFY_ENABLED
-        value: "true"
     preDeployCommand: >-
       cd /app && pnpm --filter @physio/db exec prisma migrate deploy && pnpm --filter @physio/db seed
 

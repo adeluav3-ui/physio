@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Session note and sign-off</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#f4f8fb}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:10px;background:#1b7d0e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:14px;padding:20px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.warn{background:#fdf1d8;color:#7a4f00}
+.ok{background:#e3f4e8;color:#1d5c34}
+.muted{color:#4f6478}
+.lab{display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px}
+.field{display:block;width:100%;border:1px solid #b4c4d3;border-radius:10px;padding:10px 12px;font:15px/1.5 'Figtree',sans-serif;background:#fff;color:#022449}
+.num{width:84px;min-height:44px;border:1px solid #b4c4d3;border-radius:10px;text-align:center;font:600 16px 'Figtree',sans-serif;display:flex;align-items:center;justify-content:center;background:#fff}
+.opt{display:flex;gap:10px;align-items:center;padding:12px 14px;border:1.5px solid #c3d1de;border-radius:12px;background:#fff;font:600 14px 'Figtree',sans-serif}
+.opton{border-color:#1b7d0e;background:#e6f4e1}
+.dot{width:18px;height:18px;border-radius:50%;border:2px solid #7d93a8;flex:none}
+.doton{border-color:#1b7d0e;background:radial-gradient(#1b7d0e 45%,transparent 50%)}
+.req{display:flex;gap:8px;align-items:center;font:500 14px 'Figtree',sans-serif;padding:6px 0}
+.tick{width:20px;height:20px;border-radius:50%;background:#1b7d0e;color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 12px 'Figtree',sans-serif;flex:none}
+.todo{background:#fff;border:2px solid #b4c4d3;color:#fff}
+</style>
+</helmet>
+<div style="width:1280px;height:1100px">
+<div style="height:5px;background:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%)"></div>
+<div style="height:64px;background:#fff;border-bottom:1px solid #d9e3ec;display:flex;align-items:center;gap:16px;padding:0 24px">
+<img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:34px;width:auto;display:block">
+<div style="width:1px;height:28px;background:#d9e3ec"></div>
+<div><div style="font:700 16px 'Figtree',sans-serif">Session note: [Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Follow-up · Video · Today, 4:00 pm</div></div>
+<span class="chip warn" style="margin-left:8px">Not signed</span><span class="chip ok">Saved just now</span>
+<a class="btn btn2" href="#" style="margin-left:auto">Back to patient record</a>
+</div>
+<div style="display:flex;gap:20px;padding:24px;align-items:flex-start">
+
+<main style="flex:1;min-width:0;display:grid;gap:16px">
+<div class="card">
+<h2 style="font:700 18px 'Figtree',sans-serif">Note</h2>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:2px">Filled from the intake form and your notes during the call. Edit anything.</p>
+<div style="display:grid;gap:14px;margin-top:16px">
+<div><span class="lab">Subjective: what the patient reports</span><div class="field" style="min-height:76px">Right shoulder pain, now 6 of 10, down from 8. Night pain is less frequent. Wall slides done 5 days of 7.</div></div>
+<div><span class="lab">Objective: what you found</span><div class="field" style="min-height:76px">Active flexion to 130 degrees, painful arc 90 to 120. Good scapular control with cues. No weakness in external rotation.</div></div>
+<div><span class="lab">Assessment *</span><div class="field" style="min-height:76px">Subacromial pain, improving. Responding to mobility work. Strength is the next limit.</div></div>
+<div><span class="lab">Plan *</span><div class="field" style="min-height:76px">Add band external rotation and chest stretch. Keep wall slides and pendulum. Review in 2 weeks.</div></div>
+</div></div>
+
+<div class="card">
+<h2 style="font:700 18px 'Figtree',sans-serif">Outcome measures</h2>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:2px">Saved as numbers so progress can be charted.</p>
+<div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:16px">
+<div><span class="lab">Pain now (0 to 10)</span><div style="display:flex;gap:10px;align-items:center"><div class="num">6</div><span class="muted" style="font:400 13px 'Figtree',sans-serif">Last visit 8</span></div></div>
+<div><span class="lab">Function score (0 to 100)</span><div style="display:flex;gap:10px;align-items:center"><div class="num">58</div><span class="muted" style="font:400 13px 'Figtree',sans-serif">Last visit 44</span></div></div>
+<div><span class="lab">Flexion (degrees)</span><div style="display:flex;gap:10px;align-items:center"><div class="num">130</div><span class="muted" style="font:400 13px 'Figtree',sans-serif">Last visit 110</span></div></div>
+</div></div>
+
+<div class="card">
+<h2 style="font:700 18px 'Figtree',sans-serif">Next step *</h2>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px">
+<div class="opt opton"><span class="dot doton"></span><div>Follow-up<div class="muted" style="font:400 12px 'Figtree',sans-serif;font-weight:400">Book the next session</div></div></div>
+<div class="opt"><span class="dot"></span><div>Refer<div class="muted" style="font:400 12px 'Figtree',sans-serif;font-weight:400">Send to another specialist</div></div></div>
+<div class="opt"><span class="dot"></span><div>Discharge<div class="muted" style="font:400 12px 'Figtree',sans-serif;font-weight:400">Goals met, write summary</div></div></div>
+</div>
+<div style="display:flex;gap:14px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:12px;background:#eef3f8"><div style="flex:1"><div style="font:600 14px 'Figtree',sans-serif">Follow-up in 2 weeks</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Suggested: Thu 28 Nov, 4:00 pm · Video</div></div><a class="btn btn2" href="#" style="min-height:38px">Choose time</a></div>
+</div>
+</main>
+
+<aside style="flex:0 0 380px;display:grid;gap:16px">
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font:700 18px 'Figtree',sans-serif">Summary for the patient</h2><span class="chip">Draft</span></div>
+<p class="muted" style="font:400 13px 'Figtree',sans-serif;margin-top:2px">Plain words. The patient reads this, not your clinical note.</p>
+<div class="field" style="margin-top:12px;min-height:200px;font-size:14px">Your shoulder is improving. Pain has come down from 8 to 6 and you can lift your arm higher.<br><br><b>What to do:</b> keep up the wall slides and pendulum swings daily, and add the two new exercises we practised.<br><br><b>Stop and message me if:</b> the pain becomes sharp, or you feel numbness in your hand.<br><br><b>Next visit:</b> in 2 weeks.</div>
+</div>
+<div class="card">
+<h2 style="font:700 16px 'Figtree',sans-serif">Before you sign</h2>
+<div style="margin-top:8px">
+<div class="req"><span class="tick">✓</span>Assessment written</div>
+<div class="req"><span class="tick">✓</span>Plan written</div>
+<div class="req"><span class="tick">✓</span>Next step chosen</div>
+<div class="req"><span class="tick">✓</span>Patient summary checked</div></div>
+<a class="btn" href="#" style="width:100%;margin-top:12px">Sign and complete session</a>
+<p class="muted" style="font:400 12px/1.5 'Figtree',sans-serif;margin-top:10px">Signing locks the note. Later changes are added as dated addenda. Your payment is released 24 hours after signing if no complaint is raised.</p>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

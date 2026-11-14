@@ -43,9 +43,23 @@ export class PhysioService {
         };
     }
 
-    async listPublic() {
+    async listPublic(filters?: {
+        discipline?: string;
+        language?: string;
+        mode?: string;
+        maxRateKobo?: number;
+        specialtyKeyword?: string;
+    }) {
+        type Where = NonNullable<Parameters<typeof this.prisma.client.physioProfile.findMany>[0]>["where"];
+        const where: Where = {
+            licenceStatus: "VERIFIED",
+            acceptingPatients: true,
+        };
+        if (filters?.discipline) where!.discipline = filters.discipline as import("@physio/db").Discipline;
+        if (filters?.maxRateKobo) where!.rateKobo = { lte: filters.maxRateKobo };
+
         const rows = await this.prisma.client.physioProfile.findMany({
-            where: { licenceStatus: "VERIFIED" },
+            where,
             select: {
                 userId: true,
                 discipline: true,
@@ -57,11 +71,27 @@ export class PhysioService {
                 photoUrl: true,
                 languages: true,
                 sessionTypes: true,
+                sessionMinutes: true,
                 user: { select: { id: true, name: true } },
             },
             orderBy: { createdAt: "desc" },
         });
-        return rows.map(PhysioService.toPublic);
+
+        let list = rows
+            .filter((r) => !filters?.language || r.languages.includes(filters.language))
+            .filter((r) => !filters?.mode || r.sessionTypes.includes(filters.mode));
+
+        // keyword match against specialties
+        if (filters?.specialtyKeyword) {
+            const kw = filters.specialtyKeyword.toLowerCase();
+            list = list.sort((a, b) => {
+                const aMatch = a.specialties.some((s) => s.toLowerCase().includes(kw)) ? 0 : 1;
+                const bMatch = b.specialties.some((s) => s.toLowerCase().includes(kw)) ? 0 : 1;
+                return aMatch - bMatch;
+            });
+        }
+
+        return list.map(PhysioService.toPublic);
     }
 
     async getPublic(userId: string) {
@@ -191,6 +221,60 @@ export class PhysioService {
             throw new NotFoundException({ code: "NOT_FOUND", message: "Pending application not found" });
         }
         return profile;
+    }
+
+    async getMe(user: SessionUser) {
+        const p = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: user.id },
+            select: {
+                userId: true,
+                licenceStatus: true,
+                discipline: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
+                sessionMinutes: true,
+                bufferMinutes: true,
+                acceptingPatients: true,
+                user: { select: { id: true, name: true } },
+            },
+        });
+        if (!p) throw new NotFoundException({ code: "NOT_FOUND", message: "Profile not found" });
+        return p;
+    }
+
+    async updateSettings(
+        user: SessionUser,
+        input: {
+            sessionMinutes?: number;
+            bufferMinutes?: number;
+            acceptingPatients?: boolean;
+            sessionTypes?: string[];
+        },
+    ) {
+        if (user.role !== "PHYSIO") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Physio only" });
+        }
+        return this.prisma.client.physioProfile.update({
+            where: { userId: user.id },
+            data: {
+                ...(input.sessionMinutes !== undefined && { sessionMinutes: input.sessionMinutes }),
+                ...(input.bufferMinutes !== undefined && { bufferMinutes: input.bufferMinutes }),
+                ...(input.acceptingPatients !== undefined && { acceptingPatients: input.acceptingPatients }),
+                ...(input.sessionTypes !== undefined && { sessionTypes: input.sessionTypes }),
+            },
+            select: {
+                sessionMinutes: true,
+                bufferMinutes: true,
+                acceptingPatients: true,
+                sessionTypes: true,
+            },
+        });
     }
 
     async listAll() {

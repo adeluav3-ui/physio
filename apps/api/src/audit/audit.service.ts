@@ -17,7 +17,11 @@ export type AuditAction =
     | "physio.reject"
     | "session.start"
     | "session.end"
-    | "booking.create";
+    | "booking.create"
+    | "booking.cancel"
+    | "booking.dispute"
+    | "note.sign"
+    | "note.addendum";
 
 @Injectable()
 export class AuditService {

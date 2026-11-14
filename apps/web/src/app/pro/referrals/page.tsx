@@ -1,232 +1,275 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
-import { DISCIPLINE_LABELS } from "@physio/shared";
 
 type Referral = {
-    id: string; toDiscipline: string; reason: string; urgency: string;
-    status: string; createdAt: string; fromProfessionalId: string;
+    id: string;
+    toDiscipline: string;
+    reason: string;
+    urgency: string;
+    status: string;
+    patientConsented: boolean;
+    shareAssessmentNote: boolean;
+    sharePlan: boolean;
+    declineReason: string | null;
+    createdAt: string;
+    fromProfessionalId: string;
     patient: { user: { name: string } };
     sender: { user: { name: string } };
     receiver: { user: { name: string } } | null;
 };
 
-const STATUS_CHIP: Record<string, string> = {
-    SENT: "warn", PATIENT_CONSENTED: "", ACCEPTED: "ok", DECLINED: "bad",
-    BOOKED: "ok", SESSION_HELD: "ok", SUMMARY_SENT: "ok", CONFIRMED: "ok",
-    CLOSED: "", EXPIRED: "warn",
-};
-const STATUS_LABEL: Record<string, string> = {
-    SENT: "Waiting for reply", PATIENT_CONSENTED: "Consented", ACCEPTED: "Accepted",
-    DECLINED: "Declined", BOOKED: "Booked", SESSION_HELD: "Session held",
-    SUMMARY_SENT: "Confirm", CONFIRMED: "Confirmed", CLOSED: "Closed", EXPIRED: "Expired",
+const NAV = "#022449";
+const GREEN = "#1b7d0e";
+const MUTED = "#4f6478";
+const BORDER = "#d9e3ec";
+
+const DISCIPLINE_LABELS: Record<string, string> = {
+    PHYSIOTHERAPY: "Physiotherapy",
+    OCCUPATIONAL_THERAPY: "Occupational therapy",
+    SPEECH_THERAPY: "Speech therapy",
+    PROSTHETICS: "Prosthetics",
+    ORTHOTICS: "Orthotics",
 };
 
-const TIMELINE_STEPS = [
-    "Referral sent", "Patient agreed", "Receiver accepts",
-    "Patient books", "Session held", "Summary sent back and confirmed",
-];
+function statusChip(status: string) {
+    const map: Record<string, { bg: string; color: string; label: string }> = {
+        SENT: { bg: "#eef3f8", color: MUTED, label: "Sent" },
+        PATIENT_CONSENTED: { bg: "#dbeafe", color: "#1e40af", label: "Patient consented" },
+        ACCEPTED: { bg: "#e3f4e8", color: "#1d5c34", label: "Accepted" },
+        DECLINED: { bg: "#fce4e4", color: "#7f1d1d", label: "Declined" },
+        BOOKED: { bg: "#e3f4e8", color: "#1d5c34", label: "Booked" },
+        SESSION_HELD: { bg: "#e3f4e8", color: "#1d5c34", label: "Session held" },
+        SUMMARY_SENT: { bg: "#e3f4e8", color: "#1d5c34", label: "Summary sent" },
+        CONFIRMED: { bg: "#e3f4e8", color: "#1d5c34", label: "Confirmed" },
+        CLOSED: { bg: "#eef3f8", color: MUTED, label: "Closed" },
+        EXPIRED: { bg: "#fdf1d8", color: "#7a4f00", label: "Expired" },
+    };
+    return map[status] ?? { bg: "#eef3f8", color: MUTED, label: status };
+}
+
+function urgencyChip(urgency: string) {
+    if (urgency === "URGENT") return { bg: "#fce4e4", color: "#7f1d1d" };
+    if (urgency === "SOON") return { bg: "#fdf1d8", color: "#7a4f00" };
+    return { bg: "#eef3f8", color: MUTED };
+}
 
 export default function ProReferralsPage() {
     const [referrals, setReferrals] = useState<Referral[]>([]);
-    const [meId, setMeId] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selected, setSelected] = useState<Referral | null>(null);
     const [acting, setActing] = useState<string | null>(null);
-
-    /* Send form */
-    const [patientId, setPatientId] = useState("");
-    const [referTo, setReferTo] = useState("");
-    const [reason, setReason] = useState("");
-    const [urgency, setUrgency] = useState<"ROUTINE" | "SOON" | "URGENT">("SOON");
-    const [shareAssessment, setShareAssessment] = useState(true);
-    const [sharePlan, setSharePlan] = useState(true);
-    const [shareMessages, setShareMessages] = useState(false);
-    const [sending, setSending] = useState(false);
-    const [sendError, setSendError] = useState<string | null>(null);
+    const [declineId, setDeclineId] = useState<string | null>(null);
+    const [declineReason, setDeclineReason] = useState("");
+    const [declineError, setDeclineError] = useState<string | null>(null);
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/proxy/auth/me").then(r => r.ok ? r.json() : null),
-            fetch("/api/proxy/referrals/mine").then(r => r.ok ? r.json() : []),
-        ]).then(([me, refs]) => {
-            setMeId(me?.id ?? null);
-            const list = refs ?? [];
-            setReferrals(list);
-            if (list.length > 0) setSelected(list[0]);
-        }).catch(() => {}).finally(() => setLoading(false));
+        async function load() {
+            const [me, refs] = await Promise.all([
+                fetch("/api/proxy/auth/me").then((r) => (r.ok ? r.json() : null)),
+                fetch("/api/proxy/referrals/mine").then((r) => (r.ok ? r.json() : [])),
+            ]);
+            setCurrentUserId(me?.id ?? null);
+            setReferrals(refs ?? []);
+            setLoading(false);
+        }
+        load().catch(() => setLoading(false));
     }, []);
 
-    async function sendReferral(e: React.FormEvent) {
-        e.preventDefault();
-        setSendError(null); setSending(true);
+    async function accept(referralId: string) {
+        setActing(referralId);
         try {
-            const res = await fetch("/api/proxy/referrals", {
+            const res = await fetch(`/api/proxy/referrals/${referralId}/respond`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ patientId, toDiscipline: referTo, reason, urgency }),
+                body: JSON.stringify({ decision: "ACCEPTED" }),
             });
-            if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message ?? "Failed"); }
-            const created = await res.json();
-            setReferrals(prev => [created, ...prev]);
-            setSelected(created);
-            setPatientId(""); setReferTo(""); setReason("");
-        } catch (err) { setSendError((err as Error).message); }
-        finally { setSending(false); }
+            if (res.ok) {
+                setReferrals((prev) => prev.map((r) => r.id === referralId ? { ...r, status: "ACCEPTED" } : r));
+            }
+        } finally {
+            setActing(null);
+        }
     }
 
-    async function respond(id: string, decision: "ACCEPTED" | "DECLINED") {
-        setActing(id);
+    async function decline(referralId: string) {
+        if (!declineReason.trim()) { setDeclineError("A reason is required"); return; }
+        setActing(referralId);
+        setDeclineError(null);
         try {
-            const res = await fetch(`/api/proxy/referrals/${id}/respond`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ decision }),
+            const res = await fetch(`/api/proxy/referrals/${referralId}/respond`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ decision: "DECLINED", reason: declineReason }),
             });
-            if (res.ok) setReferrals(prev => prev.map(r => r.id === id ? { ...r, status: decision } : r));
-        } finally { setActing(null); }
+            if (res.ok) {
+                setReferrals((prev) => prev.map((r) => r.id === referralId ? { ...r, status: "DECLINED", declineReason } : r));
+                setDeclineId(null);
+                setDeclineReason("");
+            }
+        } finally {
+            setActing(null);
+        }
     }
-
-    const sent = referrals.filter(r => r.fromProfessionalId === meId);
-    const received = referrals.filter(r => r.fromProfessionalId !== meId);
-
-    /* Timeline step index for selected referral */
-    const TL_STATUS_IDX: Record<string, number> = {
-        SENT: 0, PATIENT_CONSENTED: 1, ACCEPTED: 2, BOOKED: 3, SESSION_HELD: 4, SUMMARY_SENT: 5, CONFIRMED: 5,
-    };
 
     if (loading) {
         return (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "300px" }}>
-                <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading…</div>
+            <div style={{ display: "flex", minHeight: "60vh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree', system-ui, sans-serif" }}>
+                <p style={{ fontSize: 14, color: MUTED }}>Loading referrals…</p>
+            </div>
+        );
+    }
+
+    const sent = referrals.filter((r) => r.fromProfessionalId === currentUserId);
+    const received = referrals.filter((r) => r.fromProfessionalId !== currentUserId);
+
+    const field: React.CSSProperties = { display: "block", width: "100%", border: "1px solid #b4c4d3", borderRadius: 10, padding: "8px 12px", font: "14px/1.4 'Figtree', sans-serif", color: NAV, background: "#fff", resize: "vertical" };
+
+    function ReferralCard({ ref: r, isSent }: { ref: Referral; isSent: boolean }) {
+        const sc = statusChip(r.status);
+        const uc = urgencyChip(r.urgency);
+        const isDeclineOpen = declineId === r.id;
+
+        return (
+            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                            <span style={{ font: "600 15px 'Figtree', sans-serif", color: NAV }}>
+                                {r.patient.user.name}
+                            </span>
+                            <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", background: "#eef3f8", color: MUTED }}>
+                                {DISCIPLINE_LABELS[r.toDiscipline] ?? r.toDiscipline}
+                            </span>
+                            <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", ...uc }}>
+                                {r.urgency}
+                            </span>
+                            <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", background: sc.bg, color: sc.color }}>
+                                {sc.label}
+                            </span>
+                        </div>
+                        <p style={{ font: "400 13px/1.5 'Figtree', sans-serif", color: MUTED, margin: "0 0 6px" }}>
+                            {isSent
+                                ? `To: ${r.receiver?.user.name ?? DISCIPLINE_LABELS[r.toDiscipline] ?? r.toDiscipline}`
+                                : `From: ${r.sender.user.name}`}
+                        </p>
+                        <p style={{ font: "400 14px/1.5 'Figtree', sans-serif", color: NAV, margin: 0 }}>
+                            {r.reason.length > 140 ? r.reason.slice(0, 140) + "…" : r.reason}
+                        </p>
+                        {(r.shareAssessmentNote || r.sharePlan) && (
+                            <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                                {r.shareAssessmentNote && (
+                                    <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", background: "#eef3f8", color: MUTED }}>
+                                        Note shared
+                                    </span>
+                                )}
+                                {r.sharePlan && (
+                                    <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", background: "#eef3f8", color: MUTED }}>
+                                        Plan shared
+                                    </span>
+                                )}
+                                {!r.patientConsented && (
+                                    <span style={{ padding: "2px 8px", borderRadius: 99, font: "600 11px 'Figtree', sans-serif", background: "#fdf1d8", color: "#7a4f00" }}>
+                                        Awaiting consent
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        {r.status === "DECLINED" && r.declineReason && (
+                            <p style={{ font: "400 13px 'Figtree', sans-serif", color: "#7f1d1d", marginTop: 8 }}>
+                                Decline reason: {r.declineReason}
+                            </p>
+                        )}
+                    </div>
+                    <div style={{ font: "400 12px 'Figtree', sans-serif", color: MUTED, flexShrink: 0 }}>
+                        {new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                    </div>
+                </div>
+
+                {/* Received + consented: show accept/decline */}
+                {!isSent && r.status === "PATIENT_CONSENTED" && (
+                    <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {!isDeclineOpen ? (
+                            <div style={{ display: "flex", gap: 8 }}>
+                                <button
+                                    disabled={acting === r.id}
+                                    onClick={() => accept(r.id)}
+                                    style={{ flex: 1, minHeight: 40, borderRadius: 10, background: GREEN, color: "#fff", font: "600 14px 'Figtree', sans-serif", border: 0, cursor: "pointer", opacity: acting === r.id ? 0.6 : 1 }}
+                                >
+                                    {acting === r.id ? "…" : "Accept"}
+                                </button>
+                                <button
+                                    disabled={acting === r.id}
+                                    onClick={() => { setDeclineId(r.id); setDeclineReason(""); setDeclineError(null); }}
+                                    style={{ flex: 1, minHeight: 40, borderRadius: 10, background: "#fff", color: "#7f1d1d", font: "600 14px 'Figtree', sans-serif", border: "1.5px solid #fca5a5", cursor: "pointer" }}
+                                >
+                                    Decline
+                                </button>
+                            </div>
+                        ) : (
+                            <div style={{ background: "#fef9f9", border: "1px solid #fca5a5", borderRadius: 10, padding: 12 }}>
+                                <p style={{ font: "600 13px 'Figtree', sans-serif", color: "#7f1d1d", margin: "0 0 8px" }}>Reason for declining *</p>
+                                <textarea
+                                    value={declineReason}
+                                    onChange={(e) => setDeclineReason(e.target.value)}
+                                    rows={3}
+                                    placeholder="Explain why you are declining…"
+                                    style={field}
+                                />
+                                {declineError && <p style={{ font: "400 12px 'Figtree', sans-serif", color: "#b91c1c", marginTop: 4 }}>{declineError}</p>}
+                                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                                    <button
+                                        disabled={acting === r.id}
+                                        onClick={() => decline(r.id)}
+                                        style={{ flex: 1, minHeight: 38, borderRadius: 10, background: "#b91c1c", color: "#fff", font: "600 13px 'Figtree', sans-serif", border: 0, cursor: "pointer" }}
+                                    >
+                                        {acting === r.id ? "…" : "Confirm decline"}
+                                    </button>
+                                    <button
+                                        onClick={() => setDeclineId(null)}
+                                        style={{ flex: 1, minHeight: 38, borderRadius: 10, background: "#fff", color: NAV, font: "600 13px 'Figtree', sans-serif", border: `1px solid ${BORDER}`, cursor: "pointer" }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         );
     }
 
     return (
-        <>
-            <h1 style={{ font: "700 28px 'Figtree',sans-serif", margin: 0 }}>Referrals</h1>
-            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                <span className="chip" style={{ background: "#1b7d0e", color: "#fff", padding: "8px 14px" }}>Sent {sent.length}</span>
-                <span className="chip" style={{ padding: "8px 14px" }}>Received {received.length}</span>
-            </div>
+        <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 720, margin: "0 auto" }}>
+            <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: "0 0 4px" }}>Referrals</h1>
+            <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: "0 0 24px" }}>
+                Referrals you send and receive appear here.
+            </p>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px", alignItems: "flex-start" }}>
-                {/* Send form */}
-                <div className="card" style={{ flex: "1 1 380px" }}>
-                    <h2 style={{ font: "700 18px 'Figtree',sans-serif", margin: 0 }}>Send a referral</h2>
-                    <form onSubmit={sendReferral} style={{ display: "grid", gap: "14px", marginTop: "16px" }}>
-                        <div>
-                            <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Patient</label>
-                            <input className="in" value={patientId} onChange={e => setPatientId(e.target.value)} placeholder="[Patient name or ID]" required />
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-                            <div style={{ flex: "1 1 160px" }}>
-                                <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Refer to</label>
-                                <input className="in" value={referTo} onChange={e => setReferTo(e.target.value)} placeholder="Orthotist" required />
-                            </div>
-                            <div style={{ flex: "1 1 160px" }}>
-                                <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Professional</label>
-                                <input className="in" placeholder="Any available" />
-                            </div>
-                        </div>
-                        <div>
-                            <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Reason (required)</label>
-                            <input className="in" value={reason} onChange={e => setReason(e.target.value)} placeholder="Needs an ankle brace for foot drop" style={{ minHeight: "70px" }} required />
-                        </div>
-                        <div>
-                            <div style={{ font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Urgency (required)</div>
-                            <div style={{ display: "flex", gap: "8px" }}>
-                                {(["ROUTINE", "SOON", "URGENT"] as const).map(u => (
-                                    <button key={u} type="button"
-                                        className={`chip${urgency === u ? (u === "URGENT" ? " warn" : " stcur") : ""}`}
-                                        style={{ padding: "8px 14px", cursor: "pointer" }}
-                                        onClick={() => setUrgency(u)}>
-                                        {u.charAt(0) + u.slice(1).toLowerCase()}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <div style={{ font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Share with the receiver</div>
-                            <div style={{ display: "grid", gap: "8px", font: "500 15px 'Figtree',sans-serif" }}>
-                                {[
-                                    { label: "Latest assessment note", value: shareAssessment, set: setShareAssessment },
-                                    { label: "Current plan", value: sharePlan, set: setSharePlan },
-                                    { label: "Message history", value: shareMessages, set: setShareMessages },
-                                ].map(({ label, value, set }) => (
-                                    <label key={label} style={{ display: "flex", gap: "10px", alignItems: "center", margin: 0, fontWeight: 500 }}>
-                                        <input type="checkbox" checked={value} onChange={e => set(e.target.checked)} style={{ width: "20px", height: "20px", margin: 0 }} />
-                                        {label}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                        <div style={{ padding: "12px", borderRadius: "10px", background: "#eef3f8", font: "400 14px/1.5 'Figtree',sans-serif" }} className="muted">
-                            The patient will be asked to agree before anything is shared.
-                        </div>
-                        {sendError && <div style={{ color: "#8f1d1d", font: "400 13px 'Figtree',sans-serif" }}>{sendError}</div>}
-                        <button type="submit" className="btn" disabled={sending}>{sending ? "Sending…" : "Send referral"}</button>
-                    </form>
-                </div>
-
-                {/* Right column: in-progress + timeline */}
-                <div style={{ flex: "1 1 420px", display: "grid", gap: "20px" }}>
-                    {/* In progress list */}
-                    <div className="card">
-                        <h2 style={{ font: "700 18px 'Figtree',sans-serif", margin: 0 }}>In progress</h2>
-                        {referrals.length === 0 ? (
-                            <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "12px" }}>No referrals yet.</div>
-                        ) : referrals.map(r => (
-                            <div key={r.id} className="row" style={{ marginTop: "8px", cursor: "pointer" }} onClick={() => setSelected(r)}>
-                                <div style={{ flex: "1 1 180px" }}>
-                                    <div style={{ font: "600 15px 'Figtree',sans-serif" }}>
-                                        {r.patient.user.name} to {DISCIPLINE_LABELS[r.toDiscipline as keyof typeof DISCIPLINE_LABELS] ?? r.toDiscipline}
-                                    </div>
-                                    <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>
-                                        {r.fromProfessionalId === meId ? "owner: you" : `from ${r.sender.user.name}`}
-                                    </div>
-                                </div>
-                                <span className={`chip${STATUS_CHIP[r.status] ? ` ${STATUS_CHIP[r.status]}` : ""}`}>
-                                    {STATUS_LABEL[r.status] ?? r.status}
-                                </span>
-                                {r.status === "PATIENT_CONSENTED" && r.fromProfessionalId !== meId && (
-                                    <div style={{ display: "flex", gap: "8px" }}>
-                                        <button type="button" className="btn" style={{ minHeight: "32px", fontSize: "13px", padding: "0 12px" }}
-                                            disabled={acting === r.id} onClick={e => { e.stopPropagation(); respond(r.id, "ACCEPTED"); }}>Accept</button>
-                                        <button type="button" className="btn btn3" style={{ minHeight: "32px", fontSize: "13px", padding: "0 12px" }}
-                                            disabled={acting === r.id} onClick={e => { e.stopPropagation(); respond(r.id, "DECLINED"); }}>Decline</button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+            {received.length > 0 && (
+                <section style={{ marginBottom: 32 }}>
+                    <h2 style={{ font: "600 16px 'Figtree', sans-serif", margin: "0 0 12px", color: NAV }}>Received</h2>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {received.map((r) => <ReferralCard key={r.id} ref={r} isSent={false} />)}
                     </div>
+                </section>
+            )}
 
-                    {/* Timeline for selected */}
-                    {selected && (
-                        <div className="card">
-                            <h2 style={{ font: "700 18px 'Figtree',sans-serif", margin: 0 }}>
-                                {selected.patient.user.name} to {DISCIPLINE_LABELS[selected.toDiscipline as keyof typeof DISCIPLINE_LABELS] ?? selected.toDiscipline}
-                            </h2>
-                            <div style={{ display: "grid", gap: "14px", marginTop: "16px" }}>
-                                {TIMELINE_STEPS.map((step, i) => {
-                                    const cur = TL_STATUS_IDX[selected.status] ?? 0;
-                                    const done = i <= cur;
-                                    const isCur = i === cur + 1 && cur < TIMELINE_STEPS.length - 1;
-                                    return (
-                                        <div key={step} style={{ display: "flex", gap: "12px", alignItems: "flex-start", font: "500 15px 'Figtree',sans-serif" }}>
-                                            <span className={`tldot${done ? " tldone" : isCur ? " tlcur" : ""}`}></span>
-                                            <div style={!done && !isCur ? { color: "#4f6478" } : {}}>
-                                                {step}
-                                                {isCur && <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>Waiting. A reminder goes out if there is no reply in time.</div>}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </>
+            <section>
+                <h2 style={{ font: "600 16px 'Figtree', sans-serif", margin: "0 0 12px", color: NAV }}>Sent</h2>
+                {sent.length === 0 ? (
+                    <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 20, textAlign: "center" }}>
+                        <p style={{ font: "400 14px 'Figtree', sans-serif", color: MUTED, margin: 0 }}>
+                            No referrals sent yet. Use the Refer tab during a session to send one.
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {sent.map((r) => <ReferralCard key={r.id} ref={r} isSent={true} />)}
+                    </div>
+                )}
+            </section>
+        </div>
     );
 }

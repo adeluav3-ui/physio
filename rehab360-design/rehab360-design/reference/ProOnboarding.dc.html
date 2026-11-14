@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Professional onboarding checklist</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#f6f8f7}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:10px;background:#1b766e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#12302c;border:1px solid #c5d3cf}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:16px;padding:24px}
+.in{display:block;width:100%;min-height:46px;border:1px solid #b9c9c5;border-radius:10px;padding:0 12px;font:15px 'Figtree',sans-serif;background:#fff;color:#12302c}
+label{display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1ef;color:#14544e}
+.warn{background:#fdf1d8;color:#7a4f00}
+.muted{color:#4f6663}
+.step{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;font:500 15px 'Figtree',sans-serif}
+.dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 13px 'Figtree',sans-serif;flex:none;border:2px solid #b9c9c5;color:#4f6663}
+</style>
+</helmet>
+<div style="width:100%;padding:24px">
+<div style="max-width:1160px;margin:0 auto">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+<div style="font:700 22px 'Figtree',sans-serif;color:#1b766e">Rehab360</div>
+<span class="chip warn">Not yet visible to patients</span>
+</div>
+<h1 style="font:700 32px 'Figtree',sans-serif;margin-top:24px">Set up your practice</h1>
+<p class="muted" style="font:400 16px 'Figtree',sans-serif;margin-top:6px">Finish all steps, then submit for verification. This takes about 15 minutes.</p>
+<div style="height:8px;border-radius:99px;background:#dbe5e2;margin-top:18px;max-width:520px"><div style="width:50%;height:8px;border-radius:99px;background:#1b766e"></div></div>
+<div style="font:600 13px 'Figtree',sans-serif;margin-top:6px" class="muted">3 of 6 steps done</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:24px;align-items:flex-start">
+<div style="flex:0 1 300px;display:grid;gap:6px">
+<div class="step"><span class="dot" style="background:#1b766e;border-color:#1b766e;color:#fff">1</span>Account and discipline</div>
+<div class="step"><span class="dot" style="background:#1b766e;border-color:#1b766e;color:#fff">2</span>Licence</div>
+<div class="step"><span class="dot" style="background:#1b766e;border-color:#1b766e;color:#fff">3</span>Profile</div>
+<div class="step" style="background:#e3f1ef;font-weight:600"><span class="dot" style="border-color:#1b766e;color:#1b766e">4</span>Availability</div>
+<div class="step"><span class="dot">5</span>Payout details</div>
+<div class="step"><span class="dot">6</span>Submit for verification</div>
+</div>
+
+<div class="card" style="flex:999 1 560px;min-width:0">
+<h2 style="font:700 24px 'Figtree',sans-serif">Your weekly availability</h2>
+<p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">Patients can only book inside these hours. You can change them any time.</p>
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:20px">
+<div style="flex:1 1 200px"><label for="a-len">Session length</label><input class="in" id="a-len" placeholder="45 minutes"></div>
+<div style="flex:1 1 200px"><label for="a-gap">Break between sessions</label><input class="in" id="a-gap" placeholder="15 minutes"></div>
+<div style="flex:1 1 200px"><label for="a-type">Session types</label><input class="in" id="a-type" placeholder="Video, home visit"></div>
+</div>
+<div style="margin-top:24px;display:grid;gap:10px">
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 14px;border:1px solid #dbe5e2;border-radius:12px"><span style="width:90px;font:600 15px 'Figtree',sans-serif">Monday</span><span class="chip">9:00 am – 1:00 pm</span><span class="chip">3:00 pm – 6:00 pm</span><span class="muted" style="margin-left:auto;font:500 14px 'Figtree',sans-serif">Add hours</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 14px;border:1px solid #dbe5e2;border-radius:12px"><span style="width:90px;font:600 15px 'Figtree',sans-serif">Tuesday</span><span class="chip">9:00 am – 1:00 pm</span><span class="muted" style="margin-left:auto;font:500 14px 'Figtree',sans-serif">Add hours</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 14px;border:1px solid #dbe5e2;border-radius:12px"><span style="width:90px;font:600 15px 'Figtree',sans-serif">Wednesday</span><span class="muted" style="font:400 14px 'Figtree',sans-serif">Not available</span><span class="muted" style="margin-left:auto;font:500 14px 'Figtree',sans-serif">Add hours</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 14px;border:1px solid #dbe5e2;border-radius:12px"><span style="width:90px;font:600 15px 'Figtree',sans-serif">Thursday</span><span class="chip">2:00 pm – 7:00 pm</span><span class="muted" style="margin-left:auto;font:500 14px 'Figtree',sans-serif">Add hours</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 14px;border:1px solid #dbe5e2;border-radius:12px"><span style="width:90px;font:600 15px 'Figtree',sans-serif">Friday</span><span class="muted" style="font:400 14px 'Figtree',sans-serif">Not available</span><span class="muted" style="margin-left:auto;font:500 14px 'Figtree',sans-serif">Add hours</span></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;justify-content:space-between">
+<a class="btn btn2" href="#">Back</a><a class="btn" href="#">Save and continue</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":940}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

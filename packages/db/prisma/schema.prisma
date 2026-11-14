@@ -94,6 +94,7 @@ enum AppointmentStatus {
 enum SessionMode {
   VIDEO
   HOME
+  CHAT
 }
 
 enum PaymentStatus {
@@ -186,30 +187,36 @@ model PhysioProfile {
   verifiedAt      DateTime?
   rejectedAt      DateTime?
   rejectionReason String?
-  languages       String[]      @default([])
-  photoUrl        String?
-  sessionTypes    String[]      @default([])
+  languages         String[]      @default([])
+  photoUrl          String?
+  sessionTypes      String[]      @default([])
+  sessionMinutes    Int           @default(45)
+  bufferMinutes     Int           @default(15)
+  acceptingPatients Boolean       @default(true)
 
   // Identity & credential documents (URLs from Vercel Blob)
-  licenceDocUrl   String?
-  certificateUrl  String?
-  idType          String?       // "NIN" | "DRIVERS_LICENSE" | "INTL_PASSPORT" | "VOTERS_CARD"
-  ninNumber       String?       @unique  // ID number (NIN, licence, passport, or voter card)
-  ninDocUrl       String?
+  licenceDocUrl     String?
+  certificateUrl    String?
+  idType            String?       // "NIN" | "DRIVERS_LICENSE" | "INTL_PASSPORT" | "VOTERS_CARD"
+  ninNumber         String?       @unique  // ID number (NIN, licence, passport, or voter card)
+  ninDocUrl         String?
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  availability    Availability[]
-  appointments    Appointment[] @relation("physio_appointments")
-  programs        Program[]
-  referralsSent   Referral[]    @relation("referral_sender")
-  referralsReceived Referral[]  @relation("referral_receiver")
-  goalPlans       GoalPlan[]
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability      Availability[]
+  appointments      Appointment[] @relation("physio_appointments")
+  programs          Program[]
+  referralsSent     Referral[]    @relation("referral_sender")
+  referralsReceived Referral[]    @relation("referral_receiver")
+  goalPlans         GoalPlan[]
+  slotHolds         SlotHold[]
+  daysOff           DayOff[]
 
   @@index([licenceStatus])
   @@index([discipline, licenceStatus])
+  @@index([acceptingPatients, licenceStatus])
 }
 
 model PatientProfile {
@@ -297,19 +304,52 @@ model Availability {
   @@index([physioId, weekday])
 }
 
+// Temporarily holds a slot while the patient completes checkout.
+// Expired holds are cleaned up by the SlotHoldExpiry BullMQ job.
+model SlotHold {
+  id            String    @id @default(uuid())
+  physioId      String
+  patientId     String
+  startsAt      DateTime
+  endsAt        DateTime
+  expiresAt     DateTime
+  appointmentId String?   @unique // set when the booking is confirmed
+
+  physio        PhysioProfile @relation(fields: [physioId], references: [userId], onDelete: Cascade)
+
+  @@index([physioId, startsAt])
+  @@index([expiresAt])
+}
+
+// Single-day exceptions to a professional's recurring availability.
+model DayOff {
+  id       String        @id @default(uuid())
+  physioId String
+  date     DateTime      @db.Date
+  reason   String?
+
+  physio   PhysioProfile @relation(fields: [physioId], references: [userId], onDelete: Cascade)
+
+  @@unique([physioId, date])
+  @@index([physioId, date])
+}
+
 model Appointment {
-  id           String            @id @default(uuid())
-  patientId    String
-  physioId     String
-  dependentId  String?
-  intakeId     String?           @unique
-  type         AppointmentType
-  mode         SessionMode
-  startsAt     DateTime
-  endsAt       DateTime
-  status       AppointmentStatus @default(PENDING_PAYMENT)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id             String            @id @default(uuid())
+  patientId      String
+  physioId       String
+  dependentId    String?
+  intakeId       String?           @unique
+  type           AppointmentType
+  mode           SessionMode
+  startsAt       DateTime
+  endsAt         DateTime
+  status         AppointmentStatus @default(PENDING_PAYMENT)
+  cancelledAt    DateTime?
+  cancelReason   String?
+  disputeAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   patient      PatientProfile @relation("patient_appointments", fields: [patientId], references: [userId])
   physio       PhysioProfile   @relation("physio_appointments", fields: [physioId], references: [userId])
@@ -317,11 +357,12 @@ model Appointment {
   intake       Intake?         @relation(fields: [intakeId], references: [id])
   payment      Payment?
   videoSession VideoSession?
-  notes        SessionNote?
-  homeVisit    HomeVisit?
-  review       Review?
-  ledger       LedgerEntry[]
-  referral     Referral?       @relation("referral_appointment")
+  notes          SessionNote?
+  homeVisit      HomeVisit?
+  review         Review?
+  ledger         LedgerEntry[]
+  referral       Referral?       @relation("referral_appointment")
+  patientSummary PatientSummary?
 
   @@index([patientId, startsAt])
   @@index([physioId, startsAt])
@@ -377,17 +418,43 @@ model VideoSession {
 }
 
 model SessionNote {
-  id              String   @id @default(uuid())
-  appointmentId   String   @unique
+  id              String    @id @default(uuid())
+  appointmentId   String    @unique
   subjective      String
   objective       String
   assessment      String
   plan            String
-  outcomeMeasures Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  outcomeMeasures Json      @default("{}")
+  signedAt        DateTime?
+  signedBy        String?   // userId of the signer
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  appointment     Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointment     Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  addenda         NoteAddendum[]
+}
+
+// Post-sign-off additions — the original note is never edited after signing.
+model NoteAddendum {
+  id       String      @id @default(uuid())
+  noteId   String
+  body     String
+  addedBy  String      // userId
+  addedAt  DateTime    @default(now())
+
+  note     SessionNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  @@index([noteId, addedAt])
+}
+
+// Plain-language summary the professional writes for the patient after the session.
+model PatientSummary {
+  id            String      @id @default(uuid())
+  appointmentId String      @unique
+  body          String
+  approvedAt    DateTime?   // set when the professional finalises it
+  approvedBy    String?     // userId
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 }
 
 // ── Exercise library & programs ──────────
@@ -415,13 +482,16 @@ model Exercise {
 }
 
 model Program {
-  id         String   @id @default(uuid())
-  patientId  String
-  physioId   String
-  startsAt   DateTime
-  endsAt     DateTime?
-  status     String   @default("ACTIVE")
-  createdAt  DateTime @default(now())
+  id                String    @id @default(uuid())
+  patientId         String
+  physioId          String
+  startsAt          DateTime
+  endsAt            DateTime?
+  status            String    @default("ACTIVE")
+  version           Int       @default(1)
+  dischargeSummary  String?
+  maintenancePlan   String?
+  createdAt         DateTime  @default(now())
 
   patient    PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
   physio     PhysioProfile   @relation(fields: [physioId], references: [userId])

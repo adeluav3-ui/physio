@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Device case: prosthetics and orthotics</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#12302c;background:#f6f8f7}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:10px;background:#1b766e;color:#fff;font:600 14px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#12302c;border:1px solid #c5d3cf}
+.card{background:#fff;border:1px solid #dbe5e2;border-radius:14px;padding:20px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1ef;color:#14544e}
+.warn{background:#fdf1d8;color:#7a4f00}
+.muted{color:#4f6663}
+.nav{display:block;padding:10px 12px;border-radius:10px;font:500 15px 'Figtree',sans-serif;color:#12302c;text-decoration:none}
+.navon{background:#e3f1ef;font-weight:600;color:#14544e}
+h2{font:700 18px 'Figtree',sans-serif}
+.stage{flex:1 1 150px;padding:12px;border-radius:12px;border:1px solid #dbe5e2;background:#fff;font:600 14px 'Figtree',sans-serif}
+.stdone{background:#e3f4e8;border-color:#b6dcc2;color:#1d5c34}
+.stcur{background:#1b766e;color:#fff;border-color:#1b766e}
+.col{flex:1 1 200px;min-width:0;background:#eef3f2;border-radius:14px;padding:12px;display:grid;gap:10px;align-content:start}
+.mini{background:#fff;border:1px solid #dbe5e2;border-radius:12px;padding:12px}
+.in{display:block;width:100%;min-height:42px;border:1px solid #b9c9c5;border-radius:10px;padding:0 12px;font:15px 'Figtree',sans-serif;background:#fff}
+</style>
+</helmet>
+<div style="display:flex;flex-wrap:wrap;width:100%">
+<aside style="flex:0 0 240px;background:#fff;border-right:1px solid #dbe5e2;padding:20px 16px">
+<div style="font:700 20px 'Figtree',sans-serif;color:#1b766e;padding:0 12px 16px">Rehab360</div>
+<a class="nav" href="#">Home</a>
+<a class="nav navon" href="#">Patients</a>
+<a class="nav" href="#">Calendar</a>
+<a class="nav" href="#">Referrals</a>
+<a class="nav" href="#">Messages</a>
+<a class="nav" href="#">Earnings</a>
+<a class="nav" href="#">Profile</a>
+</aside>
+<main style="flex:999 1 560px;min-width:0;padding:28px">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center"><div><h1 style="font:700 26px 'Figtree',sans-serif">[Patient name] · Ankle-foot orthosis</h1><div class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:2px">Device case · Orthotist · Opened [date]</div></div><a class="btn" href="#">Update stage</a></div>
+
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:20px">
+<div class="stage stdone">1. Consult</div><div class="stage stdone">2. Assessment</div><div class="stage stcur">3. Measure or cast</div><div class="stage">4. Fabrication</div><div class="stage">5. Fitting</div><div class="stage">6. Follow-up</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:20px;margin-top:20px;align-items:flex-start">
+<div class="card" style="flex:1 1 380px"><h2>Measurements</h2>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:4px">Taken at a clinic visit. Fields come from the clinician's template.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px">
+<div><label for="m1" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">Left ankle width</label><input class="in" id="m1" placeholder="[measurement]"></div>
+<div><label for="m2" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">Calf circumference</label><input class="in" id="m2" placeholder="[measurement]"></div>
+<div><label for="m3" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">Foot length</label><input class="in" id="m3" placeholder="[measurement]"></div>
+<div><label for="m4" style="display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px">Shoe size</label><input class="in" id="m4" placeholder="[size]"></div>
+</div>
+<div style="margin-top:14px;height:110px;border-radius:12px;border:1px dashed #b9c9c5;background:#eef3f2;display:flex;align-items:center;justify-content:center;font:500 14px 'Figtree',sans-serif" class="muted">Photos of the limb and the cast</div>
+</div>
+<div style="flex:1 1 300px;display:grid;gap:20px">
+<div class="card"><h2>Next visit</h2><div style="font:700 20px 'Figtree',sans-serif;margin-top:8px">Clinic fitting · [date], 10:00</div><div class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:2px">Patient agreed to attend. Reminder set by email.</div></div>
+<div class="card"><h2>Linked care</h2><div style="display:grid;gap:10px;margin-top:10px;font:500 15px 'Figtree',sans-serif"><div style="display:flex;justify-content:space-between"><span>Referred by [Physiotherapist]</span><span class="chip">Summary due</span></div><div style="display:flex;justify-content:space-between"><span>Gait training to follow</span><span class="chip warn">Refer back</span></div></div></div>
+</div>
+</div>
+
+<h2 style="margin-top:28px">All device cases</h2>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px">
+<div class="col"><div style="font:700 13px 'Figtree',sans-serif" class="muted">ASSESSMENT · 2</div><div class="mini"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Knee brace</div></div><div class="mini"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Spinal support</div></div></div>
+<div class="col"><div style="font:700 13px 'Figtree',sans-serif" class="muted">MEASURE · 1</div><div class="mini" style="border-color:#1b766e"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Ankle-foot orthosis</div></div></div>
+<div class="col"><div style="font:700 13px 'Figtree',sans-serif" class="muted">FABRICATION · 2</div><div class="mini"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Below-knee prosthesis</div></div><div class="mini"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Insoles</div></div></div>
+<div class="col"><div style="font:700 13px 'Figtree',sans-serif" class="muted">FITTING · 1</div><div class="mini"><div style="font:600 14px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Wrist splint</div></div></div>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":860}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

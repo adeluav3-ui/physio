@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Landing and waitlist</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#f4f8fb}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:10px;background:#1b7d0e;color:#fff;font:600 15px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:16px;padding:24px}
+.in{display:block;width:100%;min-height:46px;border:1px solid #b4c4d3;border-radius:10px;padding:0 12px;font:15px 'Figtree',sans-serif;background:#fff;color:#022449}
+label{display:block;font:600 13px 'Figtree',sans-serif;margin-bottom:6px}
+.chip{display:inline-block;padding:5px 12px;border-radius:99px;font:600 13px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.muted{color:#4f6478}
+a{color:#1b7d0e}
+</style>
+</helmet>
+<div style="flex:0 0 100%;width:100%;height:5px;background:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%)"></div>
+<div style="width:100%">
+<div style="max-width:1160px;margin:0 auto;padding:0 24px">
+<header style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:20px 0">
+<img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:46px;width:auto;display:block">
+<nav style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;font:500 15px 'Figtree',sans-serif">
+<a href="#how" style="color:#022449;text-decoration:none">How it works</a>
+<a href="#pros" style="color:#022449;text-decoration:none">For professionals</a>
+<a href="#faq" style="color:#022449;text-decoration:none">FAQ</a>
+<a class="btn" href="#join" style="min-height:44px">Join the waitlist</a>
+</nav>
+</header>
+
+<section style="display:flex;flex-wrap:wrap;gap:48px;align-items:center;padding:56px 0 72px">
+<div style="flex:1 1 460px">
+<span class="chip">Opening soon in Nigeria</span>
+<h1 style="font:700 52px/1.08 'Figtree',sans-serif;margin-top:18px;letter-spacing:-0.02em">Rehabilitation care that comes to you, <span style="color:#1b7d0e">from people you can trust.</span></h1>
+<p class="muted" style="font:400 19px/1.55 'Figtree',sans-serif;margin-top:18px;max-width:520px">Talk to a licensed physiotherapist, occupational therapist, speech therapist, prosthetist or orthotist by video, then follow your plan at home with them beside you.</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:28px">
+<a class="btn" href="#join">I need care</a>
+<a class="btn btn2" href="#join">I provide care</a>
+</div>
+<p class="muted" style="font:400 14px 'Figtree',sans-serif;margin-top:16px">Free to join the waitlist. No payment details needed.</p>
+</div>
+<div style="flex:1 1 380px">
+<div class="card" style="padding:28px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:48px;height:48px;border-radius:50%;background:#cfe3ee"></div>
+<div><div style="font:700 16px 'Figtree',sans-serif">[Professional name]</div><div class="muted" style="font:400 14px 'Figtree',sans-serif">Physiotherapist · Licence verified</div></div>
+</div>
+<div style="margin-top:20px;padding:16px;border-radius:12px;background:#eef3f8">
+<div style="font:600 13px 'Figtree',sans-serif;color:#0f5a08">Your plan for today</div>
+<div style="display:flex;justify-content:space-between;margin-top:12px;font:500 15px 'Figtree',sans-serif"><span>Shoulder mobility</span><span class="muted">3 sets</span></div>
+<div style="display:flex;justify-content:space-between;margin-top:8px;font:500 15px 'Figtree',sans-serif"><span>Wall slides</span><span class="muted">10 reps</span></div>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px"><span class="chip">Video session Thu 4:00 pm</span></div>
+</div>
+</div>
+</section>
+</div>
+
+<section id="how" style="background:#fff;border-top:1px solid #d9e3ec;border-bottom:1px solid #d9e3ec">
+<div style="max-width:1160px;margin:0 auto;padding:64px 24px">
+<h2 style="font:700 34px 'Figtree',sans-serif">How it works</h2>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:32px">
+<div class="card" style="background:#f4f8fb"><div style="font:700 15px 'Figtree',sans-serif;color:#1b7d0e">1</div><h3 style="font:700 20px 'Figtree',sans-serif;margin-top:8px">Tell us what is wrong</h3><p class="muted" style="font:400 16px/1.5 'Figtree',sans-serif;margin-top:8px">A few questions check for anything urgent and point you to the right kind of specialist.</p></div>
+<div class="card" style="background:#f4f8fb"><div style="font:700 15px 'Figtree',sans-serif;color:#1b7d0e">2</div><h3 style="font:700 20px 'Figtree',sans-serif;margin-top:8px">Meet your specialist</h3><p class="muted" style="font:400 16px/1.5 'Figtree',sans-serif;margin-top:8px">Book a video session or a home visit with a professional whose licence we have checked.</p></div>
+<div class="card" style="background:#f4f8fb"><div style="font:700 15px 'Figtree',sans-serif;color:#1b7d0e">3</div><h3 style="font:700 20px 'Figtree',sans-serif;margin-top:8px">Follow your plan at home</h3><p class="muted" style="font:400 16px/1.5 'Figtree',sans-serif;margin-top:8px">Exercises, goals and reminders on your phone, with messages to your specialist when you are unsure.</p></div>
+</div>
+</div>
+</section>
+
+<section style="max-width:1160px;margin:0 auto;padding:64px 24px">
+<h2 style="font:700 34px 'Figtree',sans-serif">Five kinds of rehabilitation care, one place</h2>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-top:28px">
+<div class="card" style="padding:20px"><h3 style="font:700 17px 'Figtree',sans-serif">Physiotherapy</h3><p class="muted" style="font:400 14px/1.5 'Figtree',sans-serif;margin-top:6px">Pain, injury, movement and recovery after surgery.</p></div>
+<div class="card" style="padding:20px"><h3 style="font:700 17px 'Figtree',sans-serif">Occupational therapy</h3><p class="muted" style="font:400 14px/1.5 'Figtree',sans-serif;margin-top:6px">Daily tasks, work, play and living independently.</p></div>
+<div class="card" style="padding:20px"><h3 style="font:700 17px 'Figtree',sans-serif">Speech therapy</h3><p class="muted" style="font:400 14px/1.5 'Figtree',sans-serif;margin-top:6px">Speaking, understanding, voice and swallowing.</p></div>
+<div class="card" style="padding:20px"><h3 style="font:700 17px 'Figtree',sans-serif">Prosthetics</h3><p class="muted" style="font:400 14px/1.5 'Figtree',sans-serif;margin-top:6px">Artificial limbs, fitting and follow-up.</p></div>
+<div class="card" style="padding:20px"><h3 style="font:700 17px 'Figtree',sans-serif">Orthotics</h3><p class="muted" style="font:400 14px/1.5 'Figtree',sans-serif;margin-top:6px">Braces, supports and inserts.</p></div>
+</div>
+</section>
+
+<section id="join" style="background:#022449;color:#fff">
+<div style="max-width:1160px;margin:0 auto;padding:64px 24px;display:flex;flex-wrap:wrap;gap:48px">
+<div style="flex:1 1 360px"><h2 style="font:700 34px/1.15 'Figtree',sans-serif">Be among the first.</h2><p style="font:400 17px/1.55 'Figtree',sans-serif;margin-top:12px;color:#c9d9ec">Tell us who you are and we will invite you when your city opens. Professionals can also ask to join the first testing group.</p></div>
+<div class="card" style="flex:1 1 420px;color:#022449">
+<div style="display:flex;gap:8px;margin-bottom:20px">
+<div style="flex:1;padding:12px;text-align:center;border-radius:10px;background:#1b7d0e;color:#fff;font:600 15px 'Figtree',sans-serif">I need care</div>
+<div style="flex:1;padding:12px;text-align:center;border-radius:10px;background:#eef3f8;font:600 15px 'Figtree',sans-serif">I provide care</div>
+</div>
+<div style="display:grid;gap:14px">
+<div><label for="w-name">Full name</label><input class="in" id="w-name" placeholder="Your name"></div>
+<div><label for="w-email">Email</label><input class="in" id="w-email" placeholder="you@example.com"></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px"><div style="flex:1 1 180px"><label for="w-need">What do you need help with?</label><input class="in" id="w-need" placeholder="Pick one, or not sure"></div><div style="flex:1 1 140px"><label for="w-city">City</label><input class="in" id="w-city" placeholder="City"></div></div>
+<a class="btn" href="#join" style="width:100%">Join the waitlist</a>
+</div>
+</div>
+</div>
+</section>
+
+<section id="faq" style="max-width:1160px;margin:0 auto;padding:64px 24px">
+<h2 style="font:700 34px 'Figtree',sans-serif">Questions people ask</h2>
+<div style="display:grid;gap:12px;margin-top:24px;max-width:760px">
+<div class="card" style="padding:18px 20px"><h3 style="font:600 17px 'Figtree',sans-serif">Is this for emergencies?</h3><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">No. If you have severe pain, chest pain, trouble breathing, sudden weakness or loss of feeling, go to the nearest hospital.</p></div>
+<div class="card" style="padding:18px 20px"><h3 style="font:600 17px 'Figtree',sans-serif">Are the professionals licensed?</h3><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">Every professional is checked against their licensing body before they appear in search.</p></div>
+<div class="card" style="padding:18px 20px"><h3 style="font:600 17px 'Figtree',sans-serif">Who can see my records?</h3><p class="muted" style="font:400 15px/1.5 'Figtree',sans-serif;margin-top:6px">Only you and the professionals you choose. Every access to a record is logged.</p></div>
+</div>
+</section>
+<footer style="border-top:1px solid #d9e3ec;padding:28px 24px;text-align:center;font:400 14px 'Figtree',sans-serif;color:#4f6478">Rehab360 · Privacy · Terms · Safety information</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1500}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

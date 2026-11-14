@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Consultation room: video</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#f4f8fb}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:10px;background:#1b7d0e;color:#fff;font:600 14px 'Figtree',sans-serif;border:0;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.btnsm{min-height:34px;padding:0 12px;font-size:13px}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:14px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.warn{background:#fdf1d8;color:#7a4f00}
+.ok{background:#e3f4e8;color:#1d5c34}
+.muted{color:#4f6478}
+.lab{font:600 12px 'Figtree',sans-serif;color:#4f6478;letter-spacing:.04em;text-transform:uppercase}
+.tab{flex:1;text-align:center;padding:12px 4px;font:600 14px 'Figtree',sans-serif;color:#4f6478;text-decoration:none;border-bottom:3px solid transparent}
+.tabon{color:#0f5a08;border-bottom-color:#1b7d0e}
+.round{min-width:64px;height:48px;padding:0 14px;border-radius:24px;display:flex;align-items:center;justify-content:center;background:#fff;color:#022449;border:1px solid #c3d1de;font:600 13px 'Figtree',sans-serif}
+.ex{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #e4ebf2}
+.thumb{width:64px;height:48px;border-radius:8px;background:#cdddea;flex:none}
+.dose{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:#eef3f8;font:600 12px 'Figtree',sans-serif}
+</style>
+</helmet>
+<div style="width:1280px;height:900px;display:flex;flex-direction:column">
+<div style="height:5px;background:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%);flex:none"></div>
+<div style="height:64px;flex:none;background:#fff;border-bottom:1px solid #d9e3ec;display:flex;align-items:center;gap:16px;padding:0 20px">
+<img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:34px;width:auto;display:block">
+<div style="width:1px;height:28px;background:#d9e3ec"></div>
+<div><div style="font:700 16px 'Figtree',sans-serif">Session with [Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Follow-up · Video · 45 minutes</div></div>
+<span class="chip ok" style="margin-left:8px">Connected</span>
+<div style="margin-left:auto;display:flex;align-items:center;gap:14px"><div style="text-align:right"><div class="lab">Time left</div><div style="font:700 20px 'Figtree',sans-serif">26:40</div></div><a class="btn" href="#" style="background:#b42318">End session</a></div>
+</div>
+
+<div style="flex:1;display:flex;gap:16px;padding:16px;min-height:0">
+
+<aside class="card" style="flex:0 0 300px;padding:18px;overflow:hidden">
+<div style="display:flex;gap:12px;align-items:center"><div style="width:48px;height:48px;border-radius:50%;background:#cfe3ee"></div><div><div style="font:700 17px 'Figtree',sans-serif">[Patient name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">34 · Female · Lagos</div></div></div>
+<div class="lab" style="margin-top:20px">Reason for visit</div>
+<p style="font:500 15px/1.4 'Figtree',sans-serif;margin-top:4px">Right shoulder pain for 3 weeks, worse when lifting the arm.</p>
+<div class="lab" style="margin-top:18px">Safety check</div>
+<div style="margin-top:6px"><span class="chip warn">Caution</span><span class="muted" style="font:400 13px 'Figtree',sans-serif;margin-left:6px">Pain at night</span></div>
+<div class="lab" style="margin-top:18px">Intake answers</div>
+<div style="display:grid;gap:8px;margin-top:6px;font:400 14px 'Figtree',sans-serif">
+<div style="display:flex;justify-content:space-between"><span class="muted">Pain now</span><b>6 / 10</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Numbness</span><b>No</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Recent fall</span><b>No</b></div>
+<div style="display:flex;justify-content:space-between"><span class="muted">Works as</span><b>Tailor</b></div></div>
+<div class="lab" style="margin-top:18px">Last visit</div>
+<div style="margin-top:6px;padding:10px 12px;border-radius:10px;background:#eef3f8;font:400 13px/1.4 'Figtree',sans-serif"><b>12 Oct</b> · Pain 8 to 6 after 2 weeks. Plan: wall slides, pendulum.</div>
+<div class="lab" style="margin-top:18px">Current plan</div>
+<div style="margin-top:6px;font:500 14px 'Figtree',sans-serif">3 exercises · 71% done this week</div>
+<div style="height:8px;border-radius:99px;background:#e4ebf2;margin-top:6px"><div style="width:71%;height:8px;border-radius:99px;background:#4eb91e"></div></div>
+</aside>
+
+<main style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+<div style="flex:1;border-radius:18px;background:#022449;position:relative;overflow:hidden">
+<div style="position:absolute;inset:14px;border-radius:14px;background:#12396a;display:flex;align-items:center;justify-content:center;color:#cdddea;font:500 16px 'Figtree',sans-serif">[Patient name]'s video</div>
+<div style="position:absolute;right:28px;top:28px;width:150px;height:100px;border-radius:12px;background:#4f6478;border:2px solid #f4f8fb;display:flex;align-items:center;justify-content:center;color:#fff;font:500 12px 'Figtree',sans-serif">You</div>
+<div style="position:absolute;left:28px;bottom:28px;padding:12px 14px;border-radius:12px;background:#fff;display:flex;gap:12px;align-items:center;max-width:380px"><div class="thumb"></div><div><div class="lab">Showing to patient</div><div style="font:700 15px 'Figtree',sans-serif">Wall slides</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">2 sets of 10, once a day</div></div></div>
+</div>
+<div style="display:flex;justify-content:center;gap:10px;flex:none">
+<span class="round">Mute</span><span class="round">Camera</span><span class="round">Audio only</span><span class="round">Share screen</span><span class="round" style="background:#e6f4e1;border-color:#1b7d0e;color:#0f5a08">Chat</span></div>
+</main>
+
+<aside class="card" style="flex:0 0 400px;display:flex;flex-direction:column;overflow:hidden">
+<div style="display:flex;border-bottom:1px solid #d9e3ec;padding:0 8px;flex:none"><a class="tab" href="#">Notes</a><a class="tab tabon" href="#">Exercises</a><a class="tab" href="#">Plan (3)</a><a class="tab" href="#">Refer</a></div>
+<div style="padding:16px;flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+<input aria-label="Search exercises" placeholder="Search by body area, condition or goal" style="display:block;width:100%;min-height:42px;border:1px solid #b4c4d3;border-radius:10px;padding:0 12px;font:14px 'Figtree',sans-serif">
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"><span class="chip" style="background:#e6f4e1;color:#0f5a08">Shoulder</span><span class="chip">Mobility</span><span class="chip">Strength</span><span class="chip">Protocols</span></div>
+<div style="flex:1;overflow:hidden;margin-top:6px">
+<div class="ex"><div class="thumb"></div><div style="flex:1;min-width:0"><div style="font:600 14px 'Figtree',sans-serif">Wall slides</div><span class="dose">2 x 10 · daily</span></div><span class="chip ok" style="flex:none">In plan</span></div>
+<div class="ex"><div class="thumb"></div><div style="flex:1;min-width:0"><div style="font:600 14px 'Figtree',sans-serif">Pendulum swings</div><span class="dose">3 x 30 s · twice daily</span></div><span class="chip ok" style="flex:none">In plan</span></div>
+<div class="ex"><div class="thumb"></div><div style="flex:1;min-width:0"><div style="font:600 14px 'Figtree',sans-serif">Band external rotation</div><span class="dose">3 x 12 · daily</span></div><div style="display:flex;gap:6px;flex:none"><a class="btn btn2 btnsm" href="#">Show</a><a class="btn btnsm" href="#">Add</a></div></div>
+<div class="ex"><div class="thumb"></div><div style="flex:1;min-width:0"><div style="font:600 14px 'Figtree',sans-serif">Doorway chest stretch</div><span class="dose">3 x 30 s · daily</span></div><div style="display:flex;gap:6px;flex:none"><a class="btn btn2 btnsm" href="#">Show</a><a class="btn btnsm" href="#">Add</a></div></div>
+<div class="ex"><div class="thumb"></div><div style="flex:1;min-width:0"><div style="font:600 14px 'Figtree',sans-serif">Scapular squeeze</div><span class="dose">2 x 15 · daily</span></div><div style="display:flex;gap:6px;flex:none"><a class="btn btn2 btnsm" href="#">Show</a><a class="btn btnsm" href="#">Add</a></div></div>
+</div>
+<div style="flex:none;border-top:1px solid #d9e3ec;padding-top:12px;display:flex;align-items:center;gap:10px"><div style="flex:1"><div style="font:600 14px 'Figtree',sans-serif">3 in the plan</div><div class="muted" style="font:400 12px 'Figtree',sans-serif">Edit doses in the Plan tab</div></div><a class="btn" href="#">Send plan to patient</a></div>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

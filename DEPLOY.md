@@ -8,7 +8,7 @@
 |-------|------|-------|
 | **API** | Render Web Service (Docker) | `physio-api`, Frankfurt `starter` plan |
 | **Redis** | Render Key Value | `physio-redis`, auto-linked to API |
-| **Database** | Neon Postgres | Frankfurt region, single branch for prod |
+| **Database** | Railway Postgres | Existing Railway database |
 | **Web** | Vercel | Next.js 15 App Router, Frankfurt edge preferred |
 
 ---
@@ -17,12 +17,11 @@
 
 Follow these steps **in order**. Do not start the next step until the current one shows green/OK.
 
-### 1. Provision Neon Postgres (Frankfurt)
+### 1. Get the Railway Postgres connection string
 
-1. Create a new Neon project → region: **eu-central-1 (Frankfurt)**.
-2. Copy the connection string from the Neon dashboard (it looks like
-   `postgresql://user:password@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`).
-3. Save it — this becomes `DATABASE_URL` on the API service.
+1. Railway dashboard → your Postgres service → **Connect** tab.
+2. Copy the **DATABASE_URL** (format: `postgresql://postgres:<password>@<host>:<port>/railway?sslmode=require`).
+3. Paste it as `DATABASE_URL` in the Render API service's environment variables. **Never commit it to the repo.**
 
 ### 2. Deploy the Render Blueprint
 
@@ -79,7 +78,7 @@ bash scripts/post-deploy-check.sh
 |----------|----------|------------|------------|
 | `NODE_ENV` | ✓ | Must be `production` | Hardcoded in render.yaml |
 | `PORT` | ✓ | API listen port | `4000` (hardcoded in render.yaml) |
-| `DATABASE_URL` | ✓ | Neon Postgres connection string | Copy from Neon dashboard; include `?sslmode=require` |
+| `DATABASE_URL` | ✓ | Railway Postgres connection string | Railway dashboard → your Postgres → Connect tab; must include `?sslmode=require` |
 | `REDIS_URL` | ✓ | Redis connection string | Auto-injected by Render from `physio-redis` service |
 | `JWT_SECRET` | ✓ | HMAC secret for JWTs | **Generate:** `openssl rand -hex 32` — must be ≥ 32 chars |
 | `JWT_EXPIRES_IN` | ✓ | JWT lifetime | `7d` (or `24h` for tighter sessions) |

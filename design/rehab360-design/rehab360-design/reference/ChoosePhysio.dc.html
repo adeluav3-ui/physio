@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choose a physiotherapist (phone)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;font-family:'Figtree',system-ui,sans-serif;color:#022449;background:#e9eff5}
+*{box-sizing:border-box}h1,h2,h3,p{margin:0}
+.phone{width:390px;height:844px;border:1px solid #b4c4d3;border-radius:36px;background:#f4f8fb;overflow:hidden;display:flex;flex-direction:column;flex:none;position:relative}
+.btn{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:12px;background:#1b7d0e;color:#fff;font:600 15px 'Figtree',sans-serif;text-decoration:none}
+.btn2{background:#fff;color:#022449;border:1px solid #c3d1de}
+.btnsm{min-height:40px;padding:0 16px;font-size:14px;border-radius:10px;display:inline-flex}
+.card{background:#fff;border:1px solid #d9e3ec;border-radius:16px;padding:14px}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;font:600 12px 'Figtree',sans-serif;background:#e3f1f6;color:#07506b}
+.ok{background:#e3f4e8;color:#1d5c34}
+.warn{background:#fdf1d8;color:#7a4f00}
+.chipb{display:inline-block;padding:9px 14px;border-radius:99px;font:600 14px 'Figtree',sans-serif;background:#fff;border:1.5px solid #c3d1de;color:#022449}
+.chipon{border-color:#1b7d0e;background:#e6f4e1;color:#0f5a08}
+.muted{color:#4f6478}
+.cap{font:600 13px 'Figtree',sans-serif;color:#4f6478;margin-bottom:10px}
+.av{width:52px;height:52px;border-radius:50%;background:#cfe3ee;flex:none}
+.lab{font:600 13px 'Figtree',sans-serif;margin:18px 0 8px}
+</style>
+</helmet>
+<div style="width:900px;height:960px;padding:40px;display:flex;gap:40px">
+
+<div><div class="cap">1. Choose a physiotherapist</div>
+<div class="phone">
+<div style="padding:22px 20px 12px;flex:none">
+<img src="../brand-assets/logo-horizontal-web.png" alt="Rehab360" style="height:28px;width:auto;display:block;margin-bottom:14px">
+<h1 style="font:700 24px/1.2 'Figtree',sans-serif">Choose a physiotherapist</h1>
+<p class="muted" style="font:400 14px/1.45 'Figtree',sans-serif;margin-top:4px">For shoulder pain. Listed by how well they fit your problem, then by the soonest time.</p>
+<div style="display:flex;gap:8px;margin-top:12px"><a class="btn btn2 btnsm" href="#" style="flex:1;justify-content:center">Match me quickly</a><a class="btn btn2 btnsm" href="#">Filters (1)</a></div>
+<div style="display:flex;gap:8px;margin-top:10px;overflow:hidden"><span class="chip" style="background:#e6f4e1;color:#0f5a08">Ranked</span><span class="chip" style="background:#fff;border:1px solid #c3d1de;color:#022449">Soonest</span><span class="chip" style="background:#fff;border:1px solid #c3d1de;color:#022449">Lowest price</span><span class="chip" style="background:#fff;border:1px solid #c3d1de;color:#022449">Top rated</span></div>
+</div>
+<div style="flex:1;overflow:hidden;padding:4px 20px;display:grid;gap:10px;align-content:start">
+<div class="card"><div style="display:flex;gap:12px"><div class="av"></div><div style="flex:1;min-width:0"><div style="font:700 16px 'Figtree',sans-serif">[Physiotherapist name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Shoulder and sports injuries · English, Yoruba</div><div style="display:flex;gap:6px;margin-top:6px"><span class="chip ok">Best fit</span><span class="chip">Video</span><span class="chip">4.9 · 38</span></div></div></div>
+<div style="display:flex;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #e4ebf2"><div style="flex:1"><div class="muted" style="font:400 12px 'Figtree',sans-serif">Next free</div><div style="font:600 14px 'Figtree',sans-serif">Today, 6:00 pm</div></div><div style="margin-right:12px;font:700 15px 'Figtree',sans-serif">₦[price]</div><a class="btn btnsm" href="#">Book</a></div></div>
+<div class="card"><div style="display:flex;gap:12px"><div class="av"></div><div style="flex:1;min-width:0"><div style="font:700 16px 'Figtree',sans-serif">[Physiotherapist name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Shoulder, neck and back · English</div><div style="display:flex;gap:6px;margin-top:6px"><span class="chip ok">Best fit</span><span class="chip">Video</span><span class="chip">Chat</span></div></div></div>
+<div style="display:flex;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #e4ebf2"><div style="flex:1"><div class="muted" style="font:400 12px 'Figtree',sans-serif">Next free</div><div style="font:600 14px 'Figtree',sans-serif">Tomorrow, 10:00 am</div></div><div style="margin-right:12px;font:700 15px 'Figtree',sans-serif">₦[price]</div><a class="btn btnsm" href="#">Book</a></div></div>
+<div class="card"><div style="display:flex;gap:12px"><div class="av"></div><div style="flex:1;min-width:0"><div style="font:700 16px 'Figtree',sans-serif">[Physiotherapist name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">General physiotherapy · English, Yoruba, Igbo</div><div style="display:flex;gap:6px;margin-top:6px"><span class="chip">Video</span><span class="chip">New on Rehab360</span></div></div></div>
+<div style="display:flex;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #e4ebf2"><div style="flex:1"><div class="muted" style="font:400 12px 'Figtree',sans-serif">Next free</div><div style="font:600 14px 'Figtree',sans-serif">Mon, 4:00 pm</div></div><div style="margin-right:12px;font:700 15px 'Figtree',sans-serif">₦[price]</div><a class="btn btnsm" href="#">Book</a></div></div>
+<div class="card" style="background:#eef3f8"><div style="display:flex;gap:12px"><div class="av" style="opacity:.6"></div><div style="flex:1;min-width:0"><div style="font:700 16px 'Figtree',sans-serif;color:#4f6478">[Physiotherapist name]</div><div class="muted" style="font:400 13px 'Figtree',sans-serif">Shoulder and neck · English</div><div style="display:flex;gap:6px;margin-top:6px"><span class="chip warn">No open times</span></div></div></div>
+<div style="display:flex;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #d9e3ec"><div style="flex:1" class="muted"><div style="font:400 12px 'Figtree',sans-serif">Fully booked this month</div></div><a class="btn btn2 btnsm" href="#">Join waitlist</a></div></div>
+</div>
+</div></div>
+
+<div><div class="cap">2. Filters</div>
+<div class="phone">
+<div style="padding:22px 20px 12px;flex:none;display:flex;justify-content:space-between;align-items:center"><h1 style="font:700 24px 'Figtree',sans-serif">Filters</h1><a class="chip" href="#" style="padding:8px 14px;text-decoration:none">Clear all</a></div>
+<div style="flex:1;overflow:hidden;padding:0 20px">
+<div class="lab" style="margin-top:4px">Area of practice</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chipb chipon">Shoulder</span><span class="chipb">Back and neck</span><span class="chipb">Stroke</span><span class="chipb">Children</span><span class="chipb">Sports</span></div>
+<div class="lab">Language</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chipb">English</span><span class="chipb">Yoruba</span><span class="chipb">Igbo</span><span class="chipb">Hausa</span></div>
+<div class="lab">Visit type</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chipb">Video</span><span class="chipb">Chat</span><span class="chipb">In person</span></div>
+<div class="lab">Day</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chipb">Today</span><span class="chipb">Weekdays</span><span class="chipb">Weekend</span></div>
+<div class="lab">Gender</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chipb">Any</span><span class="chipb">Woman</span><span class="chipb">Man</span></div>
+<div class="lab">Price per session</div><div style="height:6px;border-radius:99px;background:#d9e3ec;margin:10px 8px"><div style="margin-left:10%;width:60%;height:6px;border-radius:99px;background:#1b7d0e"></div></div><div style="display:flex;justify-content:space-between;font:600 13px 'Figtree',sans-serif" class="muted"><span>₦[min]</span><span>₦[max]</span></div>
+</div>
+<div style="padding:14px 20px 22px;flex:none;border-top:1px solid #d9e3ec;background:#fff"><a class="btn" href="#">Show 12 physiotherapists</a></div>
+</div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":960}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

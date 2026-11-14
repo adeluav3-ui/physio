@@ -38,16 +38,33 @@ export class ReferralsController {
         return this.referrals.listForPatient(user);
     }
 
+    @Get("admin/all")
+    @Roles("ADMIN")
+    listAll() {
+        return this.referrals.listAll();
+    }
+
+    @Get(":id")
+    getOne(@CurrentUser() user: SessionUser, @Param("id") id: string) {
+        return this.referrals.get(user, id);
+    }
+
+    @Get(":id/packet")
+    @Roles("PHYSIO", "ADMIN")
+    getPacket(@CurrentUser() user: SessionUser, @Param("id") id: string) {
+        return this.referrals.getPacket(user, id);
+    }
+
     @Post(":id/consent")
     @Roles("PATIENT")
     consent(@CurrentUser() user: SessionUser, @Param("id") id: string) {
         return this.referrals.consent(user, id);
     }
 
-    @Get("admin/all")
-    @Roles("ADMIN")
-    listAll() {
-        return this.referrals.listAll();
+    @Post(":id/withdraw")
+    @Roles("PATIENT")
+    withdraw(@CurrentUser() user: SessionUser, @Param("id") id: string) {
+        return this.referrals.withdraw(user, id);
     }
 
     @Post(":id/respond")
