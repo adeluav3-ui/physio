@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { OnEvent } from "@nestjs/event-emitter";
 import { MailService } from "../mail/mail.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -101,6 +102,47 @@ export class NotificationsService {
         );
 
         this.logger.log(`Appointment confirmed emails sent for ${appointmentId}`);
+    }
+
+    @OnEvent("exercise.pain-alert")
+    async onExercisePainAlert(payload: {
+        patientId: string;
+        patientName: string;
+        physioEmail: string;
+        physioName: string;
+        feel?: string;
+        painAfter?: number;
+    }) {
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const feel = payload.feel ?? "painful";
+        const score = payload.painAfter !== undefined ? ` (${payload.painAfter}/10)` : "";
+        await this.mail.sendRaw(
+            payload.physioEmail,
+            `Pain alert: ${payload.patientName} reported ${feel} during exercise`,
+            `<p>Hi ${escapeHtml(payload.physioName)},</p>
+<p>${escapeHtml(payload.patientName)} reported <strong>${escapeHtml(feel)}</strong>${score} after completing an exercise in their home programme.</p>
+<p>You may want to <a href="${appUrl}/pro/patients">review their plan</a> and check in with them.</p>`,
+            `Hi ${payload.physioName},\n\n${payload.patientName} reported ${feel}${score} after a home exercise.\n\nCheck their plan: ${appUrl}/pro/patients`,
+        );
+    }
+
+    @OnEvent("program.send")
+    async onProgramSend(payload: { programId: string; patientId: string }) {
+        const patient = await this.prisma.client.patientProfile.findUnique({
+            where: { userId: payload.patientId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!patient) return;
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        await this.mail.sendRaw(
+            patient.user.email,
+            "Your exercise plan has been updated",
+            `<p>Hi ${escapeHtml(patient.user.name)},</p>
+<p>Your physiotherapist has updated your exercise plan.</p>
+<p><a href="${appUrl}/app/plan">View your plan</a></p>`,
+            `Hi ${patient.user.name},\n\nYour exercise plan has been updated.\n\nView it here: ${appUrl}/app/plan`,
+        );
     }
 }
 

@@ -12,7 +12,7 @@ export class RemindersScheduler implements OnApplicationBootstrap {
         private readonly prisma: PrismaService,
     ) {}
 
-    /** On boot, re-schedule reminders for upcoming confirmed appointments. */
+    /** On boot, re-schedule reminders for upcoming confirmed appointments and register the daily inactivity check. */
     async onApplicationBootstrap() {
         try {
             const upcoming = await this.prisma.client.appointment.findMany({
@@ -23,6 +23,9 @@ export class RemindersScheduler implements OnApplicationBootstrap {
                 await this.reminders.scheduleSessionReminder(a.id, a.startsAt);
             }
             this.logger.log(`Boot-rescheduled reminders for ${upcoming.length} upcoming appointment(s)`);
+
+            // Register daily inactivity nudge as a repeatable job (runs every 24 h).
+            await this.reminders.scheduleInactivityNudge();
         } catch (err) {
             this.logger.warn(
                 `Boot reminder reschedule skipped — Redis unavailable: ${(err as Error).message}`,

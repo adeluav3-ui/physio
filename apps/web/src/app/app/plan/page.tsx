@@ -1,284 +1,211 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Chip, EmptyState, ProgressBar, Tabs } from "@physio/ui";
 
 type ExerciseItem = {
     id: string;
-    sets: number | null;
-    reps: number | null;
-    holdSeconds: number | null;
+    sets: number;
+    reps: number;
+    holdSeconds: number;
     frequency: string;
     notes: string | null;
-    exercise: { id: string; name: string; region: string; cues: string; difficulty: number };
+    exercise: { id: string; name: string; region: string; cues: string };
+    todayLog: { completed: boolean; notes: string | null } | null;
 };
 
-type Program = {
-    id: string;
-    startsAt: string;
-    endsAt: string | null;
+type TodayData = {
+    programId: string;
     items: ExerciseItem[];
+    streak: number;
+    doneToday: number;
+    total: number;
 };
 
-type TaskLog = { date: string; completed: boolean };
+type Feel = "easy" | "okay" | "painful";
 
-type PracticeTask = {
-    id: string;
-    title: string;
-    schedule: string;
-    notes: string | null;
-    logs: TaskLog[];
-};
-
-type Goal = {
-    id: string;
-    title: string;
-    status: string;
-    progress: number;
-    notes: string | null;
-    tasks: PracticeTask[];
-};
-
-type GoalPlan = {
-    id: string;
-    title: string;
-    status: string;
-    createdAt: string;
-    goals: Goal[];
-};
-
-const REGION_LABELS: Record<string, string> = {
-    KNEE: "Knee",
-    SHOULDER: "Shoulder",
-    LOWER_BACK: "Lower back",
-    HIP: "Hip",
-    ANKLE: "Ankle",
-    NECK: "Neck",
-    ELBOW: "Elbow",
-    WRIST: "Wrist",
-    OTHER: "Other",
-};
-
-const today = new Date().toISOString().slice(0, 10);
-
-function isCompletedToday(logs: TaskLog[]) {
-    return logs.some((l) => l.date.slice(0, 10) === today && l.completed);
-}
+const NAV = "#022449";
+const GREEN = "#1b7d0e";
+const MUTED = "#4f6478";
+const BORDER = "#d9e3ec";
 
 export default function PatientPlanPage() {
-    const [programs, setPrograms] = useState<Program[]>([]);
-    const [goalPlans, setGoalPlans] = useState<GoalPlan[]>([]);
+    const [data, setData] = useState<TodayData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<"exercises" | "goals">("exercises");
     const [logging, setLogging] = useState<string | null>(null);
+    const [expanded, setExpanded] = useState<string | null>(null);
 
     useEffect(() => {
-        async function load() {
-            try {
-                const [sessRes, goalRes] = await Promise.all([
-                    fetch("/api/proxy/triage/latest").then((r) => (r.ok ? r.json() : null)),
-                    fetch("/api/proxy/goal-plans/mine").then((r) => (r.ok ? r.json() : [])),
-                ]);
-                // Get patient ID from session for programs endpoint
-                const meRes = await fetch("/api/proxy/patients/me");
-                if (meRes.ok) {
-                    const me = await meRes.json();
-                    const progRes = await fetch(`/api/proxy/programs/patient/${me.userId ?? me.id}`);
-                    if (progRes.ok) setPrograms(await progRes.json());
+        fetch("/api/proxy/programs/today")
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d: TodayData | null) => {
+                setData(d);
+                // Auto-expand the first incomplete exercise
+                if (d?.items) {
+                    const first = d.items.find((i) => !i.todayLog?.completed);
+                    if (first) setExpanded(first.id);
                 }
-                setGoalPlans(goalRes ?? []);
-            } catch {
-                // Show empty state
-            } finally {
-                setLoading(false);
-            }
-        }
-        load();
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
     }, []);
 
-    async function toggleTask(taskId: string, currentlyDone: boolean) {
-        setLogging(taskId);
+    async function markDone(itemId: string, feel: Feel) {
+        setLogging(itemId);
         try {
-            await fetch(`/api/proxy/goal-plans/tasks/${taskId}/log`, {
+            await fetch(`/api/proxy/programs/items/${itemId}/log`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ completed: !currentlyDone }),
+                body: JSON.stringify({ completed: true, feel }),
             });
-            // Optimistic update
-            setGoalPlans((prev) =>
-                prev.map((gp) => ({
-                    ...gp,
-                    goals: gp.goals.map((g) => ({
-                        ...g,
-                        tasks: g.tasks.map((t) =>
-                            t.id === taskId
-                                ? {
-                                      ...t,
-                                      logs: currentlyDone
-                                          ? t.logs.filter((l) => l.date.slice(0, 10) !== today)
-                                          : [{ date: today, completed: true }, ...t.logs],
-                                  }
-                                : t,
-                        ),
-                    })),
-                })),
-            );
+            setData((prev) => {
+                if (!prev) return prev;
+                const items = prev.items.map((i) =>
+                    i.id === itemId ? { ...i, todayLog: { completed: true, notes: feel } } : i,
+                );
+                const doneToday = items.filter((i) => i.todayLog?.completed).length;
+                return { ...prev, items, doneToday };
+            });
+            // Auto-expand next incomplete
+            setExpanded((cur) => {
+                const remaining = data?.items.filter((i) => !i.todayLog?.completed && i.id !== itemId) ?? [];
+                return cur === itemId ? (remaining[0]?.id ?? null) : cur;
+            });
         } finally {
             setLogging(null);
         }
     }
 
-    const TABS = [
-        { key: "exercises", label: "Exercises" },
-        { key: "goals", label: "Goals" },
-    ] as const;
-
     if (loading) {
         return (
-            <div className="mx-auto max-w-2xl p-4">
-                <p className="text-sm text-text-muted">Loading your plan…</p>
+            <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree', system-ui, sans-serif" }}>
+                <p style={{ fontSize: 14, color: MUTED }}>Loading your plan…</p>
             </div>
         );
     }
 
-    return (
-        <div className="mx-auto max-w-2xl p-4">
-            <h1 className="text-2xl font-semibold">My plan</h1>
+    if (!data || data.items.length === 0) {
+        return (
+            <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 480, margin: "0 auto" }}>
+                <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your exercises</h1>
+                <div style={{ marginTop: 24, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 20, textAlign: "center" }}>
+                    <p style={{ font: "500 15px 'Figtree', sans-serif", color: MUTED }}>No exercise plan yet.</p>
+                    <p style={{ font: "400 14px 'Figtree', sans-serif", color: MUTED, marginTop: 4 }}>
+                        Your professional will add exercises after your first session.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
-            <div className="mt-4">
-                <Tabs
-                    items={TABS.map((t) => ({ key: t.key, label: t.label }))}
-                    active={tab}
-                    onChange={(k) => setTab(k as typeof tab)}
-                />
+    const pct = data.total > 0 ? Math.round((data.doneToday / data.total) * 100) : 0;
+
+    return (
+        <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", gap: 14 }}>
+            <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your exercises</h1>
+            <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: 0, marginTop: -8 }}>
+                {data.doneToday} of {data.total} done today
+            </p>
+
+            {/* Progress bar */}
+            <div style={{ height: 8, borderRadius: 99, background: "#d9e3ec" }}>
+                <div style={{ width: `${pct}%`, height: 8, borderRadius: 99, background: GREEN, transition: "width 0.4s" }} />
             </div>
 
-            {tab === "exercises" && (
-                <div className="mt-6 flex flex-col gap-4">
-                    {programs.length === 0 ? (
-                        <EmptyState
-                            title="No exercise program yet"
-                            description="Your professional will assign exercises after your first session."
-                        />
-                    ) : (
-                        programs.map((prog) => (
-                            <Card key={prog.id}>
-                                <p className="text-xs uppercase tracking-wide text-text-muted">
-                                    Program · since{" "}
-                                    {new Date(prog.startsAt).toLocaleDateString(undefined, {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                    })}
-                                </p>
-                                <ul className="mt-3 flex flex-col gap-3">
-                                    {prog.items.map((item) => (
-                                        <li key={item.id} className="border-t border-border pt-3 first:border-0 first:pt-0">
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div>
-                                                    <p className="font-medium">{item.exercise.name}</p>
-                                                    <div className="mt-0.5 flex flex-wrap gap-1">
-                                                        <Chip>{REGION_LABELS[item.exercise.region] ?? item.exercise.region}</Chip>
-                                                        {item.sets && <Chip>{item.sets} sets</Chip>}
-                                                        {item.reps && <Chip>{item.reps} reps</Chip>}
-                                                        {item.holdSeconds && <Chip>{item.holdSeconds}s hold</Chip>}
-                                                    </div>
-                                                    <p className="mt-1 text-sm text-text-muted">{item.exercise.cues}</p>
-                                                    {item.notes && (
-                                                        <p className="mt-1 text-xs text-text-muted italic">{item.notes}</p>
-                                                    )}
-                                                </div>
-                                                <span className="shrink-0 text-xs text-text-muted">{item.frequency}</span>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Card>
-                        ))
-                    )}
-                </div>
-            )}
+            {/* Exercise cards */}
+            {data.items.map((item) => {
+                const done = item.todayLog?.completed ?? false;
+                const isOpen = expanded === item.id;
 
-            {tab === "goals" && (
-                <div className="mt-6 flex flex-col gap-4">
-                    {goalPlans.length === 0 ? (
-                        <EmptyState
-                            title="No goal plans yet"
-                            description="Your professional will create a goal plan after your first session."
-                        />
-                    ) : (
-                        goalPlans.map((gp) => (
-                            <Card key={gp.id}>
-                                <p className="font-semibold">{gp.title}</p>
-                                <div className="mt-3 flex flex-col gap-4">
-                                    {gp.goals.map((goal) => (
-                                        <div key={goal.id}>
-                                            <div className="flex items-center justify-between gap-2">
-                                                <p className="text-sm font-medium">{goal.title}</p>
-                                                <Chip
-                                                    variant={
-                                                        goal.status === "ACHIEVED"
-                                                            ? "ok"
-                                                            : goal.status === "PAUSED"
-                                                            ? "warn"
-                                                            : "accent"
-                                                    }
-                                                >
-                                                    {goal.status}
-                                                </Chip>
-                                            </div>
-                                            {goal.progress > 0 && (
-                                                <ProgressBar
-                                                    className="mt-2"
-                                                    value={goal.progress}
-                                                    max={100}
-                                                    variant={goal.progress === 100 ? "ok" : "accent"}
-                                                    label={`${goal.progress}%`}
-                                                />
-                                            )}
-                                            {goal.tasks.length > 0 && (
-                                                <ul className="mt-3 flex flex-col gap-2">
-                                                    {goal.tasks.map((task) => {
-                                                        const done = isCompletedToday(task.logs);
-                                                        return (
-                                                            <li
-                                                                key={task.id}
-                                                                className="flex items-center gap-3 rounded-md border border-border p-2"
-                                                            >
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={logging === task.id}
-                                                                    onClick={() => toggleTask(task.id, done)}
-                                                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-                                                                        done
-                                                                            ? "border-ok-text bg-ok-bg text-ok-text"
-                                                                            : "border-border bg-surface"
-                                                                    }`}
-                                                                    aria-label={done ? "Mark incomplete" : "Mark complete"}
-                                                                >
-                                                                    {done && (
-                                                                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                                                                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                                        </svg>
-                                                                    )}
-                                                                </button>
-                                                                <div className="min-w-0">
-                                                                    <p className={`text-sm ${done ? "line-through text-text-muted" : "text-text"}`}>
-                                                                        {task.title}
-                                                                    </p>
-                                                                    <p className="text-xs text-text-muted">{task.schedule}</p>
-                                                                </div>
-                                                            </li>
-                                                        );
-                                                    })}
-                                                </ul>
-                                            )}
-                                        </div>
-                                    ))}
+                return (
+                    <div
+                        key={item.id}
+                        style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden", opacity: done ? 0.7 : 1 }}
+                    >
+                        {/* Collapsed row */}
+                        <button
+                            onClick={() => setExpanded(isOpen ? null : item.id)}
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "14px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+                        >
+                            <span style={{ font: "600 16px 'Figtree', sans-serif" }}>{item.exercise.name}</span>
+                            <span style={{ font: "400 14px 'Figtree', sans-serif", color: done ? GREEN : MUTED, fontWeight: done ? 600 : 400 }}>
+                                {done ? "Done" : `${item.sets} × ${item.reps}`}
+                            </span>
+                        </button>
+
+                        {/* Expanded card */}
+                        {isOpen && (
+                            <div style={{ padding: "0 16px 16px" }}>
+                                {/* Video placeholder */}
+                                <div style={{ height: 130, borderRadius: 12, background: "#dbe8f1", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED, marginBottom: 12 }}>
+                                    <span style={{ font: "500 14px 'Figtree', sans-serif" }}>Exercise video</span>
                                 </div>
-                            </Card>
-                        ))
-                    )}
+
+                                <h2 style={{ font: "700 18px 'Figtree', sans-serif", margin: 0 }}>{item.exercise.name}</h2>
+                                <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: "4px 0 14px" }}>
+                                    {item.reps} reps · {item.sets} sets{item.frequency ? ` · ${item.frequency}` : ""}
+                                </p>
+
+                                {item.exercise.cues && (
+                                    <p style={{ font: "400 14px/1.5 'Figtree', sans-serif", color: MUTED, marginBottom: 14 }}>
+                                        {item.exercise.cues}
+                                    </p>
+                                )}
+
+                                {!done && (
+                                    <>
+                                        <div style={{ font: "600 13px 'Figtree', sans-serif", marginBottom: 8 }}>How did it feel?</div>
+                                        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                                            {(["easy", "okay", "painful"] as Feel[]).map((f) => (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => markDone(item.id, f)}
+                                                    disabled={logging === item.id}
+                                                    style={{
+                                                        padding: "11px 14px",
+                                                        borderRadius: 10,
+                                                        border: `1px solid ${GREEN}`,
+                                                        color: "#0f5a08",
+                                                        font: "600 14px 'Figtree', sans-serif",
+                                                        background: "#fff",
+                                                        cursor: logging === item.id ? "not-allowed" : "pointer",
+                                                        opacity: logging === item.id ? 0.6 : 1,
+                                                    }}
+                                                >
+                                                    {f.charAt(0).toUpperCase() + f.slice(1)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => markDone(item.id, "okay")}
+                                            disabled={logging === item.id}
+                                            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", minHeight: 50, borderRadius: 12, background: logging === item.id ? "#999" : GREEN, color: "#fff", font: "600 16px 'Figtree', sans-serif", border: 0, cursor: logging === item.id ? "not-allowed" : "pointer" }}
+                                        >
+                                            {logging === item.id ? "Saving…" : "Mark as done"}
+                                        </button>
+                                    </>
+                                )}
+
+                                {done && (
+                                    <div style={{ display: "inline-block", padding: "4px 10px", borderRadius: 99, font: "600 12px 'Figtree', sans-serif", background: "#e3f4e8", color: "#1d5c34" }}>
+                                        Completed today
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+
+            {/* Safety warning */}
+            <div style={{ background: "#fdf1d8", border: "1px solid #ecd49b", borderRadius: 16, padding: 16, font: "400 14px/1.4 'Figtree', sans-serif", color: "#5f3f00" }}>
+                Sharp pain, new numbness or swelling? Stop and message your specialist.
+            </div>
+
+            {/* Streak */}
+            {data.streak > 0 && (
+                <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
+                    <div style={{ font: "500 13px 'Figtree', sans-serif", color: MUTED }}>Streak</div>
+                    <div style={{ font: "700 22px 'Figtree', sans-serif", marginTop: 2 }}>{data.streak} day{data.streak === 1 ? "" : "s"} in a row</div>
                 </div>
             )}
         </div>
