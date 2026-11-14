@@ -1,12 +1,9 @@
 import { BadGatewayException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
-import type { SessionUser } from "@physio/shared";
+import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { OnEvent } from "@nestjs/event-emitter";
-
-// Basis points (1 bps = 0.01%). Env var PLATFORM_FEE_BPS overrides; default 1500 (15%).
-const PLATFORM_FEE_BPS = Number(process.env["PLATFORM_FEE_BPS"] ?? 1500);
 
 @Injectable()
 export class PaymentsService {

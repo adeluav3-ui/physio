@@ -139,6 +139,60 @@ export class PhysioService {
         });
     }
 
+    async getMe(user: SessionUser) {
+        const p = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: user.id },
+            select: {
+                userId: true,
+                licenceStatus: true,
+                discipline: true,
+                specialties: true,
+                bio: true,
+                rateKobo: true,
+                serviceArea: true,
+                verifiedAt: true,
+                photoUrl: true,
+                languages: true,
+                sessionTypes: true,
+                sessionMinutes: true,
+                bufferMinutes: true,
+                acceptingPatients: true,
+                user: { select: { id: true, name: true } },
+            },
+        });
+        if (!p) throw new NotFoundException({ code: "NOT_FOUND", message: "Profile not found" });
+        return p;
+    }
+
+    async updateSettings(
+        user: SessionUser,
+        input: {
+            sessionMinutes?: number;
+            bufferMinutes?: number;
+            acceptingPatients?: boolean;
+            sessionTypes?: string[];
+        },
+    ) {
+        if (user.role !== "PHYSIO") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Physio only" });
+        }
+        return this.prisma.client.physioProfile.update({
+            where: { userId: user.id },
+            data: {
+                ...(input.sessionMinutes !== undefined && { sessionMinutes: input.sessionMinutes }),
+                ...(input.bufferMinutes !== undefined && { bufferMinutes: input.bufferMinutes }),
+                ...(input.acceptingPatients !== undefined && { acceptingPatients: input.acceptingPatients }),
+                ...(input.sessionTypes !== undefined && { sessionTypes: input.sessionTypes }),
+            },
+            select: {
+                sessionMinutes: true,
+                bufferMinutes: true,
+                acceptingPatients: true,
+                sessionTypes: true,
+            },
+        });
+    }
+
     async listAll() {
         return this.prisma.client.physioProfile.findMany({
             include: { user: { select: { id: true, name: true, email: true } } },

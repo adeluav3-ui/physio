@@ -5,14 +5,11 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
-import type { SessionUser } from "@physio/shared";
+import { type SessionUser, JOIN_WINDOW_MIN, SESSION_HARD_END_MIN } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { VideoService } from "../video/video.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { Prisma } from "@physio/db";
-
-const JOIN_WINDOW_MIN = 15; // join allowed 15 min before/after start
-const SESSION_HARD_END_MIN = 90;
 
 @Injectable()
 export class SessionsService {
