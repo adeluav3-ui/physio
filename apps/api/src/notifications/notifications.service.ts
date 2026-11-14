@@ -126,6 +126,26 @@ export class NotificationsService {
         );
     }
 
+    @OnEvent("patient-summary.approved")
+    async onPatientSummaryApproved(payload: { appointmentId: string; patientId: string }) {
+        const patient = await this.prisma.client.patientProfile.findUnique({
+            where: { userId: payload.patientId },
+            include: { user: { select: { email: true, name: true } } },
+        });
+        if (!patient) return;
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        await this.mail.sendRaw(
+            patient.user.email,
+            "Your session summary is ready",
+            `<p>Hi ${escapeHtml(patient.user.name)},</p>
+<p>Your professional has shared a summary of your recent session.</p>
+<p><a href="${appUrl}/app/appointments/${payload.appointmentId}/summary">Read your summary</a></p>`,
+            `Hi ${patient.user.name},\n\nYour professional has shared a summary of your recent session.\n\nRead it here: ${appUrl}/app/appointments/${payload.appointmentId}/summary`,
+        );
+        this.logger.log(`Patient summary email sent for appointment ${payload.appointmentId}`);
+    }
+
     @OnEvent("program.send")
     async onProgramSend(payload: { programId: string; patientId: string }) {
         const patient = await this.prisma.client.patientProfile.findUnique({

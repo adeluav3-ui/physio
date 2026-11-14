@@ -19,7 +19,9 @@ export type AuditAction =
     | "session.end"
     | "booking.create"
     | "booking.cancel"
-    | "booking.dispute";
+    | "booking.dispute"
+    | "note.sign"
+    | "note.addendum";
 
 @Injectable()
 export class AuditService {

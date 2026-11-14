@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
+import { RELEASE_DELAY_HOURS } from "@physio/shared";
 import { RemindersService } from "./reminders.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -29,6 +30,21 @@ export class RemindersScheduler implements OnApplicationBootstrap {
         } catch (err) {
             this.logger.warn(
                 `Boot reminder reschedule skipped — Redis unavailable: ${(err as Error).message}`,
+            );
+        }
+    }
+
+    /** When a note is signed, schedule the delayed payment release. */
+    @OnEvent("note.signed")
+    async onNoteSigned(payload: { appointmentId: string }) {
+        try {
+            await this.reminders.schedulePaymentRelease(
+                payload.appointmentId,
+                RELEASE_DELAY_HOURS * 3600_000,
+            );
+        } catch (err) {
+            this.logger.warn(
+                `Failed to schedule payment release for ${payload.appointmentId}: ${(err as Error).message}`,
             );
         }
     }

@@ -3,7 +3,6 @@ import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
-import { OnEvent } from "@nestjs/event-emitter";
 
 @Injectable()
 export class PaymentsService {
@@ -115,11 +114,6 @@ export class PaymentsService {
             entity: "Payment",
             entityId: payment.id,
         });
-    }
-
-    @OnEvent("session.completed")
-    async onSessionCompleted(payload: { appointmentId: string }) {
-        await this.releaseToPhysio(payload.appointmentId);
     }
 
     async refund(appointmentId: string, reason: string, adminId: string) {

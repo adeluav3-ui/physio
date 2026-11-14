@@ -44,4 +44,41 @@ export class SessionsController {
     getNote(@CurrentUser() user: SessionUser, @Param("appointmentId") appointmentId: string) {
         return this.notes.get(user, appointmentId);
     }
+
+    @Post(":appointmentId/notes/sign")
+    @Roles("PHYSIO", "ADMIN")
+    signNote(@CurrentUser() user: SessionUser, @Param("appointmentId") appointmentId: string) {
+        return this.notes.sign(user, appointmentId);
+    }
+
+    @Post(":appointmentId/notes/addendum")
+    @Roles("PHYSIO", "ADMIN")
+    addAddendum(
+        @CurrentUser() user: SessionUser,
+        @Param("appointmentId") appointmentId: string,
+        @Body() body: { body: string },
+    ) {
+        return this.notes.addAddendum(user, appointmentId, body.body);
+    }
+
+    @Post(":appointmentId/patient-summary")
+    @Roles("PHYSIO", "ADMIN")
+    upsertSummary(
+        @CurrentUser() user: SessionUser,
+        @Param("appointmentId") appointmentId: string,
+        @Body() body: { body: string },
+    ) {
+        return this.notes.upsertSummary(user, appointmentId, body.body);
+    }
+
+    @Post(":appointmentId/patient-summary/approve")
+    @Roles("PHYSIO", "ADMIN")
+    approveSummary(@CurrentUser() user: SessionUser, @Param("appointmentId") appointmentId: string) {
+        return this.notes.approveSummary(user, appointmentId);
+    }
+
+    @Get(":appointmentId/patient-summary")
+    getSummary(@CurrentUser() user: SessionUser, @Param("appointmentId") appointmentId: string) {
+        return this.notes.getSummary(user, appointmentId);
+    }
 }

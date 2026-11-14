@@ -4,7 +4,8 @@ import { Job } from "bullmq";
 import { INACTIVITY_NUDGE_DAYS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { MailService } from "../mail/mail.service.js";
-import { JOB_INACTIVITY_NUDGE, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
+import { PaymentsService } from "../payments/payments.service.js";
+import { JOB_INACTIVITY_NUDGE, JOB_PAYMENT_RELEASE, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
 
 @Processor(REMINDERS_QUEUE)
 export class RemindersProcessor extends WorkerHost {
@@ -13,6 +14,7 @@ export class RemindersProcessor extends WorkerHost {
     constructor(
         private readonly prisma: PrismaService,
         private readonly mail: MailService,
+        private readonly payments: PaymentsService,
     ) {
         super();
     }
@@ -22,7 +24,14 @@ export class RemindersProcessor extends WorkerHost {
             await this.handleSessionReminder(job as Job<{ appointmentId: string; minutesBefore: number }>);
         } else if (job.name === JOB_INACTIVITY_NUDGE) {
             await this.handleInactivityNudge();
+        } else if (job.name === JOB_PAYMENT_RELEASE) {
+            await this.handlePaymentRelease(job as Job<{ appointmentId: string }>);
         }
+    }
+
+    private async handlePaymentRelease(job: Job<{ appointmentId: string }>) {
+        await this.payments.releaseToPhysio(job.data.appointmentId);
+        this.logger.log(`Payment released for appointment ${job.data.appointmentId}`);
     }
 
     private async handleSessionReminder(job: Job<{ appointmentId: string; minutesBefore: number }>) {
