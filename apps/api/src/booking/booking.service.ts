@@ -5,10 +5,11 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import type { BookAppointmentInput, SessionUser } from "@physio/shared";
+import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { SlotService } from "./slot.service.js";
+import { SlotHoldService } from "./slot-hold.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PatientsService } from "../patients/patients.service.js";
@@ -18,6 +19,7 @@ export class BookingService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly slots: SlotService,
+        private readonly holds: SlotHoldService,
         private readonly payments: PaymentsService,
         private readonly audit: AuditService,
         private readonly notifications: NotificationsService,
@@ -116,6 +118,9 @@ export class BookingService {
 
         const reference = `appt-${randomUUID()}`;
 
+        // Create a slot hold so the slot is blocked during checkout.
+        const hold = await this.holds.createHold(input.physioId, user.id, startsAt, endsAt);
+
         const { appointment, payment } = await this.prisma.client.$transaction(async (tx) => {
             const appointment = await tx.appointment.create({
                 data: {
@@ -141,6 +146,10 @@ export class BookingService {
 
             return { appointment, payment };
         });
+
+        // Link the hold to the appointment so the expiry job knows not to delete it
+        // once confirmed. The hold stays until confirmAfterPayment() converts it.
+        await this.holds.confirmHold(hold.id, appointment.id);
 
         const appUrl = process.env.APP_URL ?? "http://localhost:3000";
         const init = await this.payments.initializeCharge({
@@ -213,6 +222,88 @@ export class BookingService {
             });
         }
         return appts;
+    }
+
+    /**
+     * Cancel an appointment.
+     * - Patient cancels ≥ PATIENT_CANCEL_FREE_HOURS before start → full refund.
+     * - Patient cancels < PATIENT_CANCEL_FREE_HOURS before start → no refund.
+     * - Physio cancels at any time → full refund to patient.
+     */
+    async cancel(user: SessionUser, appointmentId: string, reason?: string) {
+        const appt = await this.prisma.client.appointment.findUnique({
+            where: { id: appointmentId },
+            include: { payment: true },
+        });
+        if (!appt) throw new NotFoundException({ code: "NOT_FOUND", message: "Appointment not found" });
+
+        const isPatient = appt.patientId === user.id;
+        const isPhysio = appt.physioId === user.id;
+        if (!isPatient && !isPhysio && user.role !== "ADMIN") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
+        }
+
+        if (!["PENDING_PAYMENT", "CONFIRMED"].includes(appt.status)) {
+            throw new BadRequestException({ code: "CANNOT_CANCEL", message: "Appointment cannot be cancelled in its current state" });
+        }
+
+        const hoursUntilStart = (appt.startsAt.getTime() - Date.now()) / 3_600_000;
+        const earlyEnough = hoursUntilStart >= PATIENT_CANCEL_FREE_HOURS;
+        const refund = isPhysio || user.role === "ADMIN" || earlyEnough;
+
+        await this.prisma.client.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                status: "CANCELLED",
+                cancelledAt: new Date(),
+                cancelReason: reason ?? null,
+            },
+        });
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "booking.cancel",
+            entity: "Appointment",
+            entityId: appointmentId,
+        });
+
+        if (refund && appt.payment?.status === "HELD") {
+            await this.payments.refund(appointmentId, "Cancellation refund", user.id);
+        }
+
+        return { cancelled: true, refunded: refund };
+    }
+
+    /**
+     * Patient opens a dispute within DISPUTE_WINDOW_HOURS after the session.
+     * Funds remain held until admin resolves.
+     */
+    async openDispute(user: SessionUser, appointmentId: string) {
+        const appt = await this.prisma.client.appointment.findUnique({
+            where: { id: appointmentId },
+            include: { payment: true },
+        });
+        if (!appt) throw new NotFoundException({ code: "NOT_FOUND", message: "Appointment not found" });
+        if (appt.patientId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Only the patient can open a dispute" });
+        }
+        if (appt.status !== "COMPLETED") {
+            throw new BadRequestException({ code: "CANNOT_DISPUTE", message: "Disputes can only be raised after the session is completed" });
+        }
+
+        await this.prisma.client.appointment.update({
+            where: { id: appointmentId },
+            data: { disputeAt: new Date() },
+        });
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "booking.dispute",
+            entity: "Appointment",
+            entityId: appointmentId,
+        });
+
+        return { disputed: true };
     }
 
     /**

@@ -44,7 +44,15 @@ export class NotificationsService {
             timeZone: "Africa/Lagos",
         });
 
-        await this.mail.sendRaw(
+        const icsContent = buildIcs({
+            uid: appointmentId,
+            start: appt.startsAt,
+            end: appt.endsAt,
+            summary: `Session with ${physioName}`,
+            description: `Your ${appt.mode.toLowerCase()} session on Rehab360.`,
+        });
+
+        await this.mail.sendWithIcs(
             patientEmail,
             "Your physiotherapy appointment is confirmed",
             appointmentEmailHtml({
@@ -65,9 +73,10 @@ export class NotificationsService {
                 mode: appt.mode,
                 appointmentId,
             }),
+            icsContent,
         );
 
-        await this.mail.sendRaw(
+        await this.mail.sendWithIcs(
             physioEmail,
             "New appointment confirmed",
             appointmentEmailHtml({
@@ -88,6 +97,7 @@ export class NotificationsService {
                 mode: appt.mode,
                 appointmentId,
             }),
+            icsContent,
         );
 
         this.logger.log(`Appointment confirmed emails sent for ${appointmentId}`);
@@ -122,6 +132,24 @@ function appointmentEmailHtml(p: EmailParams): string {
 <strong>Time:</strong> ${escapeHtml(p.displayTime)} WAT</p>
 ${joinLine}
 <p>If you need to cancel or reschedule, please do so at least 24 hours in advance.</p>`;
+}
+
+function buildIcs(opts: { uid: string; start: Date; end: Date; summary: string; description: string }): string {
+    const fmt = (d: Date) =>
+        d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+    return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Rehab360//Rehab360//EN",
+        "BEGIN:VEVENT",
+        `UID:${opts.uid}@rehab360.app`,
+        `DTSTART:${fmt(opts.start)}`,
+        `DTEND:${fmt(opts.end)}`,
+        `SUMMARY:${opts.summary}`,
+        `DESCRIPTION:${opts.description}`,
+        "END:VEVENT",
+        "END:VCALENDAR",
+    ].join("\r\n");
 }
 
 function appointmentEmailText(p: EmailParams): string {

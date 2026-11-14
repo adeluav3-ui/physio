@@ -38,6 +38,28 @@ export class MailService {
         return this.send(to, subject, html, text);
     }
 
+    async sendWithIcs(to: string, subject: string, html: string, text: string, icsContent: string) {
+        if (!this.resend) {
+            this.logger.warn(`Email delivery disabled — skipping to ${to}: ${subject}`);
+            return;
+        }
+        try {
+            await this.resend.emails.send({
+                from: this.from,
+                to,
+                subject,
+                html,
+                text,
+                attachments: [{
+                    filename: "appointment.ics",
+                    content: Buffer.from(icsContent).toString("base64"),
+                }],
+            });
+        } catch (err) {
+            this.logger.error(`Failed to send email to ${to}: ${(err as Error).message}`);
+        }
+    }
+
     async sendEmailVerification(email: string, name: string, token: string) {
         const url = `${this.appUrl}/auth/verify?token=${encodeURIComponent(token)}`;
         await this.send(

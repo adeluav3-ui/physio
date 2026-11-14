@@ -49,6 +49,21 @@ export class BookingController {
         return this.booking.getById(user, id);
     }
 
+    @Post("appointments/:id/cancel")
+    cancel(
+        @CurrentUser() user: SessionUser,
+        @Param("id") id: string,
+        @Body() body: { reason?: string },
+    ) {
+        return this.booking.cancel(user, id, body.reason);
+    }
+
+    @Post("appointments/:id/dispute")
+    @Roles("PATIENT")
+    dispute(@CurrentUser() user: SessionUser, @Param("id") id: string) {
+        return this.booking.openDispute(user, id);
+    }
+
     @Get("availability/:physioId")
     listAvailability(@Param("physioId") physioId: string) {
         return this.availability.list(physioId);
