@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 const tabs = [
   { href: "/app", label: "Home" },
   { href: "/app/appointments", label: "Appointments" },

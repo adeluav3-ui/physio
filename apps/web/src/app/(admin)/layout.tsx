@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
+
+export const dynamic = "force-dynamic";
 import { AdminShell } from "@/components/admin-shell";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

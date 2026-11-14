@@ -1,4 +1,6 @@
 import { requireSession } from "@/lib/session";
+
+export const dynamic = "force-dynamic";
 import { apiFetch } from "@/lib/api";
 import ProShell from "@/components/pro-shell";
 
