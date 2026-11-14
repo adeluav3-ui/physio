@@ -15,9 +15,10 @@ const logger = new Logger("RedisModule");
             useFactory: (config: ConfigService) => {
                 const url = config.get<string>("REDIS_URL");
                 if (!url) throw new Error("REDIS_URL is required");
-                const opts = redisConnectionOptions(url);
                 return new Redis(url, {
-                    ...opts,
+                    ...redisConnectionOptions(url),
+                    lazyConnect: true,
+                    enableOfflineQueue: false,
                     retryStrategy: (times) => {
                         if (times > 5) {
                             logger.error(

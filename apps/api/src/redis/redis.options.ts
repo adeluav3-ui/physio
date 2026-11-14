@@ -1,11 +1,10 @@
 import type { RedisOptions } from "ioredis";
 
+/** Options shared by all Redis/BullMQ connections. */
 export function redisConnectionOptions(url: string): RedisOptions {
     return {
-        lazyConnect: true,
-        connectTimeout: 5000,
         maxRetriesPerRequest: null,
-        enableOfflineQueue: false,
+        connectTimeout: 5000,
         ...(url.startsWith("rediss://") && { tls: { rejectUnauthorized: false } }),
         retryStrategy: (times) => {
             if (times > 5) return null;
