@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { use, useEffect, useRef, useState, useCallback } from "react";
 
 const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
 
@@ -14,7 +14,8 @@ type Exercise = {
     poseData: unknown;
 };
 
-export default function AnimationEditorPage({ params }: { params: { id: string } }) {
+export default function AnimationEditorPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     const [exercise, setExercise] = useState<Exercise | null>(null);
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState("");
@@ -31,7 +32,7 @@ export default function AnimationEditorPage({ params }: { params: { id: string }
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        fetch(`/api/proxy/admin/exercises/${params.id}`)
+        fetch(`/api/proxy/admin/exercises/${id}`)
             .then((r) => r.json())
             .then((data: Exercise) => {
                 setExercise(data);
@@ -44,7 +45,7 @@ export default function AnimationEditorPage({ params }: { params: { id: string }
             })
             .catch(() => setFetchError("Failed to load exercise"))
             .finally(() => setLoading(false));
-    }, [params.id]);
+    }, [id]);
 
     const handleJsonChange = useCallback((value: string) => {
         setJson(value);
@@ -81,7 +82,7 @@ export default function AnimationEditorPage({ params }: { params: { id: string }
         setSaving(true);
         setSaveMsg("");
         try {
-            const r = await fetch(`/api/proxy/admin/exercises/${params.id}/animation`, {
+            const r = await fetch(`/api/proxy/admin/exercises/${id}/animation`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(parsed),
@@ -105,7 +106,7 @@ export default function AnimationEditorPage({ params }: { params: { id: string }
         setClearing(true);
         setSaveMsg("");
         try {
-            const r = await fetch(`/api/proxy/admin/exercises/${params.id}/animation`, {
+            const r = await fetch(`/api/proxy/admin/exercises/${id}/animation`, {
                 method: "DELETE",
             });
             if (!r.ok) {
