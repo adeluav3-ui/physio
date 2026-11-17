@@ -90,12 +90,33 @@ export class AdminController {
 
     @Post("exercises")
     async createExercise(@Body(new ZodBody(exerciseUpsertSchema)) body: ExerciseUpsertInput) {
+        const n = (v: string | undefined): string | null => v ?? null;
         return this.prisma.client.exercise.create({
             data: {
-                ...body,
-                videoUrl: body.videoUrl ?? null,
-                instructions: body.instructions ?? null,
-                contraindications: body.contraindications ?? null,
+                name: body.name,
+                category: body.category,
+                region: body.region,
+                cues: body.cues,
+                difficulty: body.difficulty,
+                defaultSets: body.defaultSets,
+                defaultReps: body.defaultReps,
+                defaultHoldSeconds: body.defaultHoldSeconds,
+                clinicalReview: body.clinicalReview,
+                joint: n(body.joint),
+                purpose: n(body.purpose),
+                goal: n(body.goal),
+                conditions: n(body.conditions),
+                position: n(body.position),
+                howTo: n(body.howTo),
+                dose: n(body.dose),
+                progression: n(body.progression),
+                precautions: n(body.precautions),
+                equipment: n(body.equipment),
+                videoStatus: n(body.videoStatus),
+                poseKey: n(body.poseKey),
+                videoUrl: n(body.videoUrl),
+                instructions: n(body.instructions),
+                contraindications: n(body.contraindications),
             },
         });
     }
@@ -107,20 +128,42 @@ export class AdminController {
     ) {
         const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
         if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
-        const { videoUrl, instructions, contraindications, ...rest } = body;
+        const opt = (key: string, v: string | undefined) => v !== undefined ? { [key]: v ?? null } : {};
         return this.prisma.client.exercise.update({
             where: { id },
             data: {
-                ...rest,
-                ...(videoUrl !== undefined ? { videoUrl: videoUrl ?? null } : {}),
-                ...(instructions !== undefined ? { instructions: instructions ?? null } : {}),
-                ...(contraindications !== undefined ? { contraindications: contraindications ?? null } : {}),
+                ...(body.name !== undefined && { name: body.name }),
+                ...(body.category !== undefined && { category: body.category }),
+                ...(body.region !== undefined && { region: body.region }),
+                ...(body.cues !== undefined && { cues: body.cues }),
+                ...(body.difficulty !== undefined && { difficulty: body.difficulty }),
+                ...(body.defaultSets !== undefined && { defaultSets: body.defaultSets }),
+                ...(body.defaultReps !== undefined && { defaultReps: body.defaultReps }),
+                ...(body.defaultHoldSeconds !== undefined && { defaultHoldSeconds: body.defaultHoldSeconds }),
+                ...(body.clinicalReview !== undefined && { clinicalReview: body.clinicalReview }),
+                ...opt("joint", body.joint),
+                ...opt("purpose", body.purpose),
+                ...opt("goal", body.goal),
+                ...opt("conditions", body.conditions),
+                ...opt("position", body.position),
+                ...opt("howTo", body.howTo),
+                ...opt("dose", body.dose),
+                ...opt("progression", body.progression),
+                ...opt("precautions", body.precautions),
+                ...opt("equipment", body.equipment),
+                ...opt("videoStatus", body.videoStatus),
+                ...opt("poseKey", body.poseKey),
+                ...opt("videoUrl", body.videoUrl),
+                ...opt("instructions", body.instructions),
+                ...opt("contraindications", body.contraindications),
             },
         });
     }
 
     @Delete("exercises/:id")
     async deleteExercise(@Param("id") id: string) {
+        const inUse = await this.prisma.client.programItem.count({ where: { exerciseId: id } });
+        if (inUse > 0) throw new BadRequestException({ code: "EXERCISE_IN_USE", message: "Exercise is used in one or more patient programs and cannot be deleted." });
         const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
         if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
         await this.prisma.client.exercise.delete({ where: { id } });

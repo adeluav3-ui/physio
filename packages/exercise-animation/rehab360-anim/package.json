@@ -1,0 +1,11 @@
+{
+    "name": "@physio/exercise-animation",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./engine/*": "./engine/*",
+        "./data/*": "./data/*",
+        "./vendor/*": "./vendor/*"
+    }
+}

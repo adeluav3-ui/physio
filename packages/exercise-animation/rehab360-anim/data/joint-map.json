@@ -1,0 +1,386 @@
+{
+ "status": "Draft taxonomy: needs physiotherapist review",
+ "groups": {
+  "Upper limbs": [
+   "Shoulder (glenohumeral)",
+   "Shoulder blade (scapulothoracic)",
+   "Acromioclavicular",
+   "Sternoclavicular",
+   "Elbow",
+   "Forearm (radioulnar)",
+   "Wrist",
+   "Thumb",
+   "Knuckles (MCP)",
+   "Finger joints (interphalangeal)"
+  ],
+  "Lower limbs": [
+   "Hip",
+   "Knee",
+   "Kneecap (patellofemoral)",
+   "Ankle",
+   "Subtalar (heel in and out)",
+   "Foot arch (midfoot)",
+   "Toes"
+  ],
+  "Neck": [
+   "Neck (cervical spine)"
+  ],
+  "Back/Trunk": [
+   "Upper back (thoracic spine)",
+   "Lower back (lumbar spine)",
+   "Sacroiliac"
+  ],
+  "Face": [
+   "Facial muscles",
+   "Jaw (TMJ)"
+  ]
+ },
+ "exercises": {
+  "UL-001": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-002": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-004": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-005": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-006": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-007": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-011": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-012": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-013": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-014": [
+   "Shoulder (glenohumeral)"
+  ],
+  "UL-003": [
+   "Shoulder (glenohumeral)",
+   "Shoulder blade (scapulothoracic)"
+  ],
+  "UL-009": [
+   "Shoulder (glenohumeral)",
+   "Shoulder blade (scapulothoracic)"
+  ],
+  "UL-008": [
+   "Shoulder blade (scapulothoracic)"
+  ],
+  "UL-010": [
+   "Shoulder blade (scapulothoracic)"
+  ],
+  "UL-015": [
+   "Elbow",
+   "Wrist"
+  ],
+  "UL-016": [
+   "Elbow",
+   "Wrist"
+  ],
+  "UL-019": [
+   "Elbow",
+   "Wrist"
+  ],
+  "UL-017": [
+   "Elbow"
+  ],
+  "UL-018": [
+   "Forearm (radioulnar)"
+  ],
+  "UL-020": [
+   "Wrist"
+  ],
+  "UL-021": [
+   "Knuckles (MCP)",
+   "Finger joints (interphalangeal)"
+  ],
+  "UL-022": [
+   "Thumb",
+   "Knuckles (MCP)",
+   "Finger joints (interphalangeal)"
+  ],
+  "UL-023": [
+   "Thumb",
+   "Knuckles (MCP)",
+   "Finger joints (interphalangeal)"
+  ],
+  "UL-025": [
+   "Thumb",
+   "Knuckles (MCP)",
+   "Finger joints (interphalangeal)"
+  ],
+  "UL-024": [
+   "Knuckles (MCP)"
+  ],
+  "LL-001": [
+   "Knee"
+  ],
+  "LL-002": [
+   "Knee"
+  ],
+  "LL-003": [
+   "Knee"
+  ],
+  "LL-005": [
+   "Knee"
+  ],
+  "LL-010": [
+   "Knee"
+  ],
+  "LL-012": [
+   "Knee"
+  ],
+  "LL-004": [
+   "Knee",
+   "Kneecap (patellofemoral)"
+  ],
+  "LL-009": [
+   "Knee",
+   "Kneecap (patellofemoral)"
+  ],
+  "LL-006": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-007": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-008": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-011": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-014": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-015": [
+   "Knee",
+   "Hip"
+  ],
+  "LL-013": [
+   "Knee",
+   "Hip",
+   "Ankle"
+  ],
+  "LL-016": [
+   "Ankle"
+  ],
+  "LL-019": [
+   "Ankle"
+  ],
+  "LL-020": [
+   "Ankle"
+  ],
+  "LL-021": [
+   "Ankle"
+  ],
+  "LL-025": [
+   "Ankle"
+  ],
+  "LL-026": [
+   "Ankle"
+  ],
+  "LL-027": [
+   "Ankle"
+  ],
+  "LL-028": [
+   "Ankle"
+  ],
+  "LL-017": [
+   "Ankle",
+   "Subtalar (heel in and out)"
+  ],
+  "LL-018": [
+   "Ankle",
+   "Subtalar (heel in and out)"
+  ],
+  "LL-022": [
+   "Toes"
+  ],
+  "LL-023": [
+   "Foot arch (midfoot)"
+  ],
+  "LL-024": [
+   "Toes",
+   "Foot arch (midfoot)"
+  ],
+  "HP-001": [
+   "Hip"
+  ],
+  "HP-002": [
+   "Hip"
+  ],
+  "HP-003": [
+   "Hip"
+  ],
+  "HP-004": [
+   "Hip"
+  ],
+  "HP-005": [
+   "Hip"
+  ],
+  "HP-006": [
+   "Hip"
+  ],
+  "HP-007": [
+   "Hip"
+  ],
+  "HP-008": [
+   "Hip"
+  ],
+  "HP-009": [
+   "Hip"
+  ],
+  "HP-010": [
+   "Hip"
+  ],
+  "HP-011": [
+   "Hip"
+  ],
+  "HP-012": [
+   "Hip"
+  ],
+  "HP-013": [
+   "Hip"
+  ],
+  "BK-001": [
+   "Neck (cervical spine)"
+  ],
+  "BK-002": [
+   "Neck (cervical spine)"
+  ],
+  "BK-003": [
+   "Neck (cervical spine)"
+  ],
+  "BK-004": [
+   "Neck (cervical spine)"
+  ],
+  "BK-005": [
+   "Neck (cervical spine)"
+  ],
+  "BK-006": [
+   "Neck (cervical spine)"
+  ],
+  "BK-007": [
+   "Neck (cervical spine)"
+  ],
+  "BK-008": [
+   "Upper back (thoracic spine)"
+  ],
+  "BK-009": [
+   "Upper back (thoracic spine)"
+  ],
+  "BK-010": [
+   "Upper back (thoracic spine)"
+  ],
+  "BK-011": [
+   "Upper back (thoracic spine)"
+  ],
+  "BK-012": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-013": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-014": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-015": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-016": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-017": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-018": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-019": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-020": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-021": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-022": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-023": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-024": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-025": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-026": [
+   "Lower back (lumbar spine)"
+  ],
+  "BK-027": [
+   "Lower back (lumbar spine)"
+  ],
+  "FC-001": [
+   "Facial muscles"
+  ],
+  "FC-002": [
+   "Facial muscles"
+  ],
+  "FC-003": [
+   "Facial muscles"
+  ],
+  "FC-004": [
+   "Facial muscles"
+  ],
+  "FC-005": [
+   "Facial muscles"
+  ],
+  "FC-006": [
+   "Facial muscles"
+  ],
+  "FC-007": [
+   "Facial muscles"
+  ],
+  "FC-008": [
+   "Facial muscles"
+  ],
+  "FC-014": [
+   "Facial muscles"
+  ],
+  "FC-009": [
+   "Jaw (TMJ)"
+  ],
+  "FC-010": [
+   "Jaw (TMJ)"
+  ],
+  "FC-011": [
+   "Jaw (TMJ)"
+  ],
+  "FC-012": [
+   "Jaw (TMJ)"
+  ],
+  "FC-013": [
+   "Jaw (TMJ)"
+  ]
+ }
+}

@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "packages/exercise-animation/rehab360-anim"
 
 publicHoistPattern:
   - "*prisma*"

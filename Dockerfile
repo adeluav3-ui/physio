@@ -10,6 +10,7 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/video/package.json ./packages/video/
 COPY packages/payments/package.json ./packages/payments/
+COPY packages/exercise-animation/rehab360-anim/package.json ./packages/exercise-animation/rehab360-anim/
 
 RUN pnpm install --frozen-lockfile
 

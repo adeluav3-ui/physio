@@ -1,101 +1,107 @@
 import { PrismaClient } from "../generated/client/client.js";
 import bcrypt from "bcryptjs";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 
 const prisma = new PrismaClient();
 
-const exercises = [
-    {
-        name: "Knee extension (seated)",
-        region: "KNEE",
-        videoUrl: "https://placeholder.physio/exercises/knee-extension.mp4",
-        cues: "Sit tall, straighten one leg slowly until knee is straight, hold, lower with control.",
-        contraindications: "Stop if sharp knee pain.",
-        difficulty: 1,
-    },
-    {
-        name: "Wall sit",
-        region: "KNEE",
-        videoUrl: "https://placeholder.physio/exercises/wall-sit.mp4",
-        cues: "Back against wall, slide down until thighs are parallel to floor, hold, rise.",
-        contraindications: "Avoid with acute knee swelling.",
-        difficulty: 2,
-    },
-    {
-        name: "Heel slides",
-        region: "KNEE",
-        videoUrl: "https://placeholder.physio/exercises/heel-slides.mp4",
-        cues: "Lie on back, slide heel toward buttocks, hold briefly, slide back.",
-        contraindications: "Stop if knee locking occurs.",
-        difficulty: 1,
-    },
-    {
-        name: "Shoulder pendulum",
-        region: "SHOULDER",
-        videoUrl: "https://placeholder.physio/exercises/shoulder-pendulum.mp4",
-        cues: "Lean forward, let arm hang, swing gently in small circles.",
-        contraindications: "Avoid with acute shoulder dislocation.",
-        difficulty: 1,
-    },
-    {
-        name: "External rotation with band",
-        region: "SHOULDER",
-        videoUrl: "https://placeholder.physio/exercises/external-rotation.mp4",
-        cues: "Elbow at 90°, pull band outward slowly, return with control.",
-        contraindications: "Stop if shoulder pinching.",
-        difficulty: 2,
-    },
-    {
-        name: "Scapular retraction",
-        region: "SHOULDER",
-        videoUrl: "https://placeholder.physio/exercises/scapular-retraction.mp4",
-        cues: "Squeeze shoulder blades together, hold 5s, relax.",
-        contraindications: "None common.",
-        difficulty: 1,
-    },
-    {
-        name: "Pelvic tilt",
-        region: "LOWER_BACK",
-        videoUrl: "https://placeholder.physio/exercises/pelvic-tilt.mp4",
-        cues: "Lie on back, flatten lower back into floor, hold 5s, relax.",
-        contraindications: "Stop if pain radiates down leg.",
-        difficulty: 1,
-    },
-    {
-        name: "Bird-dog",
-        region: "LOWER_BACK",
-        videoUrl: "https://placeholder.physio/exercises/bird-dog.mp4",
-        cues: "On all fours, extend opposite arm and leg, hold 3s, switch.",
-        contraindications: "Avoid with acute back spasm.",
-        difficulty: 2,
-    },
-    {
-        name: "Cat-camel",
-        region: "LOWER_BACK",
-        videoUrl: "https://placeholder.physio/exercises/cat-camel.mp4",
-        cues: "On all fours, alternate arching and rounding the spine slowly.",
-        contraindications: "Stop if sharp pain.",
-        difficulty: 1,
-    },
-    {
-        name: "Glute bridge",
-        region: "HIP",
-        videoUrl: "https://placeholder.physio/exercises/glute-bridge.mp4",
-        cues: "Lie on back, knees bent, lift hips until straight line from knees to shoulders, hold, lower.",
-        contraindications: "Avoid with acute hip pain.",
-        difficulty: 2,
-    },
-];
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CSV_PATH = join(__dirname, "../../exercise-animation/rehab360-anim/data/rehab360-exercise-library.csv");
+
+// ── CSV parser (RFC 4180, handles quoted fields with commas) ──────────────────
+function parseCSVRow(line: string): string[] {
+    const fields: string[] = [];
+    let i = 0;
+    while (i <= line.length) {
+        if (i === line.length) { fields.push(""); break; }
+        if (line[i] === '"') {
+            let field = "";
+            i++;
+            while (i < line.length) {
+                if (line[i] === '"' && line[i + 1] === '"') { field += '"'; i += 2; }
+                else if (line[i] === '"') { i++; break; }
+                else { field += line[i++]; }
+            }
+            fields.push(field);
+            if (line[i] === ",") i++;
+        } else {
+            const end = line.indexOf(",", i);
+            if (end === -1) { fields.push(line.slice(i)); break; }
+            fields.push(line.slice(i, end));
+            i = end + 1;
+        }
+    }
+    return fields;
+}
+
+function readExerciseCSV() {
+    const text = readFileSync(CSV_PATH, "utf-8");
+    const lines = text.replace(/\r\n/g, "\n").split("\n").filter(l => l.trim());
+    const [headerLine, ...dataLines] = lines;
+    const headers = parseCSVRow(headerLine!);
+    return dataLines.map(line => {
+        const vals = parseCSVRow(line);
+        return Object.fromEntries(headers.map((h, i) => [h, vals[i] ?? ""])) as Record<string, string>;
+    });
+}
 
 async function seedExercises() {
-    console.log("Seeding exercise library...");
-    for (const e of exercises) {
+    console.log("Seeding exercise library from CSV...");
+    let rows: ReturnType<typeof readExerciseCSV>;
+    try {
+        rows = readExerciseCSV();
+    } catch (e) {
+        console.warn("CSV not found — skipping exercise seed:", (e as Error).message);
+        return;
+    }
+    for (const row of rows) {
+        const csvId = row["id"]!;
         await prisma.exercise.upsert({
-            where: { id: e.name.toLowerCase().replace(/\s+/g, "-") },
-            update: e,
-            create: { id: e.name.toLowerCase().replace(/\s+/g, "-"), ...e },
+            where: { csvId },
+            update: {
+                name:         row["name"] ?? "",
+                region:       row["region"] ?? "",
+                joint:        row["joint"] || null,
+                purpose:      row["purpose"] || null,
+                goal:         row["goal"] || null,
+                conditions:   row["conditions"] || null,
+                position:     row["position"] || null,
+                howTo:        row["how"] || null,
+                dose:         row["dose"] || null,
+                progression:  row["progression"] || null,
+                precautions:  row["precautions"] || null,
+                equipment:    row["equipment"] || null,
+                videoStatus:  row["videoStatus"] || null,
+                poseKey:      csvId,
+                // clinicalReview stays false until an admin ticks it in the UI
+            },
+            create: {
+                csvId,
+                name:         row["name"] ?? "",
+                region:       row["region"] ?? "",
+                joint:        row["joint"] || null,
+                purpose:      row["purpose"] || null,
+                goal:         row["goal"] || null,
+                conditions:   row["conditions"] || null,
+                position:     row["position"] || null,
+                howTo:        row["how"] || null,
+                dose:         row["dose"] || null,
+                progression:  row["progression"] || null,
+                precautions:  row["precautions"] || null,
+                equipment:    row["equipment"] || null,
+                videoStatus:  row["videoStatus"] || null,
+                poseKey:      csvId,
+                clinicalReview: false,
+                cues:         "",
+                difficulty:   1,
+                defaultSets:  3,
+                defaultReps:  10,
+                defaultHoldSeconds: 0,
+            },
         });
     }
-    console.log(`Seeded ${exercises.length} exercises.`);
+    console.log(`Seeded ${rows.length} exercises from CSV.`);
 }
 
 async function seedAdmin() {

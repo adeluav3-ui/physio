@@ -460,12 +460,25 @@ model PatientSummary {
 // ── Exercise library & programs ──────────
 model Exercise {
   id                 String        @id @default(uuid())
+  csvId              String?       @unique     // CSV id e.g. "UL-001" — set for every library exercise
   name               String
   category           String        @default("General")
   region             String
+  joint              String?
+  purpose            String?
+  goal               String?
+  conditions         String?
+  position           String?
+  howTo              String?
+  dose               String?
+  progression        String?
+  precautions        String?
+  equipment          String?
+  videoStatus        String?
+  poseKey            String?                   // key into poses.json (equals csvId for library exercises)
   videoUrl           String?
   instructions       String?
-  cues               String
+  cues               String        @default("")
   contraindications  String?
   difficulty         Int           @default(1)
   defaultSets        Int           @default(3)
@@ -476,6 +489,7 @@ model Exercise {
   updatedAt          DateTime      @updatedAt
 
   programItems     ProgramItem[]
+  @@index([csvId])
   @@index([region, difficulty])
   @@index([clinicalReview])
   @@index([category])
