@@ -322,6 +322,25 @@ export class ProgramsService {
         return updated;
     }
 
+    async getOne(user: SessionUser, programId: string) {
+        const program = await this.prisma.client.program.findUnique({
+            where: { id: programId },
+            include: {
+                items: { include: { exercise: true } },
+                patient: { select: { user: { select: { id: true, name: true } } } },
+            },
+        });
+        if (!program) throw new NotFoundException({ code: "NOT_FOUND", message: "Program not found" });
+        if (user.role === "PHYSIO" && program.physioId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your programme" });
+        }
+        if (user.role === "PATIENT" && program.patientId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your programme" });
+        }
+        await this.audit.record({ actorId: user.id, action: "record.view", entity: "Program", entityId: programId });
+        return program;
+    }
+
     async listForPatient(user: SessionUser, patientId: string) {
         if (user.role === "PATIENT" && user.id !== patientId) {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your records" });

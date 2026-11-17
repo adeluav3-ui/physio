@@ -1,10 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { DailyCallFrame } from "@/components/daily-call";
 
 type JoinData = { roomUrl: string; token: string; appointment: { id: string; startsAt: string; endsAt: string } };
+
+type DiagnosticExercise = {
+    id: string;
+    exerciseId: string;
+    sentAt: string;
+    feel: string | null;
+    feedbackAt: string | null;
+    exercise: {
+        id: string;
+        name: string;
+        region: string;
+        videoUrl: string;
+        cues: string;
+        contraindications: string | null;
+    };
+};
 
 const NAV = "#022449";
 const GREEN = "#1b7d0e";
@@ -20,6 +36,15 @@ export default function PatientSessionPage() {
     const [camOk, setCamOk] = useState<boolean | null>(null);
     const [micOk, setMicOk] = useState<boolean | null>(null);
     const [netOk] = useState(true);
+    const [micOn, setMicOn] = useState(true);
+    const [cameraOn, setCameraOn] = useState(true);
+    const previewRef = useRef<HTMLVideoElement>(null);
+    const previewStreamRef = useRef<MediaStream | null>(null);
+    const [pendingExercise, setPendingExercise] = useState<DiagnosticExercise | null>(null);
+    const [dxFeel, setDxFeel] = useState<"easy" | "okay" | "painful" | "">("");
+    const [dxPain, setDxPain] = useState(0);
+    const [dxNote, setDxNote] = useState("");
+    const [dxSubmitting, setDxSubmitting] = useState(false);
 
     // Check devices on mount
     useEffect(() => {
@@ -36,7 +61,76 @@ export default function PatientSessionPage() {
             });
     }, []);
 
+    // Live camera preview while on the device-check screen.
+    useEffect(() => {
+        if (phase !== "check" || camOk !== true) return;
+        let cancelled = false;
+        navigator.mediaDevices
+            .getUserMedia({ video: true })
+            .then((stream) => {
+                if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+                previewStreamRef.current = stream;
+                if (previewRef.current) previewRef.current.srcObject = stream;
+            })
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+            previewStreamRef.current?.getTracks().forEach((t) => t.stop());
+            previewStreamRef.current = null;
+        };
+    }, [phase, camOk]);
+
+    // Poll for diagnostic exercises sent by the physio during the session
+    useEffect(() => {
+        if (phase !== "in-session") return;
+        const id = params.id;
+        let seenIds = new Set<string>();
+
+        const poll = () => {
+            fetch(`/api/proxy/sessions/${id}/diagnostic`)
+                .then((r) => (r.ok ? (r.json() as Promise<DiagnosticExercise[]>) : []))
+                .then((entries) => {
+                    // Find the first exercise without feedback that we haven't shown yet
+                    const pending = entries.find((e) => !e.feedbackAt && !seenIds.has(e.id));
+                    if (pending) {
+                        seenIds.add(pending.id);
+                        setPendingExercise(pending);
+                        setDxFeel("");
+                        setDxPain(0);
+                        setDxNote("");
+                    }
+                })
+                .catch(() => {});
+        };
+
+        poll();
+        const timer = setInterval(poll, 4000);
+        return () => clearInterval(timer);
+    }, [phase, params.id]);
+
+    async function submitDxFeedback() {
+        if (!pendingExercise || !dxFeel) return;
+        setDxSubmitting(true);
+        try {
+            await fetch(`/api/proxy/sessions/${params.id}/diagnostic/${pendingExercise.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    feel: dxFeel,
+                    ...(dxPain > 0 && { painScore: dxPain }),
+                    ...(dxNote.trim() && { feedbackNote: dxNote.trim() }),
+                }),
+            });
+            setPendingExercise(null);
+        } finally {
+            setDxSubmitting(false);
+        }
+    }
+
     function joinSession(audioOnly = false) {
+        if (audioOnly) setCameraOn(false);
+        previewStreamRef.current?.getTracks().forEach((t) => t.stop());
+        previewStreamRef.current = null;
         setPhase("joining");
         fetch(`/api/proxy/sessions/${params.id}/join`, { method: "POST" })
             .then(async (r) => {
@@ -49,7 +143,6 @@ export default function PatientSessionPage() {
             .then((j) => {
                 setJoin(j);
                 setPhase("in-session");
-                void audioOnly;
             })
             .catch((e) => {
                 setError((e as Error).message);
@@ -85,24 +178,26 @@ export default function PatientSessionPage() {
     }
 
     if (phase === "in-session" && join) {
-        const cam = statusChip(null);
-        const mic = statusChip(null);
-        void cam; void mic;
+        const isYouTube = pendingExercise && pendingExercise.exercise.videoUrl.length === 11;
         return (
             <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif" }}>
                 <div style={{ flex: 1, position: "relative" }}>
-                    <DailyCallFrame url={join.roomUrl} token={join.token} />
+                    <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "20px 0 24px", background: NAV }}>
-                    {[
-                        { label: "Mute" },
-                        { label: "Camera" },
-                        { label: "Chat" },
-                    ].map((c) => (
-                        <div key={c.label} style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", color: NAV, border: "1px solid #c3d1de", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
-                            {c.label}
-                        </div>
-                    ))}
+                    <button
+                        onClick={() => setMicOn((v) => !v)}
+                        style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: micOn ? "#fff" : "#fee2e2", color: micOn ? NAV : "#b91c1c", border: micOn ? "1px solid #c3d1de" : "1px solid #b91c1c", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
+                        {micOn ? "Mute" : "Unmute"}
+                    </button>
+                    <button
+                        onClick={() => setCameraOn((v) => !v)}
+                        style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: cameraOn ? "#fff" : "#fee2e2", color: cameraOn ? NAV : "#b91c1c", border: cameraOn ? "1px solid #c3d1de" : "1px solid #b91c1c", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
+                        {cameraOn ? "Camera" : "No cam"}
+                    </button>
+                    <button style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", color: NAV, border: "1px solid #c3d1de", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
+                        Chat
+                    </button>
                     <button
                         onClick={leaveSession}
                         style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#b42318", color: "#fff", border: "none", font: "600 12px 'Figtree', sans-serif", cursor: "pointer" }}
@@ -110,6 +205,152 @@ export default function PatientSessionPage() {
                         End
                     </button>
                 </div>
+
+                {/* ── Diagnostic exercise overlay ── */}
+                {pendingExercise && (
+                    <div style={{
+                        position: "fixed", inset: 0, zIndex: 50,
+                        background: "rgba(2,36,73,0.72)",
+                        display: "flex", alignItems: "flex-end", justifyContent: "center",
+                        padding: 16,
+                    }}>
+                        <div style={{
+                            width: "100%", maxWidth: 480,
+                            background: "#fff", borderRadius: "24px 24px 16px 16px",
+                            overflow: "hidden", maxHeight: "90vh", display: "flex", flexDirection: "column",
+                        }}>
+                            {/* Header */}
+                            <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid #d9e3ec", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                    <div style={{ font: "700 17px 'Figtree', sans-serif", color: NAV }}>
+                                        {pendingExercise.exercise.name}
+                                    </div>
+                                    <div style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, marginTop: 2 }}>
+                                        Your specialist wants you to try this movement
+                                    </div>
+                                </div>
+                                <span style={{ padding: "3px 10px", borderRadius: 99, background: "#eef3f8", font: "600 12px 'Figtree', sans-serif", color: MUTED }}>
+                                    {pendingExercise.exercise.region}
+                                </span>
+                            </div>
+
+                            <div style={{ flex: 1, overflowY: "auto" }}>
+                                {/* Animation / video */}
+                                {isYouTube ? (
+                                    <iframe
+                                        src={`https://www.youtube-nocookie.com/embed/${pendingExercise.exercise.videoUrl}?autoplay=0&rel=0`}
+                                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        style={{ width: "100%", height: 220, border: 0, display: "block" }}
+                                        title={pendingExercise.exercise.name}
+                                    />
+                                ) : pendingExercise.exercise.videoUrl ? (
+                                    <div style={{ width: "100%", background: "#0a0a0a", display: "flex", justifyContent: "center" }}>
+                                        <img
+                                            src={pendingExercise.exercise.videoUrl}
+                                            alt={pendingExercise.exercise.name}
+                                            style={{ maxHeight: 220, maxWidth: "100%", objectFit: "contain", display: "block" }}
+                                        />
+                                    </div>
+                                ) : null}
+
+                                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                                    {/* Cues */}
+                                    <div>
+                                        <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>Instructions</div>
+                                        <p style={{ font: "400 15px/1.5 'Figtree', sans-serif", color: NAV, margin: 0 }}>
+                                            {pendingExercise.exercise.cues}
+                                        </p>
+                                    </div>
+
+                                    {pendingExercise.exercise.contraindications && (
+                                        <div style={{ background: "#fdf1d8", border: "1px solid #ecd49b", borderRadius: 10, padding: "10px 14px", font: "400 13px/1.4 'Figtree', sans-serif", color: "#5f3f00" }}>
+                                            ⚠ {pendingExercise.exercise.contraindications}
+                                        </div>
+                                    )}
+
+                                    {/* How did it feel */}
+                                    <div>
+                                        <div style={{ font: "600 13px 'Figtree', sans-serif", color: NAV, marginBottom: 8 }}>
+                                            Perform the movement, then tell your specialist how it felt:
+                                        </div>
+                                        <div style={{ display: "flex", gap: 8 }}>
+                                            {(["easy", "okay", "painful"] as const).map((f) => (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => setDxFeel(f)}
+                                                    style={{
+                                                        flex: 1, padding: "11px 8px", borderRadius: 10, textAlign: "center",
+                                                        border: dxFeel === f
+                                                            ? `2px solid ${f === "painful" ? "#b91c1c" : f === "easy" ? GREEN : "#c8930a"}`
+                                                            : "1.5px solid #c3d1de",
+                                                        background: dxFeel === f
+                                                            ? (f === "painful" ? "#fee2e2" : f === "easy" ? "#e3f4e8" : "#fdf1d8")
+                                                            : "#fff",
+                                                        color: dxFeel === f
+                                                            ? (f === "painful" ? "#7f1d1d" : f === "easy" ? "#1d5c34" : "#7a4f00")
+                                                            : NAV,
+                                                        font: "600 14px 'Figtree', sans-serif",
+                                                        cursor: "pointer",
+                                                    }}
+                                                >
+                                                    {f === "easy" ? "Easy" : f === "okay" ? "OK" : "Painful"}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Pain score (shown only if "painful" or "okay") */}
+                                    {(dxFeel === "painful" || dxFeel === "okay") && (
+                                        <div>
+                                            <div style={{ font: "600 13px 'Figtree', sans-serif", color: NAV, marginBottom: 6 }}>
+                                                Pain score: <span style={{ color: dxFeel === "painful" ? "#b91c1c" : NAV }}>{dxPain}/10</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min={0}
+                                                max={10}
+                                                value={dxPain}
+                                                onChange={(e) => setDxPain(Number(e.target.value))}
+                                                style={{ width: "100%", accentColor: dxFeel === "painful" ? "#b91c1c" : GREEN }}
+                                            />
+                                            <div style={{ display: "flex", justifyContent: "space-between", font: "400 11px 'Figtree', sans-serif", color: MUTED }}>
+                                                <span>No pain</span><span>Worst pain</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Optional note */}
+                                    <div>
+                                        <input
+                                            value={dxNote}
+                                            onChange={(e) => setDxNote(e.target.value)}
+                                            placeholder="Anything else to tell your specialist? (optional)"
+                                            style={{ display: "block", width: "100%", border: "1px solid #c3d1de", borderRadius: 10, padding: "10px 12px", font: "14px 'Figtree', sans-serif", color: NAV, background: "#fff" }}
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={submitDxFeedback}
+                                        disabled={!dxFeel || dxSubmitting}
+                                        style={{
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            minHeight: 50, borderRadius: 12,
+                                            background: dxFeel && !dxSubmitting ? GREEN : "#9db8a0",
+                                            color: "#fff",
+                                            font: "600 16px 'Figtree', sans-serif",
+                                            border: 0,
+                                            cursor: dxFeel && !dxSubmitting ? "pointer" : "not-allowed",
+                                            marginBottom: 4,
+                                        }}
+                                    >
+                                        {dxSubmitting ? "Sending…" : "Send feedback to specialist"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
@@ -129,10 +370,22 @@ export default function PatientSessionPage() {
                         Your session is about to start.
                     </p>
 
-                    {/* Camera preview placeholder */}
-                    <div style={{ height: 200, borderRadius: 16, background: "#cdddea", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED }}>
-                        <span style={{ font: "500 15px 'Figtree', sans-serif" }}>Your camera preview</span>
-                    </div>
+                    {/* Camera preview */}
+                    {camOk === true ? (
+                        <video
+                            ref={previewRef}
+                            autoPlay
+                            muted
+                            playsInline
+                            style={{ height: 200, width: "100%", borderRadius: 16, objectFit: "cover", background: "#000" }}
+                        />
+                    ) : (
+                        <div style={{ height: 200, borderRadius: 16, background: "#cdddea", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED }}>
+                            <span style={{ font: "500 15px 'Figtree', sans-serif" }}>
+                                {camOk === null ? "Starting camera…" : "Camera unavailable"}
+                            </span>
+                        </div>
+                    )}
 
                     {/* Device status */}
                     <div style={{ background: "#fff", border: "1px solid #d9e3ec", borderRadius: 16, padding: 16, display: "grid", gap: 10, font: "500 15px 'Figtree', sans-serif" }}>

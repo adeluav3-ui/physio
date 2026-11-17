@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { sessionNoteSchema, type SessionNoteInput, type SessionUser } from "@physio/shared";
 import { SessionsService } from "./sessions.service.js";
 import { SessionNotesService } from "./session-notes.service.js";
@@ -80,5 +80,36 @@ export class SessionsController {
     @Get(":appointmentId/patient-summary")
     getSummary(@CurrentUser() user: SessionUser, @Param("appointmentId") appointmentId: string) {
         return this.notes.getSummary(user, appointmentId);
+    }
+
+    // ── Diagnostic exercises ──────────────────────────────────────────────────
+
+    @Post(":appointmentId/diagnostic")
+    @Roles("PHYSIO")
+    sendDiagnosticExercise(
+        @CurrentUser() user: SessionUser,
+        @Param("appointmentId") appointmentId: string,
+        @Body() body: { exerciseId: string },
+    ) {
+        return this.sessions.sendDiagnosticExercise(user, appointmentId, body.exerciseId);
+    }
+
+    @Get(":appointmentId/diagnostic")
+    listDiagnosticExercises(
+        @CurrentUser() user: SessionUser,
+        @Param("appointmentId") appointmentId: string,
+    ) {
+        return this.sessions.listDiagnosticExercises(user, appointmentId);
+    }
+
+    @Patch(":appointmentId/diagnostic/:seId")
+    @Roles("PATIENT")
+    submitDiagnosticFeedback(
+        @CurrentUser() user: SessionUser,
+        @Param("appointmentId") appointmentId: string,
+        @Param("seId") seId: string,
+        @Body() body: { feel?: "easy" | "okay" | "painful"; painScore?: number; feedbackNote?: string },
+    ) {
+        return this.sessions.submitDiagnosticFeedback(user, appointmentId, seId, body);
     }
 }

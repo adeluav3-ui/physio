@@ -24,6 +24,7 @@ import { ReferralsModule } from "./referrals/referrals.module.js";
 import { AdminModule } from "./admin/admin.module.js";
 import { MessagingModule } from "./messaging/messaging.module.js";
 import { ReviewsModule } from "./reviews/reviews.module.js";
+import { PackagesModule } from "./packages/packages.module.js";
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { ReviewsModule } from "./reviews/reviews.module.js";
         AdminModule,
         MessagingModule,
         ReviewsModule,
+        PackagesModule,
     ],
     providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
