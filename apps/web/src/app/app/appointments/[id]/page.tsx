@@ -128,6 +128,15 @@ export default async function PatientAppointmentDetailPage({
                         </p>
                     </Card>
                 )}
+
+                {appt.status === "COMPLETED" && (
+                    <Link
+                        href={`/app/appointments/${appt.id}/review`}
+                        className="block rounded-lg border border-border bg-white px-4 py-3 text-center text-sm font-semibold text-text-primary hover:bg-surface-muted"
+                    >
+                        Leave a review
+                    </Link>
+                )}
             </div>
         </div>
     );

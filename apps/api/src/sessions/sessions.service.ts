@@ -167,6 +167,98 @@ export class SessionsService {
         return { ok: true };
     }
 
+    // ── Diagnostic exercises ──────────────────────────────────────────────────
+
+    async sendDiagnosticExercise(user: SessionUser, appointmentId: string, exerciseId: string) {
+        if (user.role !== "PHYSIO") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Physio only" });
+        }
+
+        const appt = await this.prisma.client.appointment.findUnique({ where: { id: appointmentId } });
+        if (!appt) throw new NotFoundException({ code: "NOT_FOUND", message: "Appointment not found" });
+        if (appt.physioId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
+        }
+        if (appt.status !== "IN_PROGRESS" && appt.status !== "CONFIRMED") {
+            throw new BadRequestException({ code: "SESSION_NOT_ACTIVE", message: "Session must be active to send exercises" });
+        }
+
+        const exercise = await this.prisma.client.exercise.findUnique({ where: { id: exerciseId } });
+        if (!exercise) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+
+        const se = await this.prisma.client.sessionExercise.create({
+            data: { appointmentId, exerciseId },
+            include: { exercise: true },
+        });
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "record.update",
+            entity: "Appointment",
+            entityId: appointmentId,
+        });
+
+        return se;
+    }
+
+    async listDiagnosticExercises(user: SessionUser, appointmentId: string) {
+        const appt = await this.prisma.client.appointment.findUnique({ where: { id: appointmentId } });
+        if (!appt) throw new NotFoundException({ code: "NOT_FOUND", message: "Appointment not found" });
+        if (appt.patientId !== user.id && appt.physioId !== user.id && user.role !== "ADMIN") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
+        }
+
+        return this.prisma.client.sessionExercise.findMany({
+            where: { appointmentId },
+            include: { exercise: true },
+            orderBy: { sentAt: "asc" },
+        });
+    }
+
+    async submitDiagnosticFeedback(
+        user: SessionUser,
+        appointmentId: string,
+        sessionExerciseId: string,
+        input: { feel?: "easy" | "okay" | "painful"; painScore?: number; feedbackNote?: string },
+    ) {
+        if (user.role !== "PATIENT") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Patient only" });
+        }
+
+        const se = await this.prisma.client.sessionExercise.findUnique({
+            where: { id: sessionExerciseId },
+        });
+        if (!se) throw new NotFoundException({ code: "NOT_FOUND", message: "Session exercise not found" });
+        if (se.appointmentId !== appointmentId) {
+            throw new BadRequestException({ code: "MISMATCH", message: "Exercise does not belong to this session" });
+        }
+
+        const appt = await this.prisma.client.appointment.findUnique({ where: { id: appointmentId } });
+        if (!appt || appt.patientId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
+        }
+
+        const updated = await this.prisma.client.sessionExercise.update({
+            where: { id: sessionExerciseId },
+            data: {
+                feel: input.feel ?? null,
+                painScore: input.painScore ?? null,
+                feedbackNote: input.feedbackNote ?? null,
+                feedbackAt: new Date(),
+            },
+            include: { exercise: true },
+        });
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "record.update",
+            entity: "Appointment",
+            entityId: appointmentId,
+        });
+
+        return updated;
+    }
+
     async getForCaller(user: SessionUser, appointmentId: string) {
         const appt = await this.prisma.client.appointment.findUnique({
             where: { id: appointmentId },

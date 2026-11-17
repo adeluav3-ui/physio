@@ -21,7 +21,7 @@ export default function AppointmentReviewPage() {
     const [done, setDone] = useState(false);
 
     useEffect(() => {
-        fetch(`/api/reviews/appointments/${appointmentId}`, { credentials: "include" })
+        fetch(`/api/proxy/reviews/appointments/${appointmentId}`, { credentials: "include" })
             .then((r) => (r.ok ? r.json() : null))
             .then((r) => {
                 if (r) {
@@ -37,7 +37,7 @@ export default function AppointmentReviewPage() {
         setSubmitting(true);
         setError(null);
         try {
-            const res = await fetch(`/api/reviews/appointments/${appointmentId}`, {
+            const res = await fetch(`/api/proxy/reviews/appointments/${appointmentId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",

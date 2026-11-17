@@ -213,6 +213,7 @@ model PhysioProfile {
   goalPlans         GoalPlan[]
   slotHolds         SlotHold[]
   daysOff           DayOff[]
+  packages          Package[]
 
   @@index([licenceStatus])
   @@index([discipline, licenceStatus])
@@ -235,6 +236,7 @@ model PatientProfile {
   dependents        Dependent[]
   goalPlans         GoalPlan[]
   referralsAsPatient Referral[]
+  packages           Package[]
 }
 
 // ── Caregiver / Dependents ────────────────
@@ -361,8 +363,10 @@ model Appointment {
   homeVisit      HomeVisit?
   review         Review?
   ledger         LedgerEntry[]
-  referral       Referral?       @relation("referral_appointment")
-  patientSummary PatientSummary?
+  referral           Referral?       @relation("referral_appointment")
+  patientSummary     PatientSummary?
+  packageSession     PackageSession?
+  sessionExercises   SessionExercise[]
 
   @@index([patientId, startsAt])
   @@index([physioId, startsAt])
@@ -489,7 +493,8 @@ model Exercise {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  programItems     ProgramItem[]
+  programItems       ProgramItem[]
+  sessionExercises   SessionExercise[]
   @@index([csvId])
   @@index([region, difficulty])
   @@index([clinicalReview])
@@ -544,6 +549,26 @@ model ExerciseLog {
 
   programItem   ProgramItem @relation(fields: [programItemId], references: [id], onDelete: Cascade)
   @@unique([programItemId, date])
+}
+
+// In-session diagnostic exercise: physio sends during a live session for real-time movement testing.
+// Diagnostic only — not added to the patient's home programme.
+model SessionExercise {
+  id            String    @id @default(uuid())
+  appointmentId String
+  exerciseId    String
+  sentAt        DateTime  @default(now())
+
+  // Patient feedback (filled after performing the movement)
+  feel          String?   // easy | okay | painful
+  painScore     Int?      // 0–10
+  feedbackNote  String?
+  feedbackAt    DateTime?
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  exercise    Exercise    @relation(fields: [exerciseId], references: [id])
+
+  @@index([appointmentId])
 }
 
 // ── Messaging ────────────────────────────
@@ -761,6 +786,41 @@ model TaskLog {
   task           PracticeTask @relation(fields: [practiceTaskId], references: [id], onDelete: Cascade)
 
   @@unique([practiceTaskId, date])
+}
+
+// ── Session packages ─────────────────────
+// A prepaid bundle of follow-up sessions with a fixed physio.
+// Discount: service fee waived (PACKAGE_DISCOUNT_MODE = "WAIVE_SERVICE_FEE").
+model Package {
+  id          String   @id @default(uuid())
+  patientId   String
+  physioId    String
+  size        Int      // 3, 5, or 10 (from PACKAGE_SIZES)
+  remaining   Int
+  priceKobo   Int      // total price at purchase (no service fee)
+  status      String   @default("ACTIVE") // ACTIVE | EXHAUSTED | EXPIRED
+  expiresAt   DateTime
+  purchasedAt DateTime @default(now())
+
+  patient     PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+  physio      PhysioProfile  @relation(fields: [physioId],  references: [userId])
+  sessions    PackageSession[]
+
+  @@index([patientId, status])
+  @@index([physioId])
+}
+
+// Each appointment redeemed against a package burns one session.
+model PackageSession {
+  id            String   @id @default(uuid())
+  packageId     String
+  appointmentId String   @unique
+  redeemedAt    DateTime @default(now())
+
+  package     Package     @relation(fields: [packageId],     references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([packageId])
 }
 
 // ── Licensing bodies config ───────────────

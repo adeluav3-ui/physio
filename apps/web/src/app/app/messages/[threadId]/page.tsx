@@ -38,7 +38,7 @@ export default function PatientThreadPage() {
     }, []);
 
     const load = () => {
-        fetch(`/api/threads/${threadId}/messages`, { credentials: "include" })
+        fetch(`/api/proxy/threads/${threadId}/messages`, { credentials: "include" })
             .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
             .then((msgs: Message[]) => {
                 setMessages(msgs);
@@ -54,7 +54,7 @@ export default function PatientThreadPage() {
         setSending(true);
         setError(null);
         try {
-            const res = await fetch(`/api/threads/${threadId}/messages`, {
+            const res = await fetch(`/api/proxy/threads/${threadId}/messages`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",

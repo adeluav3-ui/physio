@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import { Prisma } from "@physio/db";
 import type { ExerciseUpsertInput, SessionUser, SetUserRoleInput } from "@physio/shared";
-import { exerciseUpsertSchema, setUserRoleSchema } from "@physio/shared";
+import { exerciseUpsertSchema, setUserRoleSchema, hasRedFlagWords } from "@physio/shared";
 import { CurrentUser } from "../common/current-user.decorator.js";
 import { ZodBody } from "../common/zod-validation.pipe.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
@@ -27,6 +27,8 @@ import { PrismaService } from "../prisma/prisma.service.js";
 export class AdminController {
     constructor(private readonly prisma: PrismaService) {}
 
+    // ── Audit ─────────────────────────────────────────────────────────────────
+
     @Get("audit")
     async auditLog() {
         return this.prisma.client.auditLog.findMany({
@@ -36,6 +38,8 @@ export class AdminController {
         });
     }
 
+    // ── Waitlist ──────────────────────────────────────────────────────────────
+
     @Get("waitlist")
     async waitlist() {
         return this.prisma.client.waitlistEntry.findMany({
@@ -43,9 +47,10 @@ export class AdminController {
         });
     }
 
-    // ── Users ──────────────────────────────────────────────
+    // ── Users ─────────────────────────────────────────────────────────────────
+
     @Get("users")
-    async users() {
+    async listUsers() {
         return this.prisma.client.user.findMany({
             select: {
                 id: true,
@@ -54,14 +59,21 @@ export class AdminController {
                 role: true,
                 status: true,
                 createdAt: true,
-                physioProfile: {
-                    select: {
-                        discipline: true,
-                        licenceStatus: true,
-                    },
-                },
+                emailVerifiedAt: true,
+                physioProfile: { select: { licenceStatus: true, discipline: true } },
             },
             orderBy: { createdAt: "desc" },
+        });
+    }
+
+    @Patch("users/:id")
+    async updateUser(@Param("id") id: string, @Body() body: { status?: "ACTIVE" | "SUSPENDED" }) {
+        const user = await this.prisma.client.user.findUnique({ where: { id } });
+        if (!user) throw new NotFoundException({ code: "NOT_FOUND", message: "User not found" });
+        return this.prisma.client.user.update({
+            where: { id },
+            data: { ...(body.status && { status: body.status }) },
+            select: { id: true, name: true, email: true, role: true, status: true },
         });
     }
 
@@ -83,7 +95,144 @@ export class AdminController {
         });
     }
 
-    // ── Exercise library ───────────────────────────────────
+    @Delete("users/:id")
+    async deleteUser(@Param("id") id: string) {
+        const user = await this.prisma.client.user.findUnique({ where: { id } });
+        if (!user) throw new NotFoundException({ code: "NOT_FOUND", message: "User not found" });
+        if (user.role === "ADMIN") {
+            throw new BadRequestException({ code: "CANNOT_DELETE_ADMIN", message: "Cannot delete an admin account" });
+        }
+
+        const hasAppointments = await this.prisma.client.appointment.count({
+            where: user.role === "PHYSIO"
+                ? { physioId: id }
+                : { patientId: id },
+        });
+        if (hasAppointments > 0) {
+            throw new BadRequestException({
+                code: "HAS_APPOINTMENTS",
+                message: "Cannot delete a user who has appointment history. Suspend the account instead.",
+            });
+        }
+
+        await this.prisma.client.user.delete({ where: { id } });
+        return { deleted: true };
+    }
+
+    // ── Analytics ─────────────────────────────────────────────────────────────
+
+    @Get("analytics")
+    async analytics() {
+        const [
+            totalUsers,
+            totalPhysios,
+            totalPatients,
+            totalAppointments,
+            completedAppointments,
+            pendingVerifications,
+            totalRevenue,
+            activePrograms,
+            totalReviews,
+            avgRating,
+        ] = await Promise.all([
+            this.prisma.client.user.count(),
+            this.prisma.client.user.count({ where: { role: "PHYSIO" } }),
+            this.prisma.client.user.count({ where: { role: "PATIENT" } }),
+            this.prisma.client.appointment.count(),
+            this.prisma.client.appointment.count({ where: { status: "COMPLETED" } }),
+            this.prisma.client.physioProfile.count({ where: { licenceStatus: "UNVERIFIED" } }),
+            this.prisma.client.ledgerEntry.aggregate({
+                _sum: { amountKobo: true },
+                where: { type: "CHARGE" },
+            }),
+            this.prisma.client.program.count({ where: { status: "ACTIVE" } }),
+            this.prisma.client.review.count(),
+            this.prisma.client.review.aggregate({ _avg: { rating: true } }),
+        ]);
+
+        const recentAppointments = await this.prisma.client.appointment.findMany({
+            where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 3600_000) } },
+            select: { createdAt: true, status: true },
+            orderBy: { createdAt: "asc" },
+        });
+
+        return {
+            totalUsers,
+            totalPhysios,
+            totalPatients,
+            totalAppointments,
+            completedAppointments,
+            pendingVerifications,
+            revenueKobo: totalRevenue._sum.amountKobo ?? 0,
+            activePrograms,
+            totalReviews,
+            averageRating: avgRating._avg.rating ? Math.round(avgRating._avg.rating * 10) / 10 : null,
+            recentAppointments,
+        };
+    }
+
+    // ── Triage ────────────────────────────────────────────────────────────────
+
+    @Get("triage")
+    async triageResults() {
+        return this.prisma.client.triageResult.findMany({
+            include: {
+                intake: {
+                    select: {
+                        complaint: true,
+                        bodyRegion: true,
+                        painScore: true,
+                        createdAt: true,
+                        patient: { select: { user: { select: { name: true, email: true } } } },
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 500,
+        });
+    }
+
+    // ── Incidents (red-flag messages) ─────────────────────────────────────────
+
+    @Get("incidents")
+    async incidents() {
+        const messages = await this.prisma.client.message.findMany({
+            include: {
+                sender: { select: { name: true, role: true } },
+                thread: {
+                    select: {
+                        patient: { select: { name: true, email: true } },
+                        physio: { select: { name: true } },
+                    },
+                },
+            },
+            orderBy: { sentAt: "desc" },
+            take: 2000,
+        });
+        return messages.filter((m) => hasRedFlagWords(m.body));
+    }
+
+    // ── Home visits ───────────────────────────────────────────────────────────
+
+    @Get("home-visits")
+    async homeVisits() {
+        return this.prisma.client.homeVisit.findMany({
+            include: {
+                appointment: {
+                    select: {
+                        startsAt: true,
+                        status: true,
+                        patient: { select: { user: { select: { name: true } } } },
+                        physio: { select: { user: { select: { name: true } } } },
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    // ── Exercise library ──────────────────────────────────────────────────────
+
     @Get("exercises")
     async listExercises(
         @Query("region") region?: string,
@@ -191,7 +340,8 @@ export class AdminController {
         return { ok: true };
     }
 
-    // ── Animation overrides ────────────────────────────────
+    // ── Animation overrides ───────────────────────────────────────────────────
+
     @Put("exercises/:id/animation")
     async setExerciseAnimation(
         @Param("id") id: string,
@@ -217,6 +367,24 @@ export class AdminController {
             where: { id },
             data: { poseData: Prisma.DbNull },
             select: { id: true, csvId: true, poseData: true },
+        });
+    }
+
+    // ── Payments ledger ───────────────────────────────────────────────────────
+
+    @Get("payments/ledger")
+    async ledger() {
+        return this.prisma.client.ledgerEntry.findMany({
+            include: {
+                appointment: {
+                    select: {
+                        patient: { select: { user: { select: { name: true } } } },
+                        physio: { select: { user: { select: { name: true } } } },
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1000,
         });
     }
 }

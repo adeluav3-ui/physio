@@ -21,7 +21,7 @@ export default function PatientMessagesPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/threads", { credentials: "include" })
+        fetch("/api/proxy/threads", { credentials: "include" })
             .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
             .then(setThreads)
             .catch(() => setError("Could not load messages."))

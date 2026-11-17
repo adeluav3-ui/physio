@@ -43,6 +43,11 @@ export class ProgramsController {
         return this.programs.listForPatient(user, patientId);
     }
 
+    @Get(":id")
+    getOne(@CurrentUser() user: SessionUser, @Param("id") id: string) {
+        return this.programs.getOne(user, id);
+    }
+
     @Post(":id/items")
     @Roles("PHYSIO")
     addItem(

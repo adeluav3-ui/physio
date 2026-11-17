@@ -42,9 +42,21 @@ type Exercise = {
     id: string;
     name: string;
     region: string;
+    videoUrl: string;
     cues: string;
     difficulty: number;
     clinicalReview: boolean;
+};
+
+type DiagnosticEntry = {
+    id: string;
+    exerciseId: string;
+    sentAt: string;
+    feel: "easy" | "okay" | "painful" | null;
+    painScore: number | null;
+    feedbackNote: string | null;
+    feedbackAt: string | null;
+    exercise: Exercise;
 };
 
 type NoteFields = { subjective: string; objective: string; assessment: string; plan: string };
@@ -105,6 +117,8 @@ export default function PhysioSessionPage() {
     const [referSent, setReferSent] = useState(false);
     const [referSending, setReferSending] = useState(false);
     const [referError, setReferError] = useState<string | null>(null);
+    const [diagnostics, setDiagnostics] = useState<DiagnosticEntry[]>([]);
+    const [sendingDx, setSendingDx] = useState<string | null>(null);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
     // Join + load session data in parallel
@@ -184,6 +198,38 @@ export default function PhysioSessionPage() {
             .then(() => setNoteStatus("saved"))
             .catch(() => setNoteStatus("idle"));
     }, [params.id]);
+
+    // Poll diagnostic results every 5 seconds once the session is live
+    useEffect(() => {
+        if (!join) return;
+        const id = params.id;
+        const poll = () => {
+            fetch(`/api/proxy/sessions/${id}/diagnostic`)
+                .then((r) => (r.ok ? (r.json() as Promise<DiagnosticEntry[]>) : []))
+                .then(setDiagnostics)
+                .catch(() => {});
+        };
+        poll();
+        const timer = setInterval(poll, 5000);
+        return () => clearInterval(timer);
+    }, [join, params.id]);
+
+    async function sendDiagnosticExercise(exerciseId: string) {
+        setSendingDx(exerciseId);
+        try {
+            const r = await fetch(`/api/proxy/sessions/${params.id}/diagnostic`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ exerciseId }),
+            });
+            if (r.ok) {
+                const entry = await r.json() as DiagnosticEntry;
+                setDiagnostics((prev) => [...prev, entry]);
+            }
+        } finally {
+            setSendingDx(null);
+        }
+    }
 
     function updateNote(field: keyof NoteFields, value: string) {
         const updated = { ...note, [field]: value };
@@ -346,7 +392,7 @@ export default function PhysioSessionPage() {
                 {/* ── Center: video ── */}
                 <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ flex: 1, borderRadius: 18, background: NAV, position: "relative", overflow: "hidden", minHeight: 0 }}>
-                        <DailyCallFrame url={join.roomUrl} token={join.token} />
+                        <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "center", gap: 10, flexShrink: 0, paddingBottom: 4 }}>
                         <button
@@ -448,26 +494,72 @@ export default function PhysioSessionPage() {
                                     {exercisesLoaded && filteredEx.length === 0 && (
                                         <p style={{ font: "400 14px 'Figtree', sans-serif", color: MUTED, padding: "16px 0" }}>No exercises match.</p>
                                     )}
-                                    {filteredEx.map((ex) => (
-                                        <div key={ex.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderTop: `1px solid #e4ebf2` }}>
-                                            <div style={{ width: 64, height: 48, borderRadius: 8, background: "#cdddea", flexShrink: 0 }} />
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ font: "600 14px 'Figtree', sans-serif" }}>{ex.name}</div>
-                                                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 8, background: "#eef3f8", font: "600 12px 'Figtree', sans-serif", marginTop: 2 }}>
-                                                    {ex.region}
-                                                </span>
+                                    {filteredEx.map((ex) => {
+                                        const alreadySent = diagnostics.some((d) => d.exerciseId === ex.id);
+                                        const isSending = sendingDx === ex.id;
+                                        return (
+                                            <div key={ex.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderTop: `1px solid #e4ebf2` }}>
+                                                <div style={{ width: 64, height: 48, borderRadius: 8, background: "#cdddea", flexShrink: 0, overflow: "hidden" }}>
+                                                    {ex.videoUrl && ex.videoUrl.length !== 11 && (
+                                                        <img src={ex.videoUrl} alt={ex.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                    )}
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ font: "600 14px 'Figtree', sans-serif" }}>{ex.name}</div>
+                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 8, background: "#eef3f8", font: "600 12px 'Figtree', sans-serif", marginTop: 2 }}>
+                                                        {ex.region}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                                                    <button
+                                                        onClick={() => sendDiagnosticExercise(ex.id)}
+                                                        disabled={isSending || alreadySent}
+                                                        title="Send to patient for testing during this session"
+                                                        style={{
+                                                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                                            minHeight: 34, padding: "0 12px", borderRadius: 10,
+                                                            background: alreadySent ? "#e3f4e8" : isSending ? "#eaf1f8" : "#fff",
+                                                            color: alreadySent ? "#1d5c34" : NAV,
+                                                            border: `1px solid ${alreadySent ? "#a3d9b1" : "#c3d1de"}`,
+                                                            font: "600 13px 'Figtree', sans-serif",
+                                                            cursor: (isSending || alreadySent) ? "default" : "pointer",
+                                                        }}
+                                                    >
+                                                        {alreadySent ? "Sent ✓" : isSending ? "…" : "Send"}
+                                                    </button>
+                                                    <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 34, padding: "0 12px", borderRadius: 10, background: GREEN, color: "#fff", border: 0, font: "600 13px 'Figtree', sans-serif", cursor: "pointer" }}>
+                                                        Add
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                                                <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 34, padding: "0 12px", borderRadius: 10, background: "#fff", color: NAV, border: `1px solid #c3d1de`, font: "600 13px 'Figtree', sans-serif", cursor: "pointer" }}>
-                                                    Show
-                                                </button>
-                                                <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 34, padding: "0 12px", borderRadius: 10, background: GREEN, color: "#fff", border: 0, font: "600 13px 'Figtree', sans-serif", cursor: "pointer" }}>
-                                                    Add
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
+                                {/* Diagnostic results */}
+                                {diagnostics.length > 0 && (
+                                    <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                                        <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                            Sent for testing ({diagnostics.length})
+                                        </div>
+                                        {diagnostics.map((d) => (
+                                            <div key={d.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: d.feedbackAt ? "#e3f4e8" : "#f4f8fb", border: `1px solid ${d.feedbackAt ? "#a3d9b1" : BORDER}` }}>
+                                                <div style={{ font: "600 13px 'Figtree', sans-serif" }}>{d.exercise.name}</div>
+                                                {d.feedbackAt ? (
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8, font: "400 12px 'Figtree', sans-serif" }}>
+                                                        <span style={{ padding: "2px 8px", borderRadius: 99, background: d.feel === "painful" ? "#fce4e4" : d.feel === "easy" ? "#e3f4e8" : "#fdf1d8", color: d.feel === "painful" ? "#7f1d1d" : d.feel === "easy" ? "#1d5c34" : "#7a4f00", fontWeight: 600 }}>
+                                                            {d.feel ?? "—"}
+                                                        </span>
+                                                        {d.painScore !== null && <span style={{ color: MUTED }}>Pain {d.painScore}/10</span>}
+                                                        {d.feedbackNote && <span style={{ color: MUTED, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.feedbackNote}</span>}
+                                                    </div>
+                                                ) : (
+                                                    <span style={{ font: "400 12px 'Figtree', sans-serif", color: MUTED }}>Waiting…</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ font: "600 14px 'Figtree', sans-serif" }}>0 in the plan</div>
