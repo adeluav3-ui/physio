@@ -17,9 +17,12 @@ export interface ExerciseViewerProps {
     poseOverride?: unknown;
 }
 
+type PointFn = (seg: SolvedPose["seg"], name: string) => [number, number, number];
+
 function computeBounds(
     ex: AnimExercise,
     solve: (pose: unknown, pins: unknown) => SolvedPose,
+    pointFn: PointFn,
 ): Bounds {
     const lo: [number, number, number] = [Infinity, Infinity, Infinity];
     const hi: [number, number, number] = [-Infinity, -Infinity, -Infinity];
@@ -27,8 +30,10 @@ function computeBounds(
         const s = ex.sample((i / 24) * ex.duration);
         const solved = solve(s.pose, s.pins);
         const names = ex.fit;
+        // Use pointFn so that landmark names like "crown"/"chin" (which are not in
+        // solved.seg directly but are resolved via the LANDMARKS table) work correctly.
         const pts = names
-            ? names.map((n) => solved.seg[n]?.p).filter(Boolean) as [number, number, number][]
+            ? names.map((n) => { try { return pointFn(solved.seg, n); } catch { return null; } }).filter(Boolean) as [number, number, number][]
             : Object.values(solved.seg).map((v) => v.p);
         for (const p of pts) {
             for (let a = 0; a < 3; a++) {
@@ -62,6 +67,7 @@ export default function ExerciseViewer({
     const animRef = useRef<number>(0);
     const buildExRef = useRef<((poses: unknown, id: string, side: string) => AnimExercise | null) | null>(null);
     const solveRef = useRef<((pose: unknown, pins: unknown) => SolvedPose) | null>(null);
+    const pointRef = useRef<PointFn | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -97,7 +103,7 @@ export default function ExerciseViewer({
 
         async function init() {
             try {
-                const [THREE, { buildExercise }, { solve }, { createStage, LIGHT_COLOURS }] =
+                const [THREE, { buildExercise }, { solve, point }, { createStage, LIGHT_COLOURS }] =
                     await Promise.all([
                         import("three"),
                         import("@physio/exercise-animation/engine/sampler.js"),
@@ -107,6 +113,7 @@ export default function ExerciseViewer({
 
                 buildExRef.current = buildExercise;
                 solveRef.current = solve;
+                pointRef.current = point;
 
                 let poses: unknown;
                 if (poseOverride) {
@@ -131,7 +138,7 @@ export default function ExerciseViewer({
                 stageRef.current = stage;
                 exRef.current = ex;
 
-                const bounds = computeBounds(ex, solve);
+                const bounds = computeBounds(ex, solve, point);
                 stage.setExercise(ex, bounds);
 
                 const view = (initialView ?? ex.defaultView) as ViewName;
@@ -185,13 +192,13 @@ export default function ExerciseViewer({
 
     // Swap exercise data live when poseOverride changes (stage persists — no flicker)
     useEffect(() => {
-        if (!poseOverride || !buildExRef.current || !solveRef.current || !stageRef.current) return;
+        if (!poseOverride || !buildExRef.current || !solveRef.current || !pointRef.current || !stageRef.current) return;
         const synthetic = { schema: "rehab360-poses/1", exercises: { [csvId]: poseOverride } };
         let ex = buildExRef.current(synthetic, csvId, side ?? "left");
         if (!ex) ex = buildExRef.current(synthetic, csvId, "both");
         if (!ex) return;
         exRef.current = ex;
-        const bounds = computeBounds(ex, solveRef.current);
+        const bounds = computeBounds(ex, solveRef.current, pointRef.current);
         stageRef.current.setExercise(ex, bounds);
         const view = (initialView ?? ex.defaultView) as ViewName;
         stageRef.current.setView(view, false);
