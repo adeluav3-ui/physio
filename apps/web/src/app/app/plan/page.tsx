@@ -1,6 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+
+const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
 
 type ExerciseItem = {
     id: string;
@@ -9,7 +12,20 @@ type ExerciseItem = {
     holdSeconds: number;
     frequency: string;
     notes: string | null;
-    exercise: { id: string; name: string; region: string; cues: string };
+    exercise: {
+        id: string;
+        name: string;
+        region: string;
+        cues: string;
+        csvId: string | null;
+        poseKey: string | null;
+        poseData: unknown;
+        howTo: string | null;
+        goal: string | null;
+        precautions: string | null;
+        videoUrl: string | null;
+        position: string | null;
+    };
     todayLog: { completed: boolean; notes: string | null } | null;
 };
 
@@ -135,20 +151,55 @@ export default function PatientPlanPage() {
                         {/* Expanded card */}
                         {isOpen && (
                             <div style={{ padding: "0 16px 16px" }}>
-                                {/* Video placeholder */}
-                                <div style={{ height: 130, borderRadius: 12, background: "#dbe8f1", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED, marginBottom: 12 }}>
-                                    <span style={{ font: "500 14px 'Figtree', sans-serif" }}>Exercise video</span>
-                                </div>
+                                {/* Animation or video */}
+                                {item.exercise.poseKey ? (
+                                    <div style={{ marginBottom: 14 }}>
+                                        <ExerciseViewer
+                                            csvId={item.exercise.poseKey}
+                                            poseOverride={item.exercise.poseData ?? undefined}
+                                        />
+                                    </div>
+                                ) : item.exercise.videoUrl && /^[A-Za-z0-9_-]{11}$/.test(item.exercise.videoUrl) ? (
+                                    <div style={{ aspectRatio: "16/9", borderRadius: 12, overflow: "hidden", marginBottom: 14 }}>
+                                        <iframe
+                                            src={`https://www.youtube-nocookie.com/embed/${item.exercise.videoUrl}?rel=0`}
+                                            title={item.exercise.name}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+                                        />
+                                    </div>
+                                ) : null}
 
                                 <h2 style={{ font: "700 18px 'Figtree', sans-serif", margin: 0 }}>{item.exercise.name}</h2>
                                 <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: "4px 0 14px" }}>
                                     {item.reps} reps · {item.sets} sets{item.frequency ? ` · ${item.frequency}` : ""}
                                 </p>
 
-                                {item.exercise.cues && (
+                                {item.exercise.goal && (
+                                    <p style={{ font: "500 14px/1.5 'Figtree', sans-serif", color: NAV, marginBottom: 10 }}>
+                                        Goal: {item.exercise.goal}
+                                    </p>
+                                )}
+
+                                {item.exercise.howTo && (
+                                    <div style={{ marginBottom: 14 }}>
+                                        <div style={{ font: "600 13px 'Figtree', sans-serif", color: MUTED, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.04em" }}>How to do it</div>
+                                        <p style={{ font: "400 14px/1.6 'Figtree', sans-serif", color: NAV, margin: 0 }}>{item.exercise.howTo}</p>
+                                    </div>
+                                )}
+
+                                {item.exercise.cues && !item.exercise.howTo && (
                                     <p style={{ font: "400 14px/1.5 'Figtree', sans-serif", color: MUTED, marginBottom: 14 }}>
                                         {item.exercise.cues}
                                     </p>
+                                )}
+
+                                {item.exercise.precautions && (
+                                    <div style={{ background: "#fdf1d8", border: "1px solid #ecd49b", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+                                        <span style={{ font: "600 13px 'Figtree', sans-serif", color: "#5f3f00" }}>Stop if: </span>
+                                        <span style={{ font: "400 13px/1.4 'Figtree', sans-serif", color: "#5f3f00" }}>{item.exercise.precautions}</span>
+                                    </div>
                                 )}
 
                                 {!done && (
