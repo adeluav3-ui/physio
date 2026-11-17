@@ -119,7 +119,8 @@ export default function ExerciseViewer({
 
                 if (!mounted) return;
 
-                const ex = buildExercise(poses, csvId, side);
+                let ex = buildExercise(poses, csvId, side);
+                if (!ex) ex = buildExercise(poses, csvId, "both");
                 if (!ex) {
                     setError("No animation available for this exercise yet.");
                     setLoading(false);
@@ -186,7 +187,8 @@ export default function ExerciseViewer({
     useEffect(() => {
         if (!poseOverride || !buildExRef.current || !solveRef.current || !stageRef.current) return;
         const synthetic = { schema: "rehab360-poses/1", exercises: { [csvId]: poseOverride } };
-        const ex = buildExRef.current(synthetic, csvId, side ?? "left");
+        let ex = buildExRef.current(synthetic, csvId, side ?? "left");
+        if (!ex) ex = buildExRef.current(synthetic, csvId, "both");
         if (!ex) return;
         exRef.current = ex;
         const bounds = computeBounds(ex, solveRef.current);
