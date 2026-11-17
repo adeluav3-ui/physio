@@ -11,3 +11,6 @@ coverage/
 packages/db/generated/
 packages/db/prisma/migrations/dev.db*
 *.tsbuildinfo
+
+.vercel
+.env*

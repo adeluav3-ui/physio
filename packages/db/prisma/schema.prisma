@@ -476,6 +476,7 @@ model Exercise {
   equipment          String?
   videoStatus        String?
   poseKey            String?                   // key into poses.json (equals csvId for library exercises)
+  poseData           Json?                     // admin-edited animation override; takes precedence over poses.json when set
   videoUrl           String?
   instructions       String?
   cues               String        @default("")
