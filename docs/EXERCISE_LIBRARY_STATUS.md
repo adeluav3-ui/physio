@@ -1,7 +1,23 @@
-# Exercise Library — Phase 0 Audit
+# Exercise Library — Implementation Status
 
-Audited: 2026-11-17  
+Completed: 2026-11-17  
 Branch: `feat/exercise-library`
+
+## Status: All 7 phases done ✓
+
+| Phase | Status | Commit |
+|---|---|---|
+| 1 — Schema + CSV seed | ✓ | `migration 20261117000000` |
+| 2 — API endpoints | ✓ | admin + programs controllers |
+| 3 — ExerciseViewer component | ✓ | `apps/web/src/components/exercise-viewer.tsx` |
+| 4 — Admin library upgrades | ✓ | YouTube-nocookie, csvId display, 3D preview |
+| 5 — Animation editor | ✓ | `/admin/library/[id]/animation`, PUT/DELETE endpoints |
+| 6 — Patient + pro integration | ✓ | Plan page viewer, pro program builder |
+| 7 — Final typecheck | ✓ | Both `@physio/api` and `@physio/web` pass |
+
+---
+
+## Original Phase 0 Audit
 
 ---
 
