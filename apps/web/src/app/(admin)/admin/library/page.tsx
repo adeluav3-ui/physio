@@ -452,8 +452,14 @@ function ExerciseCard({
     const isDiag = ex.purpose === "Diagnosis";
 
     return (
-        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            {/* Media — live animation or YouTube thumbnail */}
+        <div
+            className="card"
+            onClick={() => onEdit(ex)}
+            style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", cursor: "pointer" }}
+        >
+            {/* Media — live animation or YouTube thumbnail.
+                View-change buttons inside ExerciseViewer call e.stopPropagation()
+                so they don't trigger the card's edit handler. */}
             <div style={{ position: "relative" }}>
                 {isAnimated ? (
                     <ExerciseViewer csvId={ex.poseKey!} />
@@ -522,8 +528,11 @@ function ExerciseCard({
                 )}
             </div>
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 6, padding: "0 14px 12px", flexWrap: "wrap" }}>
+            {/* Actions — stop propagation so these don't trigger the card's edit handler */}
+            <div
+                style={{ display: "flex", gap: 6, padding: "0 14px 12px", flexWrap: "wrap" }}
+                onClick={e => e.stopPropagation()}
+            >
                 {isAnimated && (
                     <Link
                         href={`/admin/library/${ex.id}/animation`}

@@ -67,9 +67,30 @@ export default function ExerciseViewer({
     const [error, setError] = useState<string | null>(null);
     const [phase, setPhase] = useState("");
     const [currentView, setCurrentView] = useState<ViewName>("angled");
+    const [inView, setInView] = useState(false);
 
+    // Track viewport visibility — only initialize WebGL when the element is on screen.
+    // This prevents exhausting the browser's WebGL context limit (~16 max) when
+    // many cards are rendered simultaneously.
     useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        const io = new IntersectionObserver(
+            ([entry]) => setInView(!!entry?.isIntersecting),
+            { rootMargin: "120px", threshold: 0 },
+        );
+        io.observe(container);
+        return () => io.disconnect();
+    }, []);
+
+    // Main init/teardown — keyed on visibility + exercise identity.
+    // When the card scrolls off-screen the cleanup cancels the WebGL context;
+    // when it re-enters, a fresh context is created (poses.json is served from
+    // the browser cache so the reload is instant).
+    useEffect(() => {
+        if (!inView) return; // defer until visible
         if (!canvasRef.current || !containerRef.current) return;
+
         const canvas = canvasRef.current;
         const container = containerRef.current;
         let mounted = true;
@@ -122,7 +143,6 @@ export default function ExerciseViewer({
 
                 setLoading(false);
 
-                // Animation loop
                 let elapsed = 0;
                 let last = performance.now();
 
@@ -160,7 +180,7 @@ export default function ExerciseViewer({
             stageRef.current = null;
             exRef.current = null;
         };
-    }, [csvId, side, initialView]);
+    }, [csvId, side, initialView, inView]);
 
     // Swap exercise data live when poseOverride changes (stage persists — no flicker)
     useEffect(() => {
@@ -176,7 +196,8 @@ export default function ExerciseViewer({
         setCurrentView(view);
     }, [poseOverride, csvId, side, initialView]);
 
-    function handleViewChange(v: ViewName) {
+    function handleViewChange(e: React.MouseEvent, v: ViewName) {
+        e.stopPropagation(); // don't bubble up to any card-level click handler
         setCurrentView(v);
         stageRef.current?.setView(v);
     }
@@ -249,7 +270,7 @@ export default function ExerciseViewer({
                             <button
                                 key={v}
                                 type="button"
-                                onClick={() => handleViewChange(v)}
+                                onClick={(e) => handleViewChange(e, v)}
                                 style={{
                                     padding: "3px 10px",
                                     borderRadius: "10px",
