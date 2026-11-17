@@ -13,6 +13,8 @@ export interface ExerciseViewerProps {
     /** Initial camera view. Defaults to the exercise's own defaultView. */
     initialView?: ViewName;
     className?: string;
+    /** Admin-edited pose override — replaces the poses.json entry when set. */
+    poseOverride?: unknown;
 }
 
 function computeBounds(
@@ -51,12 +53,15 @@ export default function ExerciseViewer({
     side = "left",
     initialView,
     className,
+    poseOverride,
 }: ExerciseViewerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const stageRef = useRef<Stage | null>(null);
     const exRef = useRef<AnimExercise | null>(null);
     const animRef = useRef<number>(0);
+    const buildExRef = useRef<((poses: unknown, id: string, side: string) => AnimExercise | null) | null>(null);
+    const solveRef = useRef<((pose: unknown, pins: unknown) => SolvedPose) | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -79,9 +84,17 @@ export default function ExerciseViewer({
                         import("@physio/exercise-animation/engine/stage.js"),
                     ]);
 
-                const res = await fetch("/exercise-data/poses.json");
-                if (!res.ok) throw new Error("Failed to load exercise data");
-                const poses: unknown = await res.json();
+                buildExRef.current = buildExercise;
+                solveRef.current = solve;
+
+                let poses: unknown;
+                if (poseOverride) {
+                    poses = { schema: "rehab360-poses/1", exercises: { [csvId]: poseOverride } };
+                } else {
+                    const res = await fetch("/exercise-data/poses.json");
+                    if (!res.ok) throw new Error("Failed to load exercise data");
+                    poses = await res.json();
+                }
 
                 if (!mounted) return;
 
@@ -148,6 +161,20 @@ export default function ExerciseViewer({
             exRef.current = null;
         };
     }, [csvId, side, initialView]);
+
+    // Swap exercise data live when poseOverride changes (stage persists — no flicker)
+    useEffect(() => {
+        if (!poseOverride || !buildExRef.current || !solveRef.current || !stageRef.current) return;
+        const synthetic = { schema: "rehab360-poses/1", exercises: { [csvId]: poseOverride } };
+        const ex = buildExRef.current(synthetic, csvId, side ?? "left");
+        if (!ex) return;
+        exRef.current = ex;
+        const bounds = computeBounds(ex, solveRef.current);
+        stageRef.current.setExercise(ex, bounds);
+        const view = (initialView ?? ex.defaultView) as ViewName;
+        stageRef.current.setView(view, false);
+        setCurrentView(view);
+    }, [poseOverride, csvId, side, initialView]);
 
     function handleViewChange(v: ViewName) {
         setCurrentView(v);

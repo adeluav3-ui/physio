@@ -8,9 +8,11 @@ import {
     Param,
     Patch,
     Post,
+    Put,
     Query,
     UseGuards,
 } from "@nestjs/common";
+import { Prisma } from "@physio/db";
 import type { ExerciseUpsertInput, SessionUser, SetUserRoleInput } from "@physio/shared";
 import { exerciseUpsertSchema, setUserRoleSchema } from "@physio/shared";
 import { CurrentUser } from "../common/current-user.decorator.js";
@@ -187,5 +189,34 @@ export class AdminController {
         if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
         await this.prisma.client.exercise.delete({ where: { id } });
         return { ok: true };
+    }
+
+    // ── Animation overrides ────────────────────────────────
+    @Put("exercises/:id/animation")
+    async setExerciseAnimation(
+        @Param("id") id: string,
+        @Body() body: unknown,
+    ) {
+        if (!body || typeof body !== "object" || Array.isArray(body)) {
+            throw new BadRequestException({ code: "INVALID_BODY", message: "Body must be a JSON object" });
+        }
+        const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+        return this.prisma.client.exercise.update({
+            where: { id },
+            data: { poseData: body as Prisma.InputJsonValue },
+            select: { id: true, csvId: true, poseData: true },
+        });
+    }
+
+    @Delete("exercises/:id/animation")
+    async clearExerciseAnimation(@Param("id") id: string) {
+        const existing = await this.prisma.client.exercise.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+        return this.prisma.client.exercise.update({
+            where: { id },
+            data: { poseData: Prisma.DbNull },
+            select: { id: true, csvId: true, poseData: true },
+        });
     }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
@@ -390,13 +391,19 @@ export default function AdminLibraryPage() {
                                 </div>
 
                                 {/* Actions */}
-                                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                                <div style={{ display: "flex", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
                                     {isAnimated && (
                                         <button type="button" className="btn btn2"
                                             style={{ minHeight: "34px", fontSize: "13px" }}
                                             onClick={() => setPreviewId(isPreviewOpen ? null : ex.id)}>
                                             {isPreviewOpen ? "Hide" : "Preview"}
                                         </button>
+                                    )}
+                                    {isAnimated && (
+                                        <Link href={`/admin/library/${ex.id}/animation`}
+                                            style={{ minHeight: "34px", fontSize: "13px", display: "inline-flex", alignItems: "center", padding: "0 12px", borderRadius: "8px", border: "1.5px solid #d9e3ec", background: "#fff", color: "#022449", fontFamily: "'Figtree',sans-serif", fontWeight: 500, textDecoration: "none" }}>
+                                            Edit animation
+                                        </Link>
                                     )}
                                     <button type="button" className="btn btn2" style={{ minHeight: "34px", fontSize: "13px" }} onClick={() => openEdit(ex)}>Edit</button>
                                     <button type="button" className="btn btn2"
