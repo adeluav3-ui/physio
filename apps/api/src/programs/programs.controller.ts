@@ -12,8 +12,18 @@ export class ProgramsController {
     constructor(private readonly programs: ProgramsService) { }
 
     @Get("exercises")
-    listExercises(@Query("q") q?: string, @Query("region") region?: string) {
-        return this.programs.listExercises({ ...(q && { q }), ...(region && { region }) });
+    listExercises(
+        @Query("q") q?: string,
+        @Query("region") region?: string,
+        @Query("joint") joint?: string,
+        @Query("reviewed") reviewed?: string,
+    ) {
+        return this.programs.listExercises({
+            ...(q && { q }),
+            ...(region && { region }),
+            ...(joint && { joint }),
+            ...(reviewed !== undefined && { reviewed }),
+        });
     }
 
     @Get("today")

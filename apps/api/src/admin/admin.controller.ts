@@ -8,6 +8,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     UseGuards,
 } from "@nestjs/common";
 import type { ExerciseUpsertInput, SessionUser, SetUserRoleInput } from "@physio/shared";
@@ -82,10 +83,28 @@ export class AdminController {
 
     // ── Exercise library ───────────────────────────────────
     @Get("exercises")
-    async listExercises() {
+    async listExercises(
+        @Query("region") region?: string,
+        @Query("joint") joint?: string,
+        @Query("reviewed") reviewed?: string,
+    ) {
         return this.prisma.client.exercise.findMany({
+            where: {
+                ...(region && { region }),
+                ...(joint && { joint }),
+                ...(reviewed !== undefined && { clinicalReview: reviewed === "true" }),
+            },
             orderBy: [{ category: "asc" }, { name: "asc" }],
         });
+    }
+
+    @Get("exercises/:id")
+    async getExercise(@Param("id") id: string) {
+        const ex = await this.prisma.client.exercise.findFirst({
+            where: { OR: [{ id }, { csvId: id }] },
+        });
+        if (!ex) throw new NotFoundException({ code: "NOT_FOUND", message: "Exercise not found" });
+        return ex;
     }
 
     @Post("exercises")
