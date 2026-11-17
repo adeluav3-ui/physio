@@ -1,0 +1,540 @@
+{
+    "source": "animation-report.md, 17 Nov",
+    "notes": {
+        "UL-003": {
+            "animationStatus": "done",
+            "shown": "Reworked 17 Nov: starts with the elbows at shoulder height (90°) and slides to 150°; the body leans in exactly as the arms rise, so elbows and wrists stay on the wall and never pass through it; right foot takes one small step in and back; knees can no longer bend backward",
+            "weakPoints": "Start position changed from 60° to 90° to make this possible. Only one foot steps."
+        },
+        "HP-001": {
+            "animationStatus": "done",
+            "shown": "Hips lift about 16 cm to a straight shoulder-to-knee line, hold 3 s",
+            "weakPoints": "Buttock tightening not visible."
+        },
+        "LL-007": {
+            "animationStatus": "done",
+            "shown": "Arms crossed, forward lean, stand fully, slow sit (3.6 s down vs 2.8 s up)",
+            "weakPoints": "Forearms pass close to the chest; slight overlap possible in some views."
+        },
+        "UL-001": {
+            "animationStatus": "done",
+            "shown": "Trunk leaning, right hand on table, arm swings forward/back, side to side, small circles (3 of each per loop)",
+            "weakPoints": "The arm is driven by angles, not by real body sway; body sway is a small added rock. Swing size (about ±14°) is my choice."
+        },
+        "UL-006": {
+            "animationStatus": "done",
+            "shown": "Elbow at 90° with towel roll, forearm turns from 40° in to 35° out, band stays attached",
+            "weakPoints": "Band is a straight strip, no stretch look. Towel roll is drawn on the arm, not squeezed."
+        },
+        "UL-008": {
+            "animationStatus": "done",
+            "shown": "Shoulders move back about 6 cm and slightly down, hold 5 s. Default view is from behind",
+            "weakPoints": "Subtle. The blades themselves are not drawn."
+        },
+        "LL-002": {
+            "animationStatus": "done",
+            "shown": "Other knee bent, straight leg lifts until the thighs are level (about 47°), slow lower",
+            "weakPoints": "See CSV note below on lift height."
+        },
+        "LL-003": {
+            "animationStatus": "done",
+            "shown": "Heel stays on the mat, knee bends to about 120°, hold 5 s",
+            "weakPoints": "No strap or sliding surface drawn."
+        },
+        "LL-006": {
+            "animationStatus": "done",
+            "shown": "Hands on counter, knees to 45°, knees stay over the toes",
+            "weakPoints": "Counter is drawn open underneath so legs stay visible."
+        },
+        "LL-020": {
+            "animationStatus": "done",
+            "shown": "Toes stay planted, heels lift about 9 cm, hold 2 s, slow lower",
+            "weakPoints": "Rise is straight up; no forward weight shift."
+        },
+        "HP-002": {
+            "animationStatus": "done",
+            "shown": "Side-lying, heels together, top knee lifts about 20 cm",
+            "weakPoints": "Pelvis is held still by the data, so \"without rolling the pelvis back\" is shown only as the correct version. Bottom arm reaches forward rather than under the head."
+        },
+        "BK-001": {
+            "animationStatus": "done",
+            "shown": "Close-up, head glides back about 2 cm, hold 5 s",
+            "weakPoints": "Small movement; best in Side view. No double-chin skin fold."
+        },
+        "BK-012": {
+            "animationStatus": "done",
+            "shown": "Lower back starts slightly arched, pelvis rolls back 12°",
+            "weakPoints": "Very subtle. The gap under the back closing is hard to see behind the arm."
+        },
+        "BK-015": {
+            "animationStatus": "done",
+            "shown": "Opposite arm and leg to horizontal, hold 5 s, swap. One loop = one rep each side",
+            "weakPoints": "Trunk is perfectly still (data), so no wobble. Readout shows arm reach only."
+        },
+        "BK-014": {
+            "animationStatus": "done",
+            "shown": "Arch up, gentle sag, hands and knees planted. Fixed 16 Nov: palms locked flat and elbows always point back toward the knees",
+            "weakPoints": "Spine bends at four points, so the curve is slightly angular."
+        },
+        "UL-002": {
+            "animationStatus": "done",
+            "shown": "Seated, hand on towel slides forward as the trunk leans, hold 5 s",
+            "weakPoints": "Good."
+        },
+        "UL-004": {
+            "animationStatus": "done, weak",
+            "shown": "Arm across the chest, other hand holding just above the elbow",
+            "weakPoints": "The arm sits too far in front of the chest, not pulled in close. Hold shown as 6 s, not 30 s."
+        },
+        "UL-005": {
+            "animationStatus": "done",
+            "shown": "Forearms on the frame, one step through, hold",
+            "weakPoints": "Hold shown as 6 s. Only one foot steps."
+        },
+        "UL-007": {
+            "animationStatus": "done",
+            "shown": "Band anchored at a door on the same side, forearm pulls in across the belly",
+            "weakPoints": "Same limits as UL-006."
+        },
+        "UL-009": {
+            "animationStatus": "done",
+            "shown": "Face down, arms lift about 17 cm to shoulder height, hold 2 s",
+            "weakPoints": "Thumbs-up position not verified in close-up. Face rests straight down."
+        },
+        "UL-010": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: elbows bend to about 98° as the chest goes to the wall, push away, then the upper back rounds, slow return. Palms are locked flat on the wall throughout",
+            "weakPoints": "The elbow-bend phase is not written in the CSV steps (see CSV note); its label is mine."
+        },
+        "UL-011": {
+            "animationStatus": "done",
+            "shown": "Side-on to a wall, arm pressed against it, held",
+            "weakPoints": "Nothing moves, by design. Pressure cannot be shown."
+        },
+        "UL-012": {
+            "animationStatus": "done",
+            "shown": "Forward raise, side raise, hand behind head, hand behind back, in one 21 s loop",
+            "weakPoints": "Hand-behind-back reaches only to the hip/low back. Test movement only, no result shown."
+        },
+        "UL-013": {
+            "animationStatus": "done",
+            "shown": "Slow side raise to overhead and back, 5 s each way",
+            "weakPoints": "No pain range is marked, on purpose."
+        },
+        "UL-014": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: the lower arm swings out to the side, round the hip and up the back; the upper arm passes beside the head and down behind the neck. Toggle swaps sides",
+            "weakPoints": "Hands sit a few centimetres off the back, not pressed against it, and do not get close to each other."
+        },
+        "UL-015": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: side table, forearm resting on it, fist with a small weight clear of the edge, close-up from the side. Other hand comes in to lift, lets go, 3.6 s lower",
+            "weakPoints": "The helping hand touches from the far side and does not visibly carry the weight. Trunk is turned a little so that hand can reach."
+        },
+        "UL-016": {
+            "animationStatus": "done",
+            "shown": "Same layout, palm up",
+            "weakPoints": "Same."
+        },
+        "UL-017": {
+            "animationStatus": "done",
+            "shown": "Seated, leaning to a table, elbow 23° to 140° with brief holds",
+            "weakPoints": "\"Straighten fully\" stops at about 23° because the forearm rests on the table."
+        },
+        "UL-018": {
+            "animationStatus": "done",
+            "shown": "Elbow at 90°, palm up then palm down",
+            "weakPoints": "Elbow not visibly tucked; hand ends over the thigh."
+        },
+        "UL-019": {
+            "animationStatus": "done",
+            "shown": "Arm out to the side, wrist and head move in opposite directions",
+            "weakPoints": "Direction pairing is my assumption (see CSV note)."
+        },
+        "UL-020": {
+            "animationStatus": "done",
+            "shown": "Arm in front, other hand bends the wrist up, hold, then down, hold",
+            "weakPoints": "Holds shown as 5 s, not 20 s. Helping hand placement approximate."
+        },
+        "UL-021": {
+            "animationStatus": "done",
+            "shown": "Hand close-up: straight, hook, full fist, table top, straight fist",
+            "weakPoints": "Fixed 16 Nov: thumb now lies across the fingers in a fist. Fingers still move as one block."
+        },
+        "UL-022": {
+            "animationStatus": "done",
+            "shown": "Hand close-up with ball, squeeze 5 s",
+            "weakPoints": "Fixed 16 Nov: fingers wrap the ball and it flattens as they close. Forearm is still not on a table as the CSV says."
+        },
+        "UL-023": {
+            "animationStatus": "done",
+            "shown": "Thumb crosses the palm to meet each fingertip in turn",
+            "weakPoints": "Fixed 16 Nov: the thumb used to bend the wrong way. Contact is approximate (a few millimetres off on some fingers) and the O shape is rough."
+        },
+        "UL-024": {
+            "animationStatus": "needs a prop",
+            "shown": "Fingers fan apart and hold 3 s",
+            "weakPoints": "**Band not drawn, and the spread is hard to see.** Needs the dedicated hand model."
+        },
+        "UL-025": {
+            "animationStatus": "done, weak",
+            "shown": "At a table with ten coins and a cup: the hand lowers, pinches one coin, carries it over the cup and lets go",
+            "weakPoints": "**One coin per loop, one hand** (toggle for the other). The coin vanishes at the drop; it does not fall. Pinch contact is approximate. No timer."
+        },
+        "LL-001": {
+            "animationStatus": "done",
+            "shown": "Renamed 16 Nov at Victor's request (was \"Quadriceps set\"; the CSV row was changed too). Towel roll under the knee flattens as the knee presses down from about 14° to 2°, hold 5 s",
+            "weakPoints": "Thigh tightening not visible."
+        },
+        "LL-004": {
+            "animationStatus": "done",
+            "shown": "Hands on thighs, knee straightens to about 4°, hold 3 s, slow lower",
+            "weakPoints": "Thigh stays on the seat by data."
+        },
+        "LL-005": {
+            "animationStatus": "done",
+            "shown": "Band from a door anchor to the back of the knee, knee 26° to straight, hands on hips",
+            "weakPoints": "Band is a straight strip through the knee line, not a loop. Other foot set slightly back."
+        },
+        "LL-008": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: step is closer, the lead knee comes over the foot and the trunk leans in before the body rises; slower step down",
+            "weakPoints": "Arms do not swing. Feet stay flat in the air."
+        },
+        "LL-009": {
+            "animationStatus": "done",
+            "shown": "Back on the wall, slides down to about 60° knee bend, hold",
+            "weakPoints": "Hold shown as 6 s, not 30 s. \"Comfortable angle\" drawn as 60°, my choice."
+        },
+        "LL-010": {
+            "animationStatus": "done",
+            "shown": "Holding a counter, heel to about 100° knee bend, hold 2 s",
+            "weakPoints": "Thigh stays vertical by data."
+        },
+        "LL-011": {
+            "animationStatus": "done",
+            "shown": "Edge of chair, one leg straight with the heel down, 25° forward lean with a straight back",
+            "weakPoints": "Hold shown as 6 s."
+        },
+        "LL-012": {
+            "animationStatus": "done",
+            "shown": "Same movement as LL-004, no hold",
+            "weakPoints": "Knee is drawn reaching nearly straight. No lag or result is shown, on purpose. Foot starts on the floor, not hanging."
+        },
+        "LL-013": {
+            "animationStatus": "done",
+            "shown": "Squat to about 95° knee bend, arms forward",
+            "weakPoints": "A clean squat only: no knee collapse, heel lift or weight shift is shown, on purpose."
+        },
+        "LL-014": {
+            "animationStatus": "done",
+            "shown": "Continuous stand and sit, 3.6 s per cycle",
+            "weakPoints": "Pace is my choice; no count or timer shown."
+        },
+        "LL-015": {
+            "animationStatus": "done, weak",
+            "shown": "Stand from the chair, walk about 2.6 m to a tape mark, turn, walk back, turn, sit",
+            "weakPoints": "**Distance is about 2.6 m, not 3 m.** Same stiff walk. Turns are four small steps on the spot. Figure is small because the whole path is in view. No timer."
+        },
+        "LL-016": {
+            "animationStatus": "done",
+            "shown": "Leg raised on a pillow, toes point away and pull back, 3 s per pump",
+            "weakPoints": "Calf may sink slightly into the pillow."
+        },
+        "LL-017": {
+            "animationStatus": "done, weak",
+            "shown": "Foot off the floor, ankle traces a wandering path",
+            "weakPoints": "**Not real letters.** A generic tracing pattern."
+        },
+        "LL-018": {
+            "animationStatus": "needs a prop",
+            "shown": "Foot goes down, up, in, out; band from the hand to the forefoot",
+            "weakPoints": "**Band direction is only right for pushing down.** The other three directions need the band anchored elsewhere. In/out movement is small."
+        },
+        "LL-019": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: shorter stance, back leg straight with heel down, front knee bent under the body, palms on the wall",
+            "weakPoints": "Hold shown as 6 s."
+        },
+        "LL-021": {
+            "animationStatus": "done",
+            "shown": "On a step holding a counter: rise on both, lift the other foot, lower the heel below step level over 3.5 s",
+            "weakPoints": "I added a counter to hold; the CSV lists only a step."
+        },
+        "LL-022": {
+            "animationStatus": "done, weak",
+            "shown": "Reworked 16 Nov: the forefoot lifts slightly as the toes curl, so the toes stay on top of the towel",
+            "weakPoints": "**Towel does not gather.** Toes move as one block. The heel dips under 1 cm as the forefoot lifts."
+        },
+        "LL-023": {
+            "animationStatus": "done",
+            "shown": "Close-up from the inner side: the arch lifts about 1.5 cm and the ball of the foot draws slightly back, hold 5 s",
+            "weakPoints": "The lift is drawn larger than real life so it can be seen. Toes stay flat by design."
+        },
+        "LL-024": {
+            "animationStatus": "done",
+            "shown": "Reworked twice 16 Nov: tight close-up with the sole facing the viewer; the same-side hand reaches over the top of the foot and wraps the toes, pulling them back 45°; ring on the arch",
+            "weakPoints": "Hold shown as 6 s. Toes move as one. The CSV does not say which hand pulls; I used the same-side hand so the sole stays in view."
+        },
+        "LL-025": {
+            "animationStatus": "done",
+            "shown": "Beside a counter, one foot lifted, small sway",
+            "weakPoints": "**Eyes do not close.** Only the eyes-open part is shown."
+        },
+        "LL-026": {
+            "animationStatus": "done",
+            "shown": "Same with hands on hips",
+            "weakPoints": "Foot never touches down; no time or result shown."
+        },
+        "LL-027": {
+            "animationStatus": "done",
+            "shown": "Palms on the wall, knee travels to the wall with the heel down",
+            "weakPoints": "One fixed distance; moving the foot back and measuring are not shown."
+        },
+        "LL-028": {
+            "animationStatus": "done, weak",
+            "shown": "Short steps on the heels, pause, then on the toes",
+            "weakPoints": "Heel walking is subtle (toes only slightly up). Feet may dip a few millimetres into the floor. Loop jumps back. No weak side shown."
+        },
+        "HP-003": {
+            "animationStatus": "done",
+            "shown": "Bottom leg bent, top leg straight and 8° back, lifts about 40°",
+            "weakPoints": "Pelvis is held still by data, so \"do not roll the hips backward\" is shown only as the correct version."
+        },
+        "HP-004": {
+            "animationStatus": "done",
+            "shown": "Holding a counter, band between the ankles, leg out 25°, trunk upright",
+            "weakPoints": "Default view is from behind so the counter does not hide the legs."
+        },
+        "HP-005": {
+            "animationStatus": "done",
+            "shown": "Half kneeling on a cushion, hands on hips, hips shift forward about 12 cm with the trunk upright",
+            "weakPoints": "Hold shown as 6 s. Buttock tightening not visible."
+        },
+        "HP-006": {
+            "animationStatus": "done",
+            "shown": "On the back, ankle on the opposite thigh above the knee, both hands pull that thigh to the chest",
+            "weakPoints": "Hold shown as 6 s. One arm threads between the legs and may brush the crossed shin on the way in."
+        },
+        "HP-007": {
+            "animationStatus": "done",
+            "shown": "Stick along the back, hips go back, trunk leans about 46° with a straight spine",
+            "weakPoints": "Hands are on the hips, not holding the stick (CSV does not say)."
+        },
+        "HP-008": {
+            "animationStatus": "done",
+            "shown": "Held bridge, one foot lifts about 6 cm, then the other",
+            "weakPoints": "Hips stay level by data."
+        },
+        "HP-009": {
+            "animationStatus": "done",
+            "shown": "Ball between the knees flattens as the knees close 5 cm, hold 5 s",
+            "weakPoints": ""
+        },
+        "HP-010": {
+            "animationStatus": "done",
+            "shown": "Sitting only: knee lifts toward the chest, then the foot turns out and in with the knee bent",
+            "weakPoints": "The lying part is not shown. Rotation is small to read."
+        },
+        "HP-011": {
+            "animationStatus": "done",
+            "shown": "Viewed from behind, one foot lifted and held",
+            "weakPoints": "**Pelvis is drawn level.** No drop or result is shown, on purpose. Hold shown as 6 s."
+        },
+        "HP-012": {
+            "animationStatus": "done",
+            "shown": "On a bed edge, one knee held to the chest with both hands, other leg lowers to hang",
+            "weakPoints": "Hanging thigh ends about 6° below level, my choice of a neutral picture, not a finding."
+        },
+        "HP-013": {
+            "animationStatus": "done",
+            "shown": "On the back, ankle on the other knee, knee falls outward",
+            "weakPoints": "Final knee height is my choice, not a finding."
+        },
+        "BK-002": {
+            "animationStatus": "done",
+            "shown": "Seated close-up: turn each side about 62°, tilt each side 35°, look down 42° and up 38°",
+            "weakPoints": "One of each per loop, not 5. Ranges are my choice of ordinary values."
+        },
+        "BK-003": {
+            "animationStatus": "done",
+            "shown": "One hand holding the seat edge, head tilts away 34°, hold",
+            "weakPoints": "Hand grips the side of the seat, not truly under it. Hold shown as 6 s. No hand pull (that is the progression)."
+        },
+        "BK-004": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: head turns 40° toward the armpit and looks down 30°; the arm lifts out in front first, then the palm settles on the back of the head with the elbow forward",
+            "weakPoints": "The \"light pull\" cannot be seen. Hold shown as 5 s."
+        },
+        "BK-005": {
+            "animationStatus": "done",
+            "shown": "On the back with a pillow: chin nods, head lifts about 2 cm, hold",
+            "weakPoints": "Hold shown as 6 s. Drawn lift may be more than \"a finger width\"."
+        },
+        "BK-006": {
+            "animationStatus": "done",
+            "shown": "Seated facing the camera, head turns about 66° each way",
+            "weakPoints": "Angle shown is the pose value, not a finding."
+        },
+        "BK-007": {
+            "animationStatus": "done",
+            "shown": "Same as BK-005 with a 9 s hold",
+            "weakPoints": "No timer or result."
+        },
+        "BK-008": {
+            "animationStatus": "done",
+            "shown": "Hands behind the head, upper back leans 22° over the chair back, eyes up",
+            "weakPoints": "Chair back height is fixed; \"move down one level\" not shown."
+        },
+        "BK-009": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: the lower arm now stays flat on the floor, straight out in front, while the top arm sweeps over and the chest turns about 48°",
+            "weakPoints": "Hips are flexed 70° to keep the knees stacked."
+        },
+        "BK-010": {
+            "animationStatus": "done",
+            "shown": "Back on the wall, arms slide from about 50° to 150° with elbows bending",
+            "weakPoints": "Wrists are held at the wall; elbows may float a little off it."
+        },
+        "BK-011": {
+            "animationStatus": "done",
+            "shown": "Hand on the belly; belly rises about 3 cm on the in-breath (3.2 s) and falls slowly (4 s)",
+            "weakPoints": "New belly-rise effect on the trunk surface. Chest stays still by design. Nose breathing cannot be shown."
+        },
+        "BK-013": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: both hands clasp over the shin just below the knee with palms on the shin; one knee, then both (one hand on each shin)",
+            "weakPoints": "Holds shown as about 3 s each. Head and shoulders lift slightly so the hands can reach."
+        },
+        "BK-016": {
+            "animationStatus": "done",
+            "shown": "Hips and knees at 90°, opposite arm and leg lower toward the floor, then the other pair",
+            "weakPoints": "Back stays flat by data."
+        },
+        "BK-017": {
+            "animationStatus": "done",
+            "shown": "Reworked 16 Nov: rest with hands beside the head and elbows out on the mat; forearms flat with elbows under the shoulders; then hands, arms nearly straight",
+            "weakPoints": "Hands shift between stages. Pelvis stays completely flat, flatter than real life."
+        },
+        "BK-018": {
+            "animationStatus": "done",
+            "shown": "Changed 16 Nov: knees now fall about 64° to each side, close to the floor, shoulders stay down",
+            "weakPoints": "Feet pivot in place; the roll comes from the lower spine in the data."
+        },
+        "BK-019": {
+            "animationStatus": "done",
+            "shown": "Hips sit back about 36 cm onto the heels. Fixed 16 Nov: arms are straight out in front with palms flat",
+            "weakPoints": "Hold shown as 6 s. Hands slide forward about 6 cm as the hips go back."
+        },
+        "BK-020": {
+            "animationStatus": "done",
+            "shown": "Reworked twice 16 Nov: forearm flat on the mat with the elbow under the shoulder, knees stacked; the top hand rests on the outside of the top thigh with the elbow up and clear of the body; hips lift about 13 cm to a straight line",
+            "weakPoints": "Hold shown as 6 s. The start has a strong side bend through the trunk, which is how the hips reach the floor."
+        },
+        "BK-021": {
+            "animationStatus": "done",
+            "shown": "One knee bent, hands under the lower back, head and shoulders lift about 6 cm, hold",
+            "weakPoints": "Lift may read as more than \"just off the floor\"."
+        },
+        "BK-022": {
+            "animationStatus": "done",
+            "shown": "Slumped sitting: knee straightens as the head looks up, bends as it looks down",
+            "weakPoints": "Knee reaches about 18° short of straight."
+        },
+        "BK-023": {
+            "animationStatus": "done",
+            "shown": "Hands on the lower back, gentle lean back of about 28° through the spine",
+            "weakPoints": ""
+        },
+        "BK-024": {
+            "animationStatus": "done, weak",
+            "shown": "Seven steps across the stage at an easy pace, then a cut back to the start",
+            "weakPoints": "**Stiff walk**: feet stay flat (no heel strike or toe-off), little pelvis or trunk motion. The loop jumps back."
+        },
+        "BK-025": {
+            "animationStatus": "done",
+            "shown": "Bend forward, lean back, side slide left and right in one 20 s loop. Fixed 16 Nov: arms are held clear of the body",
+            "weakPoints": "One of each, not 3. In the side slide the hand travels beside the thigh, not touching it."
+        },
+        "BK-026": {
+            "animationStatus": "done",
+            "shown": "Other leg straight, leg raised to about 66°",
+            "weakPoints": "End angle is my choice, not a finding."
+        },
+        "BK-027": {
+            "animationStatus": "done",
+            "shown": "Face down on a bed with the upper body off the edge, arms crossed, a helper (drawn in grey) holding the legs; trunk rises to level and holds 7 s",
+            "weakPoints": "Helper is a fixed pose. Hold is shortened. No time or result."
+        },
+        "FC-001": {
+            "animationStatus": "done",
+            "shown": "Both brows lift slowly about 1 cm, forehead lines appear, eyes widen slightly",
+            "weakPoints": "The guiding fingers on the healthy side are not shown."
+        },
+        "FC-002": {
+            "animationStatus": "done",
+            "shown": "Both lids close slowly with a lash line, then open",
+            "weakPoints": "\"Without squeezing hard\" is shown only by the absence of scrunching."
+        },
+        "FC-003": {
+            "animationStatus": "done",
+            "shown": "Nose lifts, nostrils flare, lines across the bridge, brows dip",
+            "weakPoints": "The subtlest of the set."
+        },
+        "FC-004": {
+            "animationStatus": "done",
+            "shown": "Both mouth corners lift equally, cheeks rise slightly",
+            "weakPoints": ""
+        },
+        "FC-005": {
+            "animationStatus": "done",
+            "shown": "Both cheeks fill, lips pressed, then the air moves side to side",
+            "weakPoints": ""
+        },
+        "FC-006": {
+            "animationStatus": "done",
+            "shown": "Lips push forward and together, hold 3 s, relax into a smile",
+            "weakPoints": ""
+        },
+        "FC-007": {
+            "animationStatus": "done",
+            "shown": "Brows, eyes, nose, smile, pucker in order",
+            "weakPoints": "Labels are the CSV's one-word names."
+        },
+        "FC-008": {
+            "animationStatus": "done, weak",
+            "shown": "Finger pads circle on the cheek, then the hand lies across the forehead and circles",
+            "weakPoints": "**No cloth is drawn.** Circles are small. One side only (toggle for the other)."
+        },
+        "FC-009": {
+            "animationStatus": "done",
+            "shown": "Mouth opens slowly and straight to about half, tongue tip visible on the roof of the mouth",
+            "weakPoints": ""
+        },
+        "FC-010": {
+            "animationStatus": "done, weak",
+            "shown": "Lips ease from pressed to resting",
+            "weakPoints": "**Teeth apart and tongue position cannot be seen with the lips closed.** Almost a still picture."
+        },
+        "FC-011": {
+            "animationStatus": "done",
+            "shown": "Mouth slightly open, lower jaw glides left, centre, right",
+            "weakPoints": ""
+        },
+        "FC-012": {
+            "animationStatus": "done",
+            "shown": "Both hands: finger pads circle at the cheek muscle, then at the temples",
+            "weakPoints": "Forearms come in wide at the temples. Circles are small."
+        },
+        "FC-013": {
+            "animationStatus": "done",
+            "shown": "Mouth opens wide, then three stacked fingers are held up to the opening",
+            "weakPoints": "Fingers are held at the mouth, not placed between the teeth, so no fit or result is shown. The hand partly covers the mouth from the front."
+        },
+        "FC-014": {
+            "animationStatus": "done",
+            "shown": "Brows, eyes, smile, pucker in order",
+            "weakPoints": "Symmetrical by design; no finding shown."
+        }
+    }
+}

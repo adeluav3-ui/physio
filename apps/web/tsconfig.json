@@ -25,6 +25,9 @@
             "@physio/ui": [
                 "../../packages/ui/src/index.ts"
             ],
+            "@physio/exercise-animation/*": [
+                "../../packages/exercise-animation/rehab360-anim/*"
+            ],
             "@/*": [
                 "./src/*"
             ]

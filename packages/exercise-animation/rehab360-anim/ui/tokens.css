@@ -1,0 +1,22 @@
+/* Rehab360 design tokens. Sampled from the logo; green darkened for AA contrast with white text. */
+:root{
+  --navy:#022449;          /* text, headings, admin sidebar, dark bands (15.5:1 on white) */
+  --green:#1b7d0e;         /* primary buttons, links, selected (5.3:1 with white) */
+  --green-dark:#0f5a08;    /* text on green tint */
+  --blue:#076889;          /* info, focus border, secondary accent (6.3:1 on white) */
+  --blue-dark:#07506b;     /* text on blue tint (default chip) */
+  --bright-green:#4eb91e;  /* progress fills, streaks, active markers. NEVER text on white */
+  --teal:#0eaf90;          /* logo cross, decorative, speech therapy dot */
+  --green-tint:#e6f4e1;    /* active nav, selected, success bg */
+  --blue-tint:#e3f1f6;     /* default chips, info panels */
+  --ground:#f4f8fb;        /* page background */
+  --surface:#ffffff;       /* cards */
+  --line:#d9e3ec;          /* borders */
+  --line-strong:#b4c4d3;   /* input borders */
+  --muted:#4f6478;         /* secondary text (6.1:1) */
+  --warn-bg:#fdf1d8; --warn-text:#7a4f00;
+  --danger-bg:#fde8e8; --danger-text:#8f1d1d;
+  --ok-bg:#e6f4e1; --ok-text:#0f5a08;
+  --radius-control:10px; --radius-card:16px;
+  --brand-strip:linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%);
+}

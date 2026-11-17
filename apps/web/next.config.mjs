@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    transpilePackages: ["@physio/ui", "@physio/shared"],
+    transpilePackages: ["@physio/ui", "@physio/shared", "@physio/exercise-animation"],
     images: {
         remotePatterns: [
             { protocol: "https", hostname: "**.cloudflarestream.com" },

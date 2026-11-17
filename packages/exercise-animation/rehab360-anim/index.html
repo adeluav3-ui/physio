@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehab360 exercise animations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui/tokens.css">
+<link rel="stylesheet" href="ui/app.css">
+</head>
+<body>
+<div class="strip"></div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Exercise animations</h1>
+      <p class="sub" id="summary">Loading the exercise library…</p>
+    </div>
+    <button class="btn-quiet" id="theme" type="button" aria-label="Switch between light and dark mode">Dark mode</button>
+  </header>
+
+  <div class="layout">
+    <aside class="card picker" aria-label="Exercise picker">
+      <label class="lab" for="search">Find an exercise</label>
+      <input id="search" type="search" placeholder="Search name, joint or condition" autocomplete="off">
+      <div class="lab">Region</div>
+      <div class="chips" id="regionChips" role="group" aria-label="Region"></div>
+      <div id="jointWrap" hidden>
+        <div class="lab">Joint</div>
+        <div class="chips" id="jointChips" role="group" aria-label="Joint"></div>
+      </div>
+      <div class="lab">Purpose</div>
+      <div class="chips" id="purposeChips" role="group" aria-label="Purpose"></div>
+      <label class="check"><input type="checkbox" id="animatedOnly" checked> <span>Only show animated exercises</span></label>
+      <div class="lab" id="count" aria-live="polite"></div>
+      <ul class="list" id="list"></ul>
+    </aside>
+
+    <section class="card stagecard" id="stagecard" aria-label="Animation">
+      <div class="stage" id="stage">
+        <canvas id="canvas" role="img" aria-label="Animated figure performing the selected exercise"></canvas>
+        <div class="pill phase" id="phase" aria-live="off"></div>
+        <div class="pill reps" id="reps"></div>
+        <div class="readout" id="readout"><b id="roVal"></b><span id="roLab"></span></div>
+        <div class="hint" id="hint">Drag to rotate</div>
+        <div class="empty" id="empty" hidden></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="play" type="button">Pause</button>
+        <div class="seg" id="speed" role="group" aria-label="Speed"></div>
+        <label class="sr" for="scrub">Position in the exercise</label>
+        <input type="range" id="scrub" min="0" max="1000" value="0">
+      </div>
+      <div class="controls">
+        <div class="seg" id="views" role="group" aria-label="View"></div>
+        <div class="seg" id="sides" role="group" aria-label="Side shown" hidden></div>
+      </div>
+      <div class="controls">
+        <span class="lab inline" id="skinLab">Skin tone</span>
+        <div class="tones" id="tones" role="group" aria-labelledby="skinLab"></div>
+      </div>
+      <p class="tempo" id="tempo"></p>
+    </section>
+
+    <section class="card info" id="info" aria-label="Exercise details"></section>
+  </div>
+
+  <p class="note">Draft animations, not clinical instructions. Every animation must be checked by a physiotherapist before it is shown to a patient. Exercise text comes unchanged from the Rehab360 exercise library.</p>
+</div>
+<script type="module" src="ui/app.js"></script>
+</body>
+</html>

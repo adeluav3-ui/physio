@@ -34,19 +34,26 @@ export class ProgramsService {
         private readonly events: EventEmitter2,
     ) { }
 
-    async listExercises(query?: { q?: string; region?: string; clinicalReview?: string }) {
+    async listExercises(query?: { q?: string; region?: string; joint?: string; reviewed?: string }) {
         const exercises = await this.prisma.client.exercise.findMany({
+            where: {
+                ...(query?.region && { region: query.region }),
+                ...(query?.joint && { joint: query.joint }),
+                ...(query?.reviewed !== undefined && { clinicalReview: query.reviewed === "true" }),
+            },
             orderBy: [{ region: "asc" }, { difficulty: "asc" }],
         });
         const q = query?.q?.toLowerCase();
-        const region = query?.region?.toLowerCase();
-        return exercises.filter((ex) => {
-            if (q && !ex.name.toLowerCase().includes(q) &&
-                !ex.region.toLowerCase().includes(q) &&
-                !ex.cues.toLowerCase().includes(q)) return false;
-            if (region && ex.region.toLowerCase() !== region) return false;
-            return true;
-        });
+        if (!q) return exercises;
+        return exercises.filter((ex) =>
+            ex.name.toLowerCase().includes(q) ||
+            ex.region.toLowerCase().includes(q) ||
+            (ex.joint?.toLowerCase().includes(q) ?? false) ||
+            (ex.purpose?.toLowerCase().includes(q) ?? false) ||
+            (ex.goal?.toLowerCase().includes(q) ?? false) ||
+            (ex.conditions?.toLowerCase().includes(q) ?? false) ||
+            ex.cues.toLowerCase().includes(q),
+        );
     }
 
     async create(user: SessionUser, input: ProgramCreateInput) {
