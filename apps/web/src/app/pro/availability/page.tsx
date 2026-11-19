@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -250,34 +249,7 @@ export default function ProAvailabilityPage() {
     const slots = previewSlots();
 
     return (
-        <div style={S.shell}>
-            <div style={S.strip} />
-            <div style={S.body}>
-                {/* Sidebar */}
-                <aside style={S.aside}>
-                    <div style={{ padding: "0 12px 18px" }}>
-                        <img src="/brand/logo-horizontal-web.png" alt="Rehab360" style={{ height: "38px", width: "auto", display: "block" }} />
-                    </div>
-                    {([
-                        { href: "/pro", label: "Home" },
-                        { href: "/pro/patients", label: "Patients" },
-                        { href: "/pro/calendar", label: "Calendar" },
-                        { href: "/pro/availability", label: "Availability", active: true },
-                        { href: "/pro/referrals", label: "Referrals" },
-                        { href: "/pro/messages", label: "Messages" },
-                        { href: "/pro/earnings", label: "Earnings" },
-                        { href: "/pro/profile", label: "Profile" },
-                    ] as Array<{ href: string; label: string; active?: boolean }>).map((item) => (
-                        <Link key={item.href} href={item.href} style={S.nav(!!item.active)}>{item.label}</Link>
-                    ))}
-                    <div style={{ marginTop: "auto", padding: "12px", borderRadius: "12px", background: "#eef3f8" }}>
-                        <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{proName}</div>
-                        <div style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6478" }}>{discipline || "Professional"}</div>
-                    </div>
-                </aside>
-
-                {/* Main */}
-                <main style={S.main}>
+        <div>
                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "12px", alignItems: "center" }}>
                         <div>
                             <h1 style={{ font: "700 28px 'Figtree',sans-serif", margin: 0 }}>Availability</h1>
@@ -491,8 +463,6 @@ export default function ProAvailabilityPage() {
                             </div>
                         </div>
                     </div>
-                </main>
-            </div>
         </div>
     );
 }

@@ -35,6 +35,24 @@ export class PhysioController {
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @Patch("me")
+    @Roles("PHYSIO")
+    updateProfile(
+        @CurrentUser() user: SessionUser,
+        @Body() body: {
+            bio?: string;
+            specialties?: string[];
+            languages?: string[];
+            rateKobo?: number;
+            serviceArea?: string;
+            photoUrl?: string;
+            sessionTypes?: string[];
+        },
+    ) {
+        return this.physio.updateProfile(user, body);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Patch("me/settings")
     @Roles("PHYSIO")
     updateSettings(

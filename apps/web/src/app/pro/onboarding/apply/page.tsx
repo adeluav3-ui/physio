@@ -142,6 +142,31 @@ export default function ProfessionalApplyPage() {
                 const b = await res.json().catch(() => ({}));
                 throw new Error(b.message ?? "Application failed");
             }
+
+            // Save availability — convert day slots to AvailabilityInput format
+            const DAY_INDEX: Record<string, number> = {
+                Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+                Thursday: 4, Friday: 5, Saturday: 6,
+            };
+            const toMin = (t: string) => { const [h = 0, m = 0] = t.split(":").map(Number); return h * 60 + m; };
+            const rawMode = sessionTypes.trim().toUpperCase();
+            const mode: "VIDEO" | "HOME" = rawMode.includes("HOME") || rawMode.includes("PERSON") ? "HOME" : "VIDEO";
+            const slots = Object.entries(avail)
+                .filter(([, v]) => v.enabled)
+                .map(([day, v]) => ({
+                    weekday: DAY_INDEX[day] ?? 1,
+                    startMinute: toMin(v.start),
+                    endMinute: toMin(v.end),
+                    mode,
+                }));
+            if (slots.length > 0) {
+                await fetch("/api/proxy/booking/availability", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ slots }),
+                }).catch(() => { /* non-fatal — pro can edit later */ });
+            }
+
             router.push("/pro/onboarding/pending");
         } catch (err) {
             setError((err as Error).message);

@@ -248,6 +248,39 @@ export class PhysioService {
         return p;
     }
 
+    async updateProfile(
+        user: SessionUser,
+        input: {
+            bio?: string;
+            specialties?: string[];
+            languages?: string[];
+            rateKobo?: number;
+            serviceArea?: string;
+            photoUrl?: string;
+            sessionTypes?: string[];
+        },
+    ) {
+        if (user.role !== "PHYSIO") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Physio only" });
+        }
+        return this.prisma.client.physioProfile.update({
+            where: { userId: user.id },
+            data: {
+                ...(input.bio !== undefined && { bio: input.bio }),
+                ...(input.specialties !== undefined && { specialties: input.specialties }),
+                ...(input.languages !== undefined && { languages: input.languages }),
+                ...(input.rateKobo !== undefined && { rateKobo: input.rateKobo }),
+                ...(input.serviceArea !== undefined && { serviceArea: input.serviceArea }),
+                ...(input.photoUrl !== undefined && { photoUrl: input.photoUrl ?? null }),
+                ...(input.sessionTypes !== undefined && { sessionTypes: input.sessionTypes }),
+            },
+            select: {
+                userId: true, bio: true, specialties: true, languages: true,
+                rateKobo: true, serviceArea: true, photoUrl: true, sessionTypes: true,
+            },
+        });
+    }
+
     async updateSettings(
         user: SessionUser,
         input: {
