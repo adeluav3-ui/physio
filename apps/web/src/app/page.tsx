@@ -19,8 +19,6 @@ const DISCIPLINES = [
 ] as const;
 
 export default function LandingPage() {
-    const patientLink = process.env.NEXT_PUBLIC_WHATSAPP_PATIENTS ?? "#join";
-
     return (
         <div style={{ width: "100%", fontFamily: "'Figtree',system-ui,sans-serif", color: "#022449", background: "#f4f8fb", margin: 0 }}>
 
@@ -42,7 +40,7 @@ export default function LandingPage() {
                             Talk to a licensed physiotherapist, occupational therapist, speech therapist, prosthetist or orthotist by video, then follow your plan at home with them beside you.
                         </p>
                         <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "12px", marginTop: "28px" }}>
-                            <a className="btn" href={patientLink} target="_blank" rel="noopener noreferrer">I need care</a>
+                            <a className="btn" href="#join">I need care</a>
                             <a className="btn btn2" href="#join">I provide care</a>
                         </div>
                         <p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "16px" }}>Free to join the waitlist. No payment details needed.</p>

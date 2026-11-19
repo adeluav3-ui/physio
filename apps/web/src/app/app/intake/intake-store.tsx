@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 type IntakeDraft = {
     complaint: string;
@@ -22,6 +22,8 @@ const defaultDraft: IntakeDraft = {
     redFlags: {},
 };
 
+const STORAGE_KEY = "rehab360_intake_draft";
+
 type IntakeContextType = {
     draft: IntakeDraft;
     update: (patch: Partial<IntakeDraft>) => void;
@@ -31,12 +33,33 @@ type IntakeContextType = {
 const IntakeContext = createContext<IntakeContextType | null>(null);
 
 export function IntakeProvider({ children }: { children: ReactNode }) {
-    const [draft, setDraft] = useState<IntakeDraft>(defaultDraft);
+    const [draft, setDraft] = useState<IntakeDraft>(() => {
+        if (typeof window !== "undefined") {
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) return JSON.parse(saved) as IntakeDraft;
+            } catch {
+                // ignore parse errors
+            }
+        }
+        return defaultDraft;
+    });
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+        } catch {
+            // ignore storage errors (private browsing quota)
+        }
+    }, [draft]);
 
     const update = (patch: Partial<IntakeDraft>) =>
         setDraft((prev) => ({ ...prev, ...patch }));
 
-    const reset = () => setDraft(defaultDraft);
+    const reset = () => {
+        setDraft(defaultDraft);
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    };
 
     return (
         <IntakeContext.Provider value={{ draft, update, reset }}>
