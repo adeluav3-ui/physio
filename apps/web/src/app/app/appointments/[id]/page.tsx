@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch, ApiError } from "@/lib/api";
+import { ConfirmPaymentButton } from "../confirm-payment-button";
 
 type AppointmentDetail = {
     id: string;
@@ -13,7 +14,7 @@ type AppointmentDetail = {
     type: string;
     physio: { user: { name: string; email: string } };
     patient: { user: { name: string } };
-    payment: { status: string; amountKobo: number } | null;
+    payment: { status: string; amountKobo: number; providerRef: string | null } | null;
     videoSession: { roomId: string } | null;
 };
 
@@ -108,16 +109,15 @@ export default async function PatientAppointmentDetailPage({
 
                 {pendingPayment && (
                     <Card>
-                        <p className="text-sm font-medium text-amber-700">Payment pending</p>
+                        <p className="text-sm font-medium text-amber-700">Payment received — confirming…</p>
                         <p className="mt-1 text-sm text-text-muted">
-                            Your payment did not complete. Please try again to confirm the booking.
+                            Your payment went through. Tap below to confirm your booking.
                         </p>
-                        <Link
-                            href={`/app/book/${appt.physio.user.name}`}
-                            className="mt-3 inline-block text-sm font-medium text-primary-600 underline"
-                        >
-                            Rebook
-                        </Link>
+                        {appt.payment?.providerRef && (
+                            <div className="mt-3">
+                                <ConfirmPaymentButton reference={appt.payment.providerRef} />
+                            </div>
+                        )}
                     </Card>
                 )}
 
