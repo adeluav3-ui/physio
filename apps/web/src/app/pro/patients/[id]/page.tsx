@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
@@ -40,12 +40,32 @@ type PatientProfile = {
     } | null;
 };
 
-type Appointment = { id: string; startsAt: string; endsAt: string; status: string; mode: string; type: string };
+type SessionNote = {
+    id: string;
+    subjective: string; objective: string; assessment: string; plan: string;
+    signedAt: string | null; createdAt: string;
+    addenda: { id: string; body: string; addedAt: string }[];
+};
+
+type PatientSummaryDoc = { id: string; body: string; approvedAt: string | null };
+
+type Appointment = {
+    id: string; startsAt: string; endsAt: string; status: string; mode: string; type: string;
+    notes: SessionNote | null;
+    patientSummary: PatientSummaryDoc | null;
+};
+
+type Referral = {
+    id: string; toDiscipline: string; reason: string; urgency: string; status: string;
+    summary: string | null; declineReason: string | null;
+    receiver: { user: { name: string } } | null;
+};
 
 type Chart = {
     profile: PatientProfile;
     latestIntake: Intake | null;
     appointments: Appointment[];
+    referrals: Referral[];
 };
 
 type ExerciseItem = {
@@ -77,12 +97,13 @@ function ageFromDob(dob: string | null | undefined): string {
     return `${years} yrs`;
 }
 
-const TABS = ["Overview", "Timeline", "Plan"];
+const TABS = ["Overview", "Timeline", "Notes", "Documents", "Referrals", "Messages", "Plan"];
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default function PatientRecordPage() {
     const { id: patientId } = useParams<{ id: string }>();
+    const router = useRouter();
     const [tab, setTab] = useState("Overview");
     const [chart, setChart] = useState<Chart | null>(null);
     const [programs, setPrograms] = useState<Program[]>([]);
@@ -95,6 +116,8 @@ export default function PatientRecordPage() {
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [previewLibId, setPreviewLibId] = useState<string | null>(null);
+    const [threadId, setThreadId] = useState<string | null>(null);
+    const [openingThread, setOpeningThread] = useState(false);
 
     useEffect(() => {
         async function load() {
@@ -171,6 +194,23 @@ export default function PatientRecordPage() {
         try { await fetch(`/api/proxy/programs/${prog.id}/send`, { method: "POST" }); setSent(true); setTimeout(() => setSent(false), 3000); }
         catch { /* empty */ }
         finally { setSending(false); }
+    }
+
+    async function openThread() {
+        setOpeningThread(true);
+        try {
+            const r = await fetch("/api/proxy/threads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ recipientId: patientId }),
+            });
+            if (!r.ok) return;
+            const thread = await r.json() as { id: string };
+            setThreadId(thread.id);
+            router.push(`/pro/messages/${thread.id}`);
+        } catch { /* empty */ }
+        finally { setOpeningThread(false); }
     }
 
     if (loading) return (
@@ -319,6 +359,132 @@ export default function PatientRecordPage() {
                             </span>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* ── Notes tab ── */}
+            {tab === "Notes" && (
+                <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
+                    {chart?.appointments.filter(a => a.notes).length === 0 ? (
+                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>No session notes yet.</div>
+                    ) : chart?.appointments.filter(a => a.notes).map(a => (
+                        <div key={a.id} className="card">
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
+                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
+                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                                </div>
+                                {a.notes?.signedAt ? (
+                                    <span className="chip ok">Signed</span>
+                                ) : (
+                                    <span className="chip">Draft</span>
+                                )}
+                            </div>
+                            <div style={{ display: "grid", gap: "10px" }}>
+                                {[
+                                    { label: "Subjective", value: a.notes!.subjective },
+                                    { label: "Objective", value: a.notes!.objective },
+                                    { label: "Assessment", value: a.notes!.assessment },
+                                    { label: "Plan", value: a.notes!.plan },
+                                ].map(({ label, value }) => (
+                                    <div key={label}>
+                                        <div style={{ font: "600 11px 'Figtree',sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", color: "#4f6478", marginBottom: "3px" }}>{label}</div>
+                                        <div style={{ font: "400 14px 'Figtree',sans-serif", color: "#022449", whiteSpace: "pre-wrap" }}>{value}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            {a.notes!.addenda.length > 0 && (
+                                <div style={{ marginTop: "12px", borderTop: "1px solid #e8f0f7", paddingTop: "12px" }}>
+                                    <div style={{ font: "600 12px 'Figtree',sans-serif", color: "#4f6478", marginBottom: "8px" }}>Addenda</div>
+                                    {a.notes!.addenda.map(ad => (
+                                        <div key={ad.id} style={{ font: "400 13px 'Figtree',sans-serif", color: "#022449", marginBottom: "6px" }}>
+                                            <span style={{ color: "#4f6478", marginRight: "6px" }}>{new Date(ad.addedAt).toLocaleDateString()}</span>
+                                            {ad.body}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ── Documents tab ── */}
+            {tab === "Documents" && (
+                <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
+                    {chart?.appointments.filter(a => a.patientSummary).length === 0 ? (
+                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>No patient summaries yet.</div>
+                    ) : chart?.appointments.filter(a => a.patientSummary).map(a => (
+                        <div key={a.id} className="card">
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
+                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
+                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · Patient summary
+                                </div>
+                                {a.patientSummary?.approvedAt ? (
+                                    <span className="chip ok">Approved</span>
+                                ) : (
+                                    <span className="chip">Draft</span>
+                                )}
+                            </div>
+                            <p style={{ font: "400 14px 'Figtree',sans-serif", color: "#022449", margin: 0, whiteSpace: "pre-wrap" }}>
+                                {a.patientSummary!.body}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ── Referrals tab ── */}
+            {tab === "Referrals" && (
+                <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ font: "400 14px 'Figtree',sans-serif", color: "#4f6478" }}>
+                            {chart?.referrals.length ?? 0} referral{(chart?.referrals.length ?? 0) !== 1 ? "s" : ""}
+                        </span>
+                        <Link href="/pro/referrals" className="btn btn2" style={{ minHeight: "36px", fontSize: "13px" }}>New referral</Link>
+                    </div>
+                    {!chart?.referrals.length ? (
+                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>No referrals for this patient yet.</div>
+                    ) : chart.referrals.map(ref => (
+                        <div key={ref.id} className="card">
+                            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+                                <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
+                                    {ref.toDiscipline}{ref.receiver ? ` → ${ref.receiver.user.name}` : ""}
+                                </div>
+                                <span className={`chip${ref.status === "ACCEPTED" ? " ok" : ref.status === "DECLINED" ? " bad" : ""}`}>
+                                    {ref.status.toLowerCase()}
+                                </span>
+                            </div>
+                            <div style={{ display: "grid", gap: "6px" }}>
+                                <Detail label="Urgency" value={ref.urgency} />
+                                <Detail label="Reason" value={ref.reason} wide />
+                                {ref.summary && <Detail label="Summary" value={ref.summary} wide />}
+                                {ref.declineReason && <Detail label="Decline reason" value={ref.declineReason} wide />}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ── Messages tab ── */}
+            {tab === "Messages" && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "16px", marginTop: "20px" }}>
+                    <p style={{ font: "400 14px 'Figtree',sans-serif", color: "#4f6478", margin: 0 }}>
+                        Open the message thread with {p?.name ?? "this patient"} to send and receive messages.
+                    </p>
+                    <button
+                        type="button"
+                        className="btn"
+                        onClick={openThread}
+                        disabled={openingThread}
+                        style={{ minHeight: "44px" }}
+                    >
+                        {openingThread ? "Opening…" : `Message ${p?.name?.split(" ")[0] ?? "patient"}`}
+                    </button>
+                    {threadId && (
+                        <Link href={`/pro/messages/${threadId}`} style={{ font: "500 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>
+                            Go to thread →
+                        </Link>
+                    )}
                 </div>
             )}
 

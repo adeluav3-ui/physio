@@ -70,7 +70,7 @@ export class PatientsService {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "No appointment relationship with this patient" });
         }
 
-        const [profile, latestIntake, appointments] = await Promise.all([
+        const [profile, latestIntake, appointments, referrals] = await Promise.all([
             this.prisma.client.user.findUnique({
                 where: { id: patientId },
                 select: {
@@ -88,7 +88,26 @@ export class PatientsService {
             this.prisma.client.appointment.findMany({
                 where: { physioId: physio.id, patientId },
                 orderBy: { startsAt: "desc" },
-                select: { id: true, startsAt: true, endsAt: true, status: true, mode: true, type: true },
+                select: {
+                    id: true, startsAt: true, endsAt: true, status: true, mode: true, type: true,
+                    notes: {
+                        select: {
+                            id: true, subjective: true, objective: true, assessment: true,
+                            plan: true, signedAt: true, createdAt: true,
+                            addenda: { select: { id: true, body: true, addedAt: true } },
+                        },
+                    },
+                    patientSummary: { select: { id: true, body: true, approvedAt: true } },
+                },
+            }),
+            this.prisma.client.referral.findMany({
+                where: { patientId, fromProfessionalId: physio.id },
+                orderBy: { id: "desc" },
+                select: {
+                    id: true, toDiscipline: true, reason: true, urgency: true, status: true,
+                    summary: true, declineReason: true,
+                    receiver: { select: { user: { select: { name: true } } } },
+                },
             }),
         ]);
 
@@ -103,6 +122,6 @@ export class PatientsService {
             entityId: patientId,
         });
 
-        return { profile, latestIntake, appointments };
+        return { profile, latestIntake, appointments, referrals };
     }
 }
