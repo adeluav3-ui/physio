@@ -15,6 +15,11 @@ export class PaymentsController {
         return this.payments.verifyCharge(user, reference);
     }
 
+    @Get("confirm-callback/:reference")
+    confirmCallback(@Param("reference") reference: string) {
+        return this.payments.confirmFromCallback(reference);
+    }
+
     @UseGuards(RolesGuard)
     @Roles("PHYSIO")
     @Get("me/wallet")

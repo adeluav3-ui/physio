@@ -1,4 +1,5 @@
 import { BadGatewayException, BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -12,6 +13,7 @@ export class PaymentsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly audit: AuditService,
+        private readonly events: EventEmitter2,
     ) { }
 
     async initializeCharge(input: InitChargeInput) {
@@ -177,6 +179,42 @@ export class PaymentsService {
                 },
             },
         });
+    }
+
+    /**
+     * Called from the payment callback page. Verifies with Paystack and,
+     * if successful, fires payment.succeeded so the appointment is confirmed.
+     * Safe to call multiple times — confirmAfterPayment() is idempotent.
+     */
+    async confirmFromCallback(reference: string) {
+        const payment = await this.prisma.client.payment.findFirst({
+            where: { providerRef: reference },
+            select: { id: true, status: true, appointmentId: true },
+        });
+        if (!payment) throw new NotFoundException({ code: "NOT_FOUND", message: "Payment not found" });
+
+        // Already processed — just return current appointment status.
+        if (payment.status !== "PENDING") {
+            const appt = await this.prisma.client.appointment.findUnique({
+                where: { id: payment.appointmentId },
+                select: { id: true, status: true },
+            });
+            return { status: appt?.status ?? "UNKNOWN" };
+        }
+
+        let result;
+        try {
+            result = await this.provider.verifyCharge(reference);
+        } catch {
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Could not verify payment" });
+        }
+
+        if (result.status !== "success") {
+            return { status: "PENDING_PAYMENT" };
+        }
+
+        this.events.emit("payment.succeeded", { appointmentId: payment.appointmentId, reference });
+        return { status: "CONFIRMED" };
     }
 
     async getWallet(physioId: string) {
