@@ -1,7 +1,8 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { z } from "zod";
 import type { SessionUser } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { AuditService } from "../audit/audit.service.js";
 
 export const updatePatientSchema = z.object({
     dob: z.string().date().optional(),
@@ -12,7 +13,10 @@ export const updatePatientSchema = z.object({
 
 @Injectable()
 export class PatientsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly audit: AuditService,
+    ) { }
 
     async getMe(user: SessionUser) {
         if (user.role !== "PATIENT") {
@@ -50,5 +54,55 @@ export class PatientsService {
     async isComplete(userId: string) {
         const p = await this.prisma.client.patientProfile.findUnique({ where: { userId } });
         return Boolean(p?.dob && p?.sex && p?.location && p?.emergencyContact);
+    }
+
+    /**
+     * Returns a patient's full chart for a physio who has an appointment with them.
+     * Includes profile, latest intake, triage result, and appointment history.
+     * Writes an audit log per NDPA requirements.
+     */
+    async getChartForPhysio(physio: SessionUser, patientId: string) {
+        // Verify the physio has at least one appointment with this patient
+        const hasRelationship = await this.prisma.client.appointment.count({
+            where: { physioId: physio.id, patientId },
+        });
+        if (!hasRelationship) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "No appointment relationship with this patient" });
+        }
+
+        const [profile, latestIntake, appointments] = await Promise.all([
+            this.prisma.client.user.findUnique({
+                where: { id: patientId },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    patientProfile: { select: { dob: true, sex: true, location: true, emergencyContact: true } },
+                },
+            }),
+            this.prisma.client.intake.findFirst({
+                where: { patientId },
+                orderBy: { createdAt: "desc" },
+                include: { triage: true },
+            }),
+            this.prisma.client.appointment.findMany({
+                where: { physioId: physio.id, patientId },
+                orderBy: { startsAt: "desc" },
+                select: { id: true, startsAt: true, endsAt: true, status: true, mode: true, type: true },
+            }),
+        ]);
+
+        if (!profile) {
+            throw new NotFoundException({ code: "NOT_FOUND", message: "Patient not found" });
+        }
+
+        await this.audit.record({
+            actorId: physio.id,
+            action: "record.view",
+            entity: "PatientChart",
+            entityId: patientId,
+        });
+
+        return { profile, latestIntake, appointments };
     }
 }

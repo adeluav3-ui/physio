@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Put, UseGuards } from "@nestjs/common";
 import type { SessionUser } from "@physio/shared";
 import { PatientsService, updatePatientSchema } from "./patients.service.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
@@ -7,18 +7,25 @@ import { CurrentUser } from "../common/current-user.decorator.js";
 
 @Controller("patients")
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("PATIENT")
 export class PatientsController {
     constructor(private readonly patients: PatientsService) { }
 
     @Get("me")
+    @Roles("PATIENT")
     getMe(@CurrentUser() user: SessionUser) {
         return this.patients.getMe(user);
     }
 
     @Put("me")
+    @Roles("PATIENT")
     updateMe(@CurrentUser() user: SessionUser, @Body() body: unknown) {
         const parsed = updatePatientSchema.parse(body);
         return this.patients.updateMe(user, parsed);
+    }
+
+    @Get(":id/chart")
+    @Roles("PHYSIO", "ADMIN")
+    getChart(@CurrentUser() user: SessionUser, @Param("id") patientId: string) {
+        return this.patients.getChartForPhysio(user, patientId);
     }
 }
