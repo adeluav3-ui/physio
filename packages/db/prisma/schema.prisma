@@ -114,6 +114,12 @@ enum LedgerEntryType {
   REFUND
 }
 
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum VideoProviderName {
   DAILY
   IN_HOUSE
@@ -214,6 +220,7 @@ model PhysioProfile {
   slotHolds         SlotHold[]
   daysOff           DayOff[]
   packages          Package[]
+  withdrawals       Withdrawal[]
 
   @@index([licenceStatus])
   @@index([discipline, licenceStatus])
@@ -406,6 +413,24 @@ model LedgerEntry {
 
   @@index([paymentId, createdAt])
   @@index([appointmentId])
+}
+
+model Withdrawal {
+  id            String           @id @default(uuid())
+  physioId      String
+  amountKobo    Int
+  status        WithdrawalStatus @default(PENDING)
+  bankName      String
+  accountNumber String
+  accountName   String
+  adminNote     String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  physio        PhysioProfile    @relation(fields: [physioId], references: [userId], onDelete: Cascade)
+
+  @@index([physioId, createdAt])
+  @@index([status])
 }
 
 // ── Sessions ─────────────────────────────

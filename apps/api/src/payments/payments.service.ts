@@ -1,4 +1,4 @@
-import { BadGatewayException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -176,6 +176,52 @@ export class PaymentsService {
                     include: { patient: { include: { user: true } }, physio: { include: { user: true } } },
                 },
             },
+        });
+    }
+
+    async getWallet(physioId: string) {
+        const [payouts, withdrawals] = await Promise.all([
+            this.prisma.client.ledgerEntry.findMany({
+                where: { type: "PHYSIO_PAYOUT", appointment: { physioId } },
+                include: {
+                    appointment: {
+                        select: {
+                            id: true,
+                            startsAt: true,
+                            patient: { select: { user: { select: { name: true } } } },
+                        },
+                    },
+                },
+                orderBy: { createdAt: "desc" },
+            }),
+            this.prisma.client.withdrawal.findMany({
+                where: { physioId },
+                orderBy: { createdAt: "desc" },
+            }),
+        ]);
+
+        const totalEarnedKobo = payouts.reduce((s, e) => s + e.amountKobo, 0);
+        const withdrawnKobo = withdrawals
+            .filter((w) => w.status !== "REJECTED")
+            .reduce((s, w) => s + w.amountKobo, 0);
+        const availableKobo = Math.max(0, totalEarnedKobo - withdrawnKobo);
+
+        return { availableKobo, totalEarnedKobo, payouts, withdrawals };
+    }
+
+    async requestWithdrawal(
+        physioId: string,
+        input: { amountKobo: number; bankName: string; accountNumber: string; accountName: string },
+    ) {
+        const { availableKobo } = await this.getWallet(physioId);
+        if (input.amountKobo > availableKobo) {
+            throw new BadRequestException({ code: "INSUFFICIENT_BALANCE", message: "Amount exceeds available balance" });
+        }
+        if (input.amountKobo <= 0) {
+            throw new BadRequestException({ code: "INVALID_AMOUNT", message: "Withdrawal amount must be positive" });
+        }
+        return this.prisma.client.withdrawal.create({
+            data: { physioId, ...input },
         });
     }
 }

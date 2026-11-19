@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS } from "@physio/shared";
+import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS, FIRST_CONSULT_PRICE_KOBO, FOLLOW_UP_PRICE_KOBO } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { SlotService } from "./slot.service.js";
@@ -114,7 +114,7 @@ export class BookingService {
         }
 
         const endsAt = new Date(startsAt.getTime() + input.durationMinutes * 60_000);
-        const amountKobo = physio.rateKobo;
+        const amountKobo = input.type === "ASSESSMENT" ? FIRST_CONSULT_PRICE_KOBO : FOLLOW_UP_PRICE_KOBO;
 
         const reference = `appt-${randomUUID()}`;
 

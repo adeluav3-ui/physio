@@ -9,7 +9,6 @@ type Profile = {
     bio: string;
     specialties: string[];
     languages: string[];
-    rateKobo: number;
     serviceArea: string;
     photoUrl: string | null;
     sessionTypes: string[];
@@ -34,7 +33,6 @@ export default function ProProfilePage() {
     const [bio, setBio] = useState("");
     const [specialties, setSpecialties] = useState("");
     const [languages, setLanguages] = useState<string[]>([]);
-    const [rateNaira, setRateNaira] = useState("");
     const [serviceArea, setServiceArea] = useState("");
     const [sessionTypes, setSessionTypes] = useState<string[]>([]);
     const [sessionMinutes, setSessionMinutes] = useState("45");
@@ -50,7 +48,6 @@ export default function ProProfilePage() {
                 setBio(p.bio ?? "");
                 setSpecialties((p.specialties ?? []).join(", "));
                 setLanguages(p.languages ?? []);
-                setRateNaira(String(Math.round(p.rateKobo / 100)));
                 setServiceArea(p.serviceArea ?? "");
                 setSessionTypes(p.sessionTypes ?? []);
                 setSessionMinutes(String(p.sessionMinutes ?? 45));
@@ -74,8 +71,6 @@ export default function ProProfilePage() {
         setError(null);
         setSaved(false);
         try {
-            const rateKobo = Math.round(Number(rateNaira) * 100);
-            if (Number.isNaN(rateKobo) || rateKobo < 0) throw new Error("Enter a valid rate.");
             if (sessionTypes.length === 0) throw new Error("Select at least one session type.");
 
             // Update profile fields
@@ -86,7 +81,6 @@ export default function ProProfilePage() {
                     bio: bio.trim(),
                     specialties: specialties.split(",").map((s) => s.trim()).filter(Boolean),
                     languages,
-                    rateKobo,
                     serviceArea: serviceArea.trim(),
                     sessionTypes,
                 }),
@@ -243,22 +237,12 @@ export default function ProProfilePage() {
                     </div>
                 </div>
 
-                {/* Rate */}
-                <div className="card">
-                    <label className="flabel" htmlFor="rate">Session rate (₦)</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ font: "600 16px 'Figtree',sans-serif" }}>₦</span>
-                        <input
-                            id="rate"
-                            type="number"
-                            min="0"
-                            step="500"
-                            value={rateNaira}
-                            onChange={(e) => setRateNaira(e.target.value)}
-                            className="in"
-                            style={{ maxWidth: "180px" }}
-                        />
-                    </div>
+                {/* Platform pricing notice */}
+                <div className="card" style={{ background: "#f0f7fe", borderColor: "#b6d4f0" }}>
+                    <div style={{ font: "600 14px 'Figtree',sans-serif", color: "#07506b" }}>Platform pricing</div>
+                    <p className="muted" style={{ font: "400 13px 'Figtree',sans-serif", marginTop: "4px", color: "#07506b" }}>
+                        Session fees are set by Rehab360: <strong>₦10,000</strong> for a first consultation and <strong>₦5,000</strong> for follow-up sessions. You receive 90% of the session fee after a 24-hour release window.
+                    </p>
                 </div>
 
                 {/* Session length & buffer */}

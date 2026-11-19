@@ -301,8 +301,9 @@ function FindPhysioInner() {
                                                 <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#4f6478" }}>Next free</div>
                                                 <div style={{ font: "600 14px 'Figtree',sans-serif" }}>{fmtSlot(p.nextSlot)}</div>
                                             </div>
-                                            <div style={{ marginRight: "12px", font: "700 15px 'Figtree',sans-serif" }}>
-                                                ₦{(p.rateKobo / 100).toLocaleString()}
+                                            <div style={{ marginRight: "12px", textAlign: "right" }}>
+                                                <div style={{ font: "700 15px 'Figtree',sans-serif" }}>₦10,000</div>
+                                                <div style={{ font: "400 11px 'Figtree',sans-serif", color: "#4f6478" }}>first consult</div>
                                             </div>
                                             <Link href={`/app/book/${p.userId}`} style={{ ...S.btn(true), flexShrink: 0 }}>Book</Link>
                                         </>
