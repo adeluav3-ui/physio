@@ -6,7 +6,7 @@ export type AvailabilityInput = {
     weekday: number; // 0=Sun .. 6=Sat
     startMinute: number;
     endMinute: number;
-    mode: "VIDEO" | "HOME";
+    mode: "VIDEO" | "HOME" | "CHAT" | "ANY";
 };
 
 @Injectable()
@@ -27,7 +27,7 @@ export class AvailabilityService {
 
         // Validate: no overlaps within the same weekday+mode.
         for (const weekday of [0, 1, 2, 3, 4, 5, 6]) {
-            for (const mode of ["VIDEO", "HOME"] as const) {
+            for (const mode of ["VIDEO", "HOME", "CHAT", "ANY"] as const) {
                 const day = slots
                     .filter((s) => s.weekday === weekday && s.mode === mode)
                     .sort((a, b) => a.startMinute - b.startMinute);
