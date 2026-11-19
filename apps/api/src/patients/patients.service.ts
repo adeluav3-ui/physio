@@ -90,14 +90,8 @@ export class PatientsService {
                 orderBy: { startsAt: "desc" },
                 select: {
                     id: true, startsAt: true, endsAt: true, status: true, mode: true, type: true,
-                    notes: {
-                        select: {
-                            id: true, subjective: true, objective: true, assessment: true,
-                            plan: true, signedAt: true, createdAt: true,
-                            addenda: { select: { id: true, body: true, addedAt: true } },
-                        },
-                    },
-                    patientSummary: { select: { id: true, body: true, approvedAt: true } },
+                    // notes and patientSummary are fetched via /patients/:id/notes and /patients/:id/documents
+                    // to avoid crashing when NoteAddendum / PatientSummary tables are pending migration
                 },
             }),
             this.prisma.client.referral.findMany({
@@ -123,5 +117,41 @@ export class PatientsService {
         });
 
         return { profile, latestIntake, appointments, referrals };
+    }
+
+    async getNotesForPhysio(physio: SessionUser, patientId: string) {
+        const hasRelationship = await this.prisma.client.appointment.count({
+            where: { physioId: physio.id, patientId },
+        });
+        if (!hasRelationship) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "No appointment relationship with this patient" });
+        }
+        return this.prisma.client.sessionNote.findMany({
+            where: { appointment: { physioId: physio.id, patientId } },
+            orderBy: { createdAt: "desc" },
+            select: {
+                id: true, subjective: true, objective: true, assessment: true,
+                plan: true, signedAt: true, createdAt: true,
+                appointment: { select: { id: true, startsAt: true } },
+                addenda: { select: { id: true, body: true, addedAt: true } },
+            },
+        });
+    }
+
+    async getDocumentsForPhysio(physio: SessionUser, patientId: string) {
+        const hasRelationship = await this.prisma.client.appointment.count({
+            where: { physioId: physio.id, patientId },
+        });
+        if (!hasRelationship) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "No appointment relationship with this patient" });
+        }
+        return this.prisma.client.patientSummary.findMany({
+            where: { appointment: { physioId: physio.id, patientId } },
+            orderBy: { id: "desc" },
+            select: {
+                id: true, body: true, approvedAt: true,
+                appointment: { select: { id: true, startsAt: true } },
+            },
+        });
     }
 }

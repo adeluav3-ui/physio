@@ -28,4 +28,16 @@ export class PatientsController {
     getChart(@CurrentUser() user: SessionUser, @Param("id") patientId: string) {
         return this.patients.getChartForPhysio(user, patientId);
     }
+
+    @Get(":id/notes")
+    @Roles("PHYSIO", "ADMIN")
+    getNotes(@CurrentUser() user: SessionUser, @Param("id") patientId: string) {
+        return this.patients.getNotesForPhysio(user, patientId);
+    }
+
+    @Get(":id/documents")
+    @Roles("PHYSIO", "ADMIN")
+    getDocuments(@CurrentUser() user: SessionUser, @Param("id") patientId: string) {
+        return this.patients.getDocumentsForPhysio(user, patientId);
+    }
 }

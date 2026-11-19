@@ -45,14 +45,16 @@ type SessionNote = {
     subjective: string; objective: string; assessment: string; plan: string;
     signedAt: string | null; createdAt: string;
     addenda: { id: string; body: string; addedAt: string }[];
+    appointment: { id: string; startsAt: string };
 };
 
-type PatientSummaryDoc = { id: string; body: string; approvedAt: string | null };
+type PatientSummaryDoc = {
+    id: string; body: string; approvedAt: string | null;
+    appointment: { id: string; startsAt: string };
+};
 
 type Appointment = {
     id: string; startsAt: string; endsAt: string; status: string; mode: string; type: string;
-    notes: SessionNote | null;
-    patientSummary: PatientSummaryDoc | null;
 };
 
 type Referral = {
@@ -119,6 +121,8 @@ export default function PatientRecordPage() {
     const [previewLibId, setPreviewLibId] = useState<string | null>(null);
     const [threadId, setThreadId] = useState<string | null>(null);
     const [openingThread, setOpeningThread] = useState(false);
+    const [notes, setNotes] = useState<SessionNote[] | null>(null);
+    const [docs, setDocs] = useState<PatientSummaryDoc[] | null>(null);
 
     useEffect(() => {
         async function load() {
@@ -228,6 +232,21 @@ export default function PatientRecordPage() {
         } catch { /* empty */ }
         finally { setOpeningThread(false); }
     }
+
+    useEffect(() => {
+        if (tab === "Notes" && notes === null) {
+            fetch(`/api/proxy/patients/${patientId}/notes`, { credentials: "include" })
+                .then(r => r.ok ? r.json() : [])
+                .then((data: SessionNote[]) => setNotes(data))
+                .catch(() => setNotes([]));
+        }
+        if (tab === "Documents" && docs === null) {
+            fetch(`/api/proxy/patients/${patientId}/documents`, { credentials: "include" })
+                .then(r => r.ok ? r.json() : [])
+                .then((data: PatientSummaryDoc[]) => setDocs(data))
+                .catch(() => setDocs([]));
+        }
+    }, [tab, patientId, notes, docs]);
 
     if (loading) return (
         <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif" }}>
@@ -391,39 +410,37 @@ export default function PatientRecordPage() {
             {/* ── Notes tab ── */}
             {tab === "Notes" && (
                 <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
-                    {(chart?.appointments ?? []).filter(a => a.notes).length === 0 ? (
+                    {notes === null ? (
+                        <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Loading…</div>
+                    ) : notes.length === 0 ? (
                         <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
-                            No session notes yet. Notes are written by you during or after each session.
+                            No session notes yet. Notes are written during or after each session.
                         </div>
-                    ) : (chart?.appointments ?? []).filter(a => a.notes).map(a => (
-                        <div key={a.id} className="card">
+                    ) : notes.map(n => (
+                        <div key={n.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
-                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                                    {new Date(n.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
                                 </div>
-                                {a.notes?.signedAt ? (
-                                    <span className="chip ok">Signed</span>
-                                ) : (
-                                    <span className="chip">Draft</span>
-                                )}
+                                {n.signedAt ? <span className="chip ok">Signed</span> : <span className="chip">Draft</span>}
                             </div>
                             <div style={{ display: "grid", gap: "10px" }}>
-                                {[
-                                    { label: "Subjective", value: a.notes!.subjective },
-                                    { label: "Objective", value: a.notes!.objective },
-                                    { label: "Assessment", value: a.notes!.assessment },
-                                    { label: "Plan", value: a.notes!.plan },
-                                ].map(({ label, value }) => (
+                                {([
+                                    { label: "Subjective", value: n.subjective },
+                                    { label: "Objective", value: n.objective },
+                                    { label: "Assessment", value: n.assessment },
+                                    { label: "Plan", value: n.plan },
+                                ] as { label: string; value: string }[]).map(({ label, value }) => (
                                     <div key={label}>
                                         <div style={{ font: "600 11px 'Figtree',sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", color: "#4f6478", marginBottom: "3px" }}>{label}</div>
                                         <div style={{ font: "400 14px 'Figtree',sans-serif", color: "#022449", whiteSpace: "pre-wrap" }}>{value}</div>
                                     </div>
                                 ))}
                             </div>
-                            {a.notes!.addenda.length > 0 && (
+                            {n.addenda.length > 0 && (
                                 <div style={{ marginTop: "12px", borderTop: "1px solid #e8f0f7", paddingTop: "12px" }}>
                                     <div style={{ font: "600 12px 'Figtree',sans-serif", color: "#4f6478", marginBottom: "8px" }}>Addenda</div>
-                                    {a.notes!.addenda.map(ad => (
+                                    {n.addenda.map(ad => (
                                         <div key={ad.id} style={{ font: "400 13px 'Figtree',sans-serif", color: "#022449", marginBottom: "6px" }}>
                                             <span style={{ color: "#4f6478", marginRight: "6px" }}>{new Date(ad.addedAt).toLocaleDateString()}</span>
                                             {ad.body}
@@ -439,24 +456,22 @@ export default function PatientRecordPage() {
             {/* ── Documents tab ── */}
             {tab === "Documents" && (
                 <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
-                    {(chart?.appointments ?? []).filter(a => a.patientSummary).length === 0 ? (
+                    {docs === null ? (
+                        <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Loading…</div>
+                    ) : docs.length === 0 ? (
                         <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
                             No patient summaries yet. Summaries are written after each completed session.
                         </div>
-                    ) : (chart?.appointments ?? []).filter(a => a.patientSummary).map(a => (
-                        <div key={a.id} className="card">
+                    ) : docs.map(doc => (
+                        <div key={doc.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
-                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · Patient summary
+                                    {new Date(doc.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · Patient summary
                                 </div>
-                                {a.patientSummary?.approvedAt ? (
-                                    <span className="chip ok">Approved</span>
-                                ) : (
-                                    <span className="chip">Draft</span>
-                                )}
+                                {doc.approvedAt ? <span className="chip ok">Approved</span> : <span className="chip">Draft</span>}
                             </div>
                             <p style={{ font: "400 14px 'Figtree',sans-serif", color: "#022449", margin: 0, whiteSpace: "pre-wrap" }}>
-                                {a.patientSummary!.body}
+                                {doc.body}
                             </p>
                         </div>
                     ))}

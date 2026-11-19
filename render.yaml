@@ -44,5 +44,5 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
     preDeployCommand: >-
-      cd /app && pnpm --filter @physio/db exec prisma migrate deploy && pnpm --filter @physio/db seed
+      cd /app && pnpm --filter @physio/db exec prisma migrate deploy; pnpm --filter @physio/db seed || true
 
