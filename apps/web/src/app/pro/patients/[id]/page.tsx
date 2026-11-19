@@ -110,6 +110,7 @@ export default function PatientRecordPage() {
     const [library, setLibrary] = useState<LibExercise[]>([]);
     const [libQuery, setLibQuery] = useState("");
     const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const [adding, setAdding] = useState<AddingState | null>(null);
     const [addErr, setAddErr] = useState("");
     const [removingId, setRemovingId] = useState<string | null>(null);
@@ -122,9 +123,23 @@ export default function PatientRecordPage() {
     useEffect(() => {
         async function load() {
             try {
-                const [chartData, progs, lib] = await Promise.all([
-                    fetch(`/api/proxy/patients/${patientId}/chart`, { credentials: "include" })
-                        .then(r => r.ok ? r.json() : null),
+                const chartRes = await fetch(`/api/proxy/patients/${patientId}/chart`, { credentials: "include" });
+                if (!chartRes.ok) {
+                    const body = await chartRes.json().catch(() => ({}));
+                    const code = (body as { code?: string }).code;
+                    if (code === "FORBIDDEN" || chartRes.status === 403) {
+                        setFetchError("You don't have an appointment with this patient yet.");
+                    } else if (chartRes.status === 404) {
+                        setFetchError("Patient not found.");
+                    } else {
+                        setFetchError(`Could not load patient record (${chartRes.status}). The API may still be deploying — try refreshing in a moment.`);
+                    }
+                    setLoading(false);
+                    return;
+                }
+                const chartData = await chartRes.json();
+
+                const [progs, lib] = await Promise.all([
                     fetch(`/api/proxy/programs/patient/${patientId}`, { credentials: "include" })
                         .then(r => r.ok ? r.json() : []),
                     fetch("/api/proxy/programs/exercises?reviewed=true", { credentials: "include" })
@@ -133,8 +148,9 @@ export default function PatientRecordPage() {
                 setChart(chartData);
                 setPrograms(progs ?? []);
                 setLibrary(lib ?? []);
-            } catch { /* empty */ }
-            finally { setLoading(false); }
+            } catch (e) {
+                setFetchError(`Network error: ${(e as Error).message}`);
+            } finally { setLoading(false); }
         }
         load();
     }, [patientId]);
@@ -216,6 +232,16 @@ export default function PatientRecordPage() {
     if (loading) return (
         <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", fontFamily: "'Figtree',system-ui,sans-serif" }}>
             <div className="muted" style={{ font: "400 15px 'Figtree',sans-serif" }}>Loading patient record…</div>
+        </div>
+    );
+
+    if (fetchError) return (
+        <div style={{ maxWidth: "520px", margin: "40px auto", padding: "0 20px", fontFamily: "'Figtree',system-ui,sans-serif" }}>
+            <div className="card" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "12px", padding: "20px" }}>
+                <div style={{ font: "700 16px 'Figtree',sans-serif", color: "#991b1b", marginBottom: "8px" }}>Could not load patient record</div>
+                <div style={{ font: "400 14px 'Figtree',sans-serif", color: "#7f1d1d" }}>{fetchError}</div>
+            </div>
+            <button type="button" className="btn btn2" style={{ marginTop: "16px" }} onClick={() => window.location.reload()}>Try again</button>
         </div>
     );
 
@@ -365,9 +391,11 @@ export default function PatientRecordPage() {
             {/* ── Notes tab ── */}
             {tab === "Notes" && (
                 <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
-                    {chart?.appointments.filter(a => a.notes).length === 0 ? (
-                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>No session notes yet.</div>
-                    ) : chart?.appointments.filter(a => a.notes).map(a => (
+                    {(chart?.appointments ?? []).filter(a => a.notes).length === 0 ? (
+                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
+                            No session notes yet. Notes are written by you during or after each session.
+                        </div>
+                    ) : (chart?.appointments ?? []).filter(a => a.notes).map(a => (
                         <div key={a.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
@@ -411,9 +439,11 @@ export default function PatientRecordPage() {
             {/* ── Documents tab ── */}
             {tab === "Documents" && (
                 <div style={{ display: "grid", gap: "16px", marginTop: "20px" }}>
-                    {chart?.appointments.filter(a => a.patientSummary).length === 0 ? (
-                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>No patient summaries yet.</div>
-                    ) : chart?.appointments.filter(a => a.patientSummary).map(a => (
+                    {(chart?.appointments ?? []).filter(a => a.patientSummary).length === 0 ? (
+                        <div className="card" style={{ color: "#4f6478", font: "400 14px 'Figtree',sans-serif" }}>
+                            No patient summaries yet. Summaries are written after each completed session.
+                        </div>
+                    ) : (chart?.appointments ?? []).filter(a => a.patientSummary).map(a => (
                         <div key={a.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
