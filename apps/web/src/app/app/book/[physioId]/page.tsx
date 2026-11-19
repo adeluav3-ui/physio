@@ -6,7 +6,27 @@ import { useRouter, useParams } from "next/navigation";
 type Slot = { startsAt: string; durationMinutes: number; mode: "VIDEO" | "HOME" };
 type TriageLevel = "GREEN" | "AMBER" | "RED";
 type LatestIntake = { id: string; triage: { level: TriageLevel } | null } | null;
-type Pro = { id: string; user: { name: string }; sessionFee?: number; discipline?: string };
+type Pro = {
+    userId: string;
+    user: { name: string };
+    rateKobo: number;
+    discipline: string;
+    photoUrl: string | null;
+    licenceStatus: string;
+};
+
+const DISCIPLINE_LABELS: Record<string, string> = {
+    PHYSIOTHERAPY: "Physiotherapist",
+    OCCUPATIONAL_THERAPY: "Occupational therapist",
+    SPEECH_LANGUAGE_PATHOLOGY: "Speech therapist",
+    PROSTHETICS_ORTHOTICS: "Prosthetist / orthotist",
+    AUDIOLOGY: "Audiologist",
+    CHIROPRACTIC: "Chiropractor",
+    DIETETICS: "Dietitian",
+    PSYCHOLOGY: "Psychologist",
+    SPORTS_MEDICINE: "Sports medicine",
+    MASSAGE_THERAPY: "Massage therapist",
+};
 
 function userFriendlyError(code: string | undefined): string {
     switch (code) {
@@ -37,7 +57,7 @@ export default function BookPage() {
         Promise.all([
             fetch(`/api/proxy/booking/slots/${params.physioId}`).then(r => r.json()),
             fetch("/api/proxy/triage/latest").then(r => r.ok ? r.json() : null),
-            fetch(`/api/proxy/professionals/${params.physioId}`).then(r => r.ok ? r.json() : null),
+            fetch(`/api/proxy/physios/${params.physioId}`).then(r => r.ok ? r.json() : null),
         ])
             .then(([slotsData, intakeData, proData]) => {
                 const all: Slot[] = slotsData ?? [];
@@ -70,7 +90,7 @@ export default function BookPage() {
 
     const hasBothTypes = slots.some(s => s.mode === "VIDEO") && slots.some(s => s.mode === "HOME");
 
-    const fee = pro?.sessionFee ?? 30000;
+    const fee = pro?.rateKobo ? Math.round(pro.rateKobo / 100) : 0;
     const serviceFee = Math.round(fee * 0.05);
     const total = fee + serviceFee;
 
@@ -145,10 +165,16 @@ export default function BookPage() {
 
             {/* Professional card */}
             <div className="card" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0 }}></div>
+                <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "#cfe3ee", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", font: "700 20px 'Figtree',sans-serif", color: "#07506b" }}>
+                    {pro?.photoUrl
+                        ? <img src={pro.photoUrl} alt={pro.user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : (pro?.user.name?.charAt(0).toUpperCase() ?? "?")}
+                </div>
                 <div>
-                    <div style={{ font: "700 16px 'Figtree',sans-serif" }}>{pro?.user.name ?? "[Professional name]"}</div>
-                    <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>Physiotherapist · Licence verified</div>
+                    <div style={{ font: "700 16px 'Figtree',sans-serif" }}>{pro?.user.name ?? "Loading…"}</div>
+                    <div className="muted" style={{ font: "400 14px 'Figtree',sans-serif" }}>
+                        {pro ? `${DISCIPLINE_LABELS[pro.discipline] ?? pro.discipline} · Licence verified` : ""}
+                    </div>
                 </div>
             </div>
 
