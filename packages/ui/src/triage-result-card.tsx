@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "./button";
 import { Card } from "./card";
 import type { TriageLevel } from "@physio/shared";

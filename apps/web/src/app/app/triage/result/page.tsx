@@ -1,25 +1,46 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { TriageResultCard } from "@physio/ui";
-import Link from "next/link";
-import { apiFetch } from "@/lib/api";
-import { requireSession } from "@/lib/session";
 
-export default async function TriageResultPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ id?: string }>;
-}) {
-    const { id } = await searchParams;
-    await requireSession(["PATIENT"]);
+type TriageLevel = "GREEN" | "AMBER" | "RED";
 
-    if (!id) {
-        return <div className="p-8 text-center text-text-muted">No triage result found.</div>;
+export default function TriageResultPage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const id = searchParams.get("id");
+
+    const [level, setLevel] = useState<TriageLevel | null>(null);
+    const [reasons, setReasons] = useState<string[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) { setError("No result found."); return; }
+        fetch(`/api/proxy/triage/${id}`)
+            .then(async (r) => {
+                if (!r.ok) throw new Error("Could not load result.");
+                return r.json() as Promise<{ triage: { level: TriageLevel; reasons: string[] } }>;
+            })
+            .then((d) => { setLevel(d.triage.level); setReasons(d.triage.reasons); })
+            .catch(() => setError("Could not load your result. Please try again."));
+    }, [id]);
+
+    if (error) {
+        return (
+            <div className="flex min-h-[70vh] items-center justify-center p-4 text-center text-text-muted">
+                {error}
+            </div>
+        );
     }
 
-    const data = await apiFetch<{
-        triage: { level: "GREEN" | "AMBER" | "RED"; reasons: string[] };
-    }>(`/triage/${id}`);
-
-    const { level, reasons } = data.triage;
+    if (!level) {
+        return (
+            <div className="flex min-h-[70vh] items-center justify-center p-4 text-center text-text-muted">
+                Loading your result…
+            </div>
+        );
+    }
 
     return (
         <TriageResultCard
@@ -28,12 +49,12 @@ export default async function TriageResultPage({
             {...(level !== "RED" && {
                 primaryAction: {
                     label: "Find a professional",
-                    onClick: () => { window.location.href = "/app/physios"; },
+                    onClick: () => router.push("/app/physios"),
                 },
             })}
             secondaryAction={{
                 label: level === "RED" ? "I understand" : "Back to home",
-                onClick: () => { window.location.href = "/app"; },
+                onClick: () => router.push("/app"),
             }}
             {...(level === "RED"
                 ? {
