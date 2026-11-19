@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 
-// Platform-fixed prices (from policy.ts — ₦10,000 first consult, ₦5,000 follow-up)
+// Platform-fixed prices (from policy.ts)
 const FIRST_CONSULT_NAIRA = 10_000;
-const FOLLOW_UP_NAIRA = 5_000;
 const SERVICE_FEE_BPS = 500; // 5%, capped ₦500
 const SERVICE_FEE_CAP_NAIRA = 500;
 
@@ -100,9 +99,8 @@ export default function BookPage() {
 
     const hasBothTypes = slots.some(s => s.mode === "VIDEO") && slots.some(s => s.mode === "HOME");
 
-    // Price is platform-fixed: first consult ₦10k, follow-up ₦5k
-    const isFirstConsult = !intake?.triage; // no prior intake = first consult
-    const fee = isFirstConsult ? FIRST_CONSULT_NAIRA : FOLLOW_UP_NAIRA;
+    // This page always books an ASSESSMENT (first consult) → ₦10,000
+    const fee = FIRST_CONSULT_NAIRA;
     const serviceFee = calcServiceFee(fee);
     const total = fee + serviceFee;
 
@@ -243,7 +241,7 @@ export default function BookPage() {
             {/* Price breakdown */}
             {selectedTime && (
                 <div className="card" style={{ display: "grid", gap: "8px", font: "500 15px 'Figtree',sans-serif" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}><span>{isFirstConsult ? "First consultation" : "Follow-up session"}</span><span>₦{fee.toLocaleString("en-NG")}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}><span>First consultation</span><span>₦{fee.toLocaleString("en-NG")}</span></div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}><span>Service fee</span><span>₦{serviceFee.toLocaleString("en-NG")}</span></div>
                     <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, borderTop: "1px solid #e6eeec", paddingTop: "8px" }}><span>Total</span><span>₦{total.toLocaleString("en-NG")}</span></div>
                 </div>
