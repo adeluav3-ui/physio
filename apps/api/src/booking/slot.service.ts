@@ -5,7 +5,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 export type Slot = {
     startsAt: string;      // ISO
     durationMinutes: number;
-    mode: "VIDEO" | "HOME" | "CHAT";
+    mode: "VIDEO" | "HOME" | "CHAT" | "ANY";
 };
 
 const MIN_NOTICE_MS = 2 * 60 * 60 * 1000; // 2 hours
@@ -112,7 +112,7 @@ export class SlotService {
                     slots.push({
                         startsAt: startsAt.toISOString(),
                         durationMinutes: sessionMin,
-                        mode: block.mode as "VIDEO" | "HOME" | "CHAT",
+                        mode: block.mode as "VIDEO" | "HOME" | "CHAT" | "ANY",
                     });
                 }
             }
@@ -137,11 +137,12 @@ export class SlotService {
         const startMinute = startsAt.getHours() * 60 + startsAt.getMinutes();
         const endMinute = startMinute + durationMinutes;
 
+        // Match either the exact mode or ANY (pro accepts all modes for this block)
         const block = await this.prisma.client.availability.findFirst({
             where: {
                 physioId,
                 weekday,
-                mode,
+                mode: { in: [mode, "ANY"] },
                 startMinute: { lte: startMinute },
                 endMinute: { gte: endMinute },
             },

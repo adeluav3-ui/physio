@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type AvailBlock = { weekday: number; startMinute: number; endMinute: number; mode: Mode };
-type Mode = "VIDEO" | "HOME" | "CHAT";
+type Mode = "VIDEO" | "HOME" | "CHAT" | "ANY";
 type DayOff = { id: string; date: string; reason: string | null };
 type Settings = {
     sessionMinutes: number;
@@ -17,7 +17,7 @@ type Settings = {
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const SESSION_OPTS = [30, 45, 60];
 const BUFFER_OPTS = [0, 5, 15];
-const MODE_LABELS: Record<Mode, string> = { VIDEO: "Video", HOME: "In person", CHAT: "Chat" };
+const MODE_LABELS: Record<Mode, string> = { VIDEO: "Video", HOME: "In person", CHAT: "Chat", ANY: "Any mode" };
 
 function minutesToTime(m: number) {
     const h = Math.floor(m / 60);
@@ -317,7 +317,7 @@ export default function ProAvailabilityPage() {
                                                         onChange={(e) => updateBlock(weekday, idx, { mode: e.target.value as Mode })}
                                                         style={{ ...S.timeSelect, minWidth: "90px" }}
                                                     >
-                                                        {(["VIDEO", "HOME", "CHAT"] as Mode[]).map((m) => (
+                                                        {(["VIDEO", "HOME", "CHAT", "ANY"] as Mode[]).map((m) => (
                                                             <option key={m} value={m}>{MODE_LABELS[m]}</option>
                                                         ))}
                                                     </select>

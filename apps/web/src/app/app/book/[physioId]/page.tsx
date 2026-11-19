@@ -12,7 +12,7 @@ function calcServiceFee(priceNaira: number) {
     return Math.min(Math.round((priceNaira * SERVICE_FEE_BPS) / 10_000), SERVICE_FEE_CAP_NAIRA);
 }
 
-type Slot = { startsAt: string; durationMinutes: number; mode: "VIDEO" | "HOME" };
+type Slot = { startsAt: string; durationMinutes: number; mode: "VIDEO" | "HOME" | "CHAT" | "ANY" };
 type TriageLevel = "GREEN" | "AMBER" | "RED";
 type LatestIntake = { id: string; triage: { level: TriageLevel } | null } | null;
 type Pro = {
@@ -56,7 +56,7 @@ export default function BookPage() {
     const [slots, setSlots] = useState<Slot[]>([]);
     const [pro, setPro] = useState<Pro | null>(null);
     const [intake, setIntake] = useState<LatestIntake | undefined>(undefined);
-    const [sessionType, setSessionType] = useState<"VIDEO" | "HOME">("VIDEO");
+    const [sessionType, setSessionType] = useState<"VIDEO" | "HOME" | "CHAT">("VIDEO");
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -76,6 +76,9 @@ export default function BookPage() {
                 if (all.length > 0) {
                     const firstDay = new Date(all[0]!.startsAt).toISOString().slice(0, 10);
                     setSelectedDay(firstDay);
+                    // Auto-select the first available mode
+                    const firstMode = all[0]!.mode;
+                    if (firstMode !== "ANY") setSessionType(firstMode);
                 }
             })
             .catch(e => setError((e as Error).message));
@@ -85,8 +88,8 @@ export default function BookPage() {
         if (intake === null) router.replace("/app/intake/complaint");
     }, [intake, router]);
 
-    /* Group slots by day, filtered by session type */
-    const filtered = slots.filter(s => s.mode === sessionType);
+    /* Group slots by day, filtered by session type (ANY slots appear under all tabs) */
+    const filtered = slots.filter(s => s.mode === sessionType || s.mode === "ANY");
     const byDay = filtered.reduce<Record<string, Slot[]>>((acc, s) => {
         const day = new Date(s.startsAt).toISOString().slice(0, 10);
         if (!acc[day]) acc[day] = [];
@@ -97,7 +100,10 @@ export default function BookPage() {
     const timesForDay = selectedDay ? (byDay[selectedDay] ?? []) : [];
     const selectedSlot = timesForDay.find(s => s.startsAt === selectedTime) ?? null;
 
-    const hasBothTypes = slots.some(s => s.mode === "VIDEO") && slots.some(s => s.mode === "HOME");
+    const availableModes = Array.from(new Set(
+        slots.flatMap(s => s.mode === "ANY" ? ["VIDEO", "HOME", "CHAT"] : [s.mode])
+    )) as ("VIDEO" | "HOME" | "CHAT")[];
+    const hasMultipleModes = availableModes.length > 1;
 
     // This page always books an ASSESSMENT (first consult) → ₦10,000
     const fee = FIRST_CONSULT_NAIRA;
@@ -116,7 +122,7 @@ export default function BookPage() {
                     physioId: params.physioId,
                     intakeId: intake.id,
                     type: "ASSESSMENT",
-                    mode: selectedSlot?.mode ?? sessionType,
+                    mode: sessionType,
                     startsAt: selectedTime,
                     durationMinutes: selectedSlot?.durationMinutes ?? 45,
                 }),
@@ -189,12 +195,19 @@ export default function BookPage() {
             </div>
 
             {/* Session type */}
-            {hasBothTypes && (
+            {hasMultipleModes && (
                 <div>
-                    <div style={{ font: "600 14px 'Figtree',sans-serif", marginBottom: "8px" }}>Session type</div>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                        <button type="button" className={`slot${sessionType === "VIDEO" ? " on" : ""}`} onClick={() => { setSessionType("VIDEO"); setSelectedDay(null); setSelectedTime(null); }}>Video</button>
-                        <button type="button" className={`slot${sessionType === "HOME" ? " on" : ""}`} onClick={() => { setSessionType("HOME"); setSelectedDay(null); setSelectedTime(null); }}>Home visit</button>
+                    <div style={{ font: "600 14px 'Figtree',sans-serif", marginBottom: "8px" }}>How would you like your session?</div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                        {availableModes.includes("VIDEO") && (
+                            <button type="button" className={`slot${sessionType === "VIDEO" ? " on" : ""}`} onClick={() => { setSessionType("VIDEO"); setSelectedDay(null); setSelectedTime(null); }}>Video call</button>
+                        )}
+                        {availableModes.includes("CHAT") && (
+                            <button type="button" className={`slot${sessionType === "CHAT" ? " on" : ""}`} onClick={() => { setSessionType("CHAT"); setSelectedDay(null); setSelectedTime(null); }}>Chat</button>
+                        )}
+                        {availableModes.includes("HOME") && (
+                            <button type="button" className={`slot${sessionType === "HOME" ? " on" : ""}`} onClick={() => { setSessionType("HOME"); setSelectedDay(null); setSelectedTime(null); }}>In-person visit</button>
+                        )}
                     </div>
                 </div>
             )}

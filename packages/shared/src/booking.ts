@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { idSchema } from "./common.js";
-import { AppointmentType, SessionMode } from "./enums.js";
+import { AppointmentType, AvailabilityMode, SessionMode } from "./enums.js";
 
 export const availabilitySlotSchema = z.object({
     id: idSchema,
@@ -8,7 +8,7 @@ export const availabilitySlotSchema = z.object({
     weekday: z.number().int().min(0).max(6),
     startMinute: z.number().int().min(0).max(1439),
     endMinute: z.number().int().min(1).max(1440),
-    mode: SessionMode,
+    mode: AvailabilityMode,
 });
 export type AvailabilitySlot = z.infer<typeof availabilitySlotSchema>;
 

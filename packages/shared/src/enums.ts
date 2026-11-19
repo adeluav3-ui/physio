@@ -71,8 +71,11 @@ export const AppointmentStatus = z.enum([
 ]);
 export type AppointmentStatus = z.infer<typeof AppointmentStatus>;
 
-export const SessionMode = z.enum(["VIDEO", "HOME"]);
+export const SessionMode = z.enum(["VIDEO", "HOME", "CHAT"]);
 export type SessionMode = z.infer<typeof SessionMode>;
+
+export const AvailabilityMode = z.enum(["VIDEO", "HOME", "CHAT", "ANY"]);
+export type AvailabilityMode = z.infer<typeof AvailabilityMode>;
 
 export const PaymentStatus = z.enum([
     "PENDING",

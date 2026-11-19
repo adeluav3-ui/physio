@@ -95,6 +95,7 @@ enum SessionMode {
   VIDEO
   HOME
   CHAT
+  ANY
 }
 
 enum PaymentStatus {
