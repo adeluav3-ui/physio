@@ -16,7 +16,7 @@ export class RemindersService {
                 JOB_INACTIVITY_NUDGE,
                 {},
                 {
-                    jobId: "inactivity-nudge:daily",
+                    jobId: "inactivity-nudge-daily",
                     repeat: { every: 24 * 60 * 60 * 1000 },
                     removeOnComplete: true,
                     removeOnFail: 50,
@@ -33,7 +33,7 @@ export class RemindersService {
                 JOB_REFERRAL_STALL,
                 {},
                 {
-                    jobId: "referral-stall:daily",
+                    jobId: "referral-stall-daily",
                     repeat: { every: 24 * 60 * 60 * 1000 },
                     removeOnComplete: true,
                     removeOnFail: 50,
@@ -50,7 +50,7 @@ export class RemindersService {
                 JOB_PAYMENT_RELEASE,
                 { appointmentId },
                 {
-                    jobId: `payment-release:${appointmentId}`,
+                    jobId: `payment-release-${appointmentId}`,
                     delay: delayMs,
                     removeOnComplete: true,
                     removeOnFail: 50,
@@ -72,7 +72,7 @@ export class RemindersService {
                     { appointmentId, minutesBefore },
                     {
                         // Deterministic ID prevents duplicate jobs on cold-start reschedule.
-                        jobId: `${appointmentId}:${minutesBefore}m`,
+                        jobId: `${appointmentId}-${minutesBefore}m`,
                         delay,
                         removeOnComplete: true,
                         removeOnFail: 100,

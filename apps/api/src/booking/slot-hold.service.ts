@@ -24,14 +24,14 @@ export class SlotHoldService {
         await this.queue.add(
             JOB_EXPIRE_HOLD,
             { holdId: hold.id },
-            { delay: SLOT_HOLD_MINUTES * 60_000, jobId: `hold:${hold.id}` },
+            { delay: SLOT_HOLD_MINUTES * 60_000, jobId: `hold-${hold.id}` },
         );
 
         return hold;
     }
 
     async confirmHold(holdId: string, appointmentId: string) {
-        await this.queue.remove(`hold:${holdId}`).catch(() => null);
+        await this.queue.remove(`hold-${holdId}`).catch(() => null);
         return this.prisma.client.slotHold.update({
             where: { id: holdId },
             data: { appointmentId },
@@ -39,7 +39,7 @@ export class SlotHoldService {
     }
 
     async releaseHold(holdId: string) {
-        await this.queue.remove(`hold:${holdId}`).catch(() => null);
+        await this.queue.remove(`hold-${holdId}`).catch(() => null);
         await this.prisma.client.slotHold.deleteMany({ where: { id: holdId } });
     }
 }
