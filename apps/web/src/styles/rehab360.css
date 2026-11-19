@@ -301,18 +301,20 @@ a { color: var(--green); }
 /* ── Patient / Pro shell (responsive) ────────────────────────────────────── */
 /*
  * Mobile layout (< 768px):
- *   flex column: topbar → scrollable content → bottom nav bar
- *   The shell is exactly 100dvh; only app-content scrolls.
+ *   app-shell is position:fixed to the viewport (prevents outer-page scroll),
+ *   flex column: brand-strip → topbar → scrollable content → fixed bottom nav.
  *
  * Desktop layout (≥ 768px):
- *   flex row: [left sidebar nav] [scrollable content]
- *   order: -1 on .tabs moves it before .app-content despite DOM order.
+ *   app-shell STAYS flex-direction:column so brand-strip remains at the top.
+ *   app-shell-inner becomes a flex ROW: [left sidebar 220px] [scrollable content].
+ *   order:-1 on .tabs moves the sidebar before app-content in the DOM order.
  */
 .app-shell {
-  height: 100dvh;
+  position: fixed;      /* anchor to viewport — outer page never scrolls */
+  inset: 0;
   background: var(--ground);
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* always column: strip → inner */
   font-family: 'Figtree', system-ui, sans-serif;
   color: var(--navy);
   overflow: hidden;
@@ -367,19 +369,22 @@ a { color: var(--green); }
 
 /* Desktop: sidebar + content side by side */
 @media (min-width: 768px) {
-  .app-shell { flex-direction: row; overflow: visible; }
-  .app-shell-inner { max-width: 100%; flex-direction: row; min-height: 0; }
+  /* app-shell stays flex-direction:column — brand-strip stays at top */
+  /* Only app-shell-inner becomes a row to place sidebar beside content */
+  .app-shell-inner {
+    max-width: 100%;
+    margin: 0;
+    flex-direction: row;
+    overflow: hidden;
+  }
   .app-topbar { display: none; }
-  /* Nav becomes left sidebar — order: -1 pulls it before app-content */
+  /* Nav becomes left sidebar — order:-1 pulls it before app-content */
   .tabs {
     flex-direction: column;
     align-items: stretch;
-    position: sticky;
-    top: 0;
-    height: 100dvh;
-    min-height: 0;
     width: 220px;
     flex-shrink: 0;
+    height: 100%;
     border-top: none;
     border-right: 1px solid var(--line);
     padding: 20px 12px;
