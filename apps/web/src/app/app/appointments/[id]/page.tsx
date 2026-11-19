@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch, ApiError } from "@/lib/api";
-import { ConfirmPaymentButton } from "../confirm-payment-button";
+import { AutoConfirmPayment } from "../auto-confirm-payment";
 
 type AppointmentDetail = {
     id: string;
@@ -109,15 +109,8 @@ export default async function PatientAppointmentDetailPage({
 
                 {pendingPayment && (
                     <Card>
-                        <p className="text-sm font-medium text-amber-700">Payment received — confirming…</p>
-                        <p className="mt-1 text-sm text-text-muted">
-                            Your payment went through. Tap below to confirm your booking.
-                        </p>
-                        {appt.payment?.providerRef && (
-                            <div className="mt-3">
-                                <ConfirmPaymentButton reference={appt.payment.providerRef} />
-                            </div>
-                        )}
+                        <p className="text-sm font-medium text-amber-700">Payment received</p>
+                        <AutoConfirmPayment appointmentId={appt.id} />
                     </Card>
                 )}
 

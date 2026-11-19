@@ -20,6 +20,11 @@ export class PaymentsController {
         return this.payments.confirmFromCallback(reference);
     }
 
+    @Get("appointments/:appointmentId/confirm")
+    confirmByAppointment(@Param("appointmentId") appointmentId: string) {
+        return this.payments.confirmByAppointmentId(appointmentId);
+    }
+
     @UseGuards(RolesGuard)
     @Roles("PHYSIO")
     @Get("me/wallet")

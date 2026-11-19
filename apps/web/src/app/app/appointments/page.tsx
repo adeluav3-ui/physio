@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
-import { ConfirmPaymentButton } from "./confirm-payment-button";
+import { AutoConfirmPayment } from "./auto-confirm-payment";
 
 type Appointment = {
     id: string;
@@ -10,7 +10,7 @@ type Appointment = {
     status: string;
     mode: string;
     physio: { user: { name: string } };
-    payment: { status: string; providerRef: string | null } | null;
+    payment: { status: string } | null;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -81,15 +81,15 @@ export default async function PatientAppointmentsPage() {
                                     {STATUS_LABEL[a.status] ?? a.status}
                                 </span>
                             </div>
-                            <div className="mt-3 flex flex-wrap items-center gap-3">
+                            <div className="mt-3">
                                 <Link
                                     href={`/app/appointments/${a.id}`}
                                     className="text-sm font-medium text-primary-600 underline"
                                 >
                                     View details
                                 </Link>
-                                {a.status === "PENDING_PAYMENT" && a.payment?.providerRef && (
-                                    <ConfirmPaymentButton reference={a.payment.providerRef} />
+                                {a.status === "PENDING_PAYMENT" && (
+                                    <AutoConfirmPayment appointmentId={a.id} />
                                 )}
                             </div>
                         </Card>

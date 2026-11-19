@@ -217,6 +217,40 @@ export class PaymentsService {
         return { status: "CONFIRMED" };
     }
 
+    async confirmByAppointmentId(appointmentId: string) {
+        const payment = await this.prisma.client.payment.findUnique({
+            where: { appointmentId },
+            select: { id: true, status: true, providerRef: true },
+        });
+        if (!payment) throw new NotFoundException({ code: "NOT_FOUND", message: "Payment not found" });
+
+        if (payment.status !== "PENDING") {
+            const appt = await this.prisma.client.appointment.findUnique({
+                where: { id: appointmentId },
+                select: { status: true },
+            });
+            return { status: appt?.status ?? "UNKNOWN" };
+        }
+
+        if (!payment.providerRef) {
+            throw new NotFoundException({ code: "NO_REFERENCE", message: "No payment reference on record" });
+        }
+
+        let result;
+        try {
+            result = await this.provider.verifyCharge(payment.providerRef);
+        } catch {
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Could not verify payment" });
+        }
+
+        if (result.status !== "success") {
+            return { status: "PENDING_PAYMENT" };
+        }
+
+        this.events.emit("payment.succeeded", { appointmentId, reference: payment.providerRef });
+        return { status: "CONFIRMED" };
+    }
+
     async getWallet(physioId: string) {
         const [payouts, withdrawals] = await Promise.all([
             this.prisma.client.ledgerEntry.findMany({
