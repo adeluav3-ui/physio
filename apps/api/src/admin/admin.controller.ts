@@ -340,6 +340,15 @@ export class AdminController {
         return { ok: true };
     }
 
+    @Post("exercises/bulk-approve-animated")
+    async bulkApproveAnimated() {
+        const result = await this.prisma.client.exercise.updateMany({
+            where: { poseKey: { not: null }, clinicalReview: false },
+            data: { clinicalReview: true },
+        });
+        return { approved: result.count };
+    }
+
     // ── Animation overrides ───────────────────────────────────────────────────
 
     @Put("exercises/:id/animation")

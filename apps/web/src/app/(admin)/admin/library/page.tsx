@@ -103,6 +103,7 @@ export default function AdminLibraryPage() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState<string | null>(null);
     const [err, setErr] = useState("");
+    const [approving, setApproving] = useState(false);
     const formRef = useRef<HTMLDivElement>(null);
 
     async function load() {
@@ -223,6 +224,23 @@ export default function AdminLibraryPage() {
         setDeleting(null);
     }
 
+    async function handleBulkApprove() {
+        const unreviewed = exercises.filter(e => e.poseKey && !e.clinicalReview);
+        if (unreviewed.length === 0) return;
+        if (!confirm(`Mark all ${unreviewed.length} animated exercise${unreviewed.length !== 1 ? "s" : ""} as clinically reviewed?`)) return;
+        setApproving(true);
+        try {
+            const r = await fetch("/api/proxy/admin/exercises/bulk-approve-animated", { method: "POST" });
+            if (!r.ok) throw new Error("Request failed");
+            const { approved } = await r.json() as { approved: number };
+            setExercises(prev => prev.map(e => e.poseKey ? { ...e, clinicalReview: true } : e));
+            alert(`${approved} exercise${approved !== 1 ? "s" : ""} approved.`);
+        } catch {
+            alert("Could not bulk-approve. Please try again.");
+        }
+        setApproving(false);
+    }
+
     // ── Filter ──
     const activeTab = REGION_TABS.find(t => t.label === regionTab)!;
     const visible = exercises.filter(ex => {
@@ -271,7 +289,23 @@ export default function AdminLibraryPage() {
                         {exercises.length} exercises · {exercises.filter(e => e.poseKey).length} animated
                     </p>
                 </div>
-                <button type="button" className="btn" onClick={openCreate}>+ Add exercise</button>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {(() => {
+                        const unreviewed = exercises.filter(e => e.poseKey && !e.clinicalReview).length;
+                        return unreviewed > 0 ? (
+                            <button
+                                type="button"
+                                className="btn btn2"
+                                onClick={handleBulkApprove}
+                                disabled={approving}
+                                style={{ borderColor: "#1b7d0e", color: "#1b7d0e" }}
+                            >
+                                {approving ? "Approving…" : `✓ Approve all animated (${unreviewed})`}
+                            </button>
+                        ) : null;
+                    })()}
+                    <button type="button" className="btn" onClick={openCreate}>+ Add exercise</button>
+                </div>
             </div>
 
             {/* Region tabs + search */}
