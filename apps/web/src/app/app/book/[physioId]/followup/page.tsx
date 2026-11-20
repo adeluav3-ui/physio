@@ -220,7 +220,7 @@ export default function FollowUpBookPage() {
                         Buy 3, 5 or 10 consecutive sessions at ₦5,000 each — no extra service fee per session.
                     </div>
                     <a
-                        href={`/app/packages/${params.physioId}`}
+                        href={`/app/packages/buy/${params.physioId}`}
                         style={{ font: "600 13px 'Figtree',sans-serif", color: "#1340a8", textDecoration: "none" }}
                     >
                         View packages →

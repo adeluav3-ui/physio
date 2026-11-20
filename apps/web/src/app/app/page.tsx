@@ -147,7 +147,7 @@ export default async function PatientDashboard() {
                                         Book follow-up
                                     </Link>
                                     <Link
-                                        href={`/app/packages/${s.physio.userId}`}
+                                        href={`/app/packages/buy/${s.physio.userId}`}
                                         style={{ flex: 1, minWidth: 120, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 40, borderRadius: 10, background: "#fff", border: `1px solid ${BORDER}`, color: NAV, font: "600 14px 'Figtree',sans-serif", textDecoration: "none" }}
                                     >
                                         View packages

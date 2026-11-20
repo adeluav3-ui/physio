@@ -6,9 +6,9 @@ import { useRouter, useParams } from "next/navigation";
 const SESSION_PRICE_NAIRA = 5_000;
 
 const PACKAGES = [
-    { size: 3 as const, label: "Starter", sessions: 3, totalNaira: 3 * SESSION_PRICE_NAIRA, saving: null },
-    { size: 5 as const, label: "Popular", sessions: 5, totalNaira: 5 * SESSION_PRICE_NAIRA, saving: null },
-    { size: 10 as const, label: "Best value", sessions: 10, totalNaira: 10 * SESSION_PRICE_NAIRA, saving: null },
+    { size: 3 as const, label: "Starter", sessions: 3, totalNaira: 3 * SESSION_PRICE_NAIRA },
+    { size: 5 as const, label: "Popular", sessions: 5, totalNaira: 5 * SESSION_PRICE_NAIRA },
+    { size: 10 as const, label: "Best value", sessions: 10, totalNaira: 10 * SESSION_PRICE_NAIRA },
 ] as const;
 
 type Pro = {
@@ -31,20 +31,21 @@ const DISCIPLINE_LABELS: Record<string, string> = {
     MASSAGE_THERAPY: "Massage therapist",
 };
 
-export default function PackagesPage() {
+export default function PackagesBuyPage() {
     const router = useRouter();
-    const params = useParams<{ physioId: string }>();
+    const params = useParams<{ id: string }>();
+    const physioId = params.id;
     const [pro, setPro] = useState<Pro | null>(null);
     const [selected, setSelected] = useState<3 | 5 | 10>(5);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch(`/api/proxy/physios/${params.physioId}`)
+        fetch(`/api/proxy/physios/${physioId}`)
             .then(r => r.ok ? r.json() : null)
             .then(data => setPro(data))
             .catch(() => null);
-    }, [params.physioId]);
+    }, [physioId]);
 
     async function onCheckout() {
         setLoading(true);
@@ -53,7 +54,7 @@ export default function PackagesPage() {
             const res = await fetch("/api/proxy/packages/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ physioId: params.physioId, size: selected }),
+                body: JSON.stringify({ physioId, size: selected }),
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -88,7 +89,6 @@ export default function PackagesPage() {
                 </p>
             </div>
 
-            {/* Professional card */}
             {pro && (
                 <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 14, display: "flex", gap: 12, alignItems: "center" }}>
                     <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#cfe3ee", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", font: "700 16px 'Figtree',sans-serif", color: "#07506b" }}>
@@ -103,7 +103,6 @@ export default function PackagesPage() {
                 </div>
             )}
 
-            {/* Package options */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {PACKAGES.map(p => {
                     const isSelected = p.size === selected;
@@ -122,7 +121,6 @@ export default function PackagesPage() {
                                 justifyContent: "space-between",
                                 cursor: "pointer",
                                 textAlign: "left",
-                                transition: "background 0.15s, border-color 0.15s",
                             }}
                         >
                             <div>
@@ -144,7 +142,6 @@ export default function PackagesPage() {
                 })}
             </div>
 
-            {/* Summary */}
             <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 14, padding: 16, font: "500 15px 'Figtree',sans-serif", display: "grid", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span>{pkg.sessions} × follow-up sessions</span>
