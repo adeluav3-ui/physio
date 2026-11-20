@@ -1,12 +1,12 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import { Job } from "bullmq";
-import { INACTIVITY_NUDGE_DAYS } from "@physio/shared";
+import { INACTIVITY_NUDGE_DAYS, SESSION_HARD_END_MIN } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { MailService } from "../mail/mail.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { ReferralsService } from "../referrals/referrals.service.js";
-import { JOB_INACTIVITY_NUDGE, JOB_PAYMENT_RELEASE, JOB_REFERRAL_STALL, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
+import { JOB_INACTIVITY_NUDGE, JOB_NO_SHOW_SWEEP, JOB_PAYMENT_RELEASE, JOB_REFERRAL_STALL, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
 
 @Processor(REMINDERS_QUEUE)
 export class RemindersProcessor extends WorkerHost {
@@ -30,12 +30,35 @@ export class RemindersProcessor extends WorkerHost {
             await this.handlePaymentRelease(job as Job<{ appointmentId: string }>);
         } else if (job.name === JOB_REFERRAL_STALL) {
             await this.handleReferralStall();
+        } else if (job.name === JOB_NO_SHOW_SWEEP) {
+            await this.handleNoShowSweep();
         }
     }
 
     private async handleReferralStall() {
         const count = await this.referrals.markStalled();
         this.logger.log(`Referral stall check: expired ${count} referral(s)`);
+    }
+
+    private async handleNoShowSweep() {
+        // Any CONFIRMED appointment whose session window (endsAt + hard-end grace) is in
+        // the past was missed by both parties. Mark it NO_SHOW and credit the patient's wallet.
+        const cutoff = new Date(Date.now() - SESSION_HARD_END_MIN * 60_000);
+        const missed = await this.prisma.client.appointment.findMany({
+            where: { status: "CONFIRMED", endsAt: { lt: cutoff } },
+            select: { id: true },
+        });
+
+        let refunded = 0;
+        for (const appt of missed) {
+            // refund() marks the appointment REFUNDED and credits the patient wallet.
+            await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
+            refunded++;
+        }
+
+        if (refunded > 0) {
+            this.logger.log(`No-show sweep: marked ${refunded} appointment(s) NO_SHOW and credited wallets`);
+        }
     }
 
     private async handlePaymentRelease(job: Job<{ appointmentId: string }>) {

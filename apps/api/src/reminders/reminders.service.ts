@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { JOB_INACTIVITY_NUDGE, JOB_PAYMENT_RELEASE, JOB_REFERRAL_STALL, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
+import { JOB_INACTIVITY_NUDGE, JOB_NO_SHOW_SWEEP, JOB_PAYMENT_RELEASE, JOB_REFERRAL_STALL, JOB_SESSION_REMINDER, REMINDERS_QUEUE } from "./reminders.constants.js";
 
 @Injectable()
 export class RemindersService {
@@ -58,6 +58,23 @@ export class RemindersService {
             );
         } catch (err) {
             this.logger.warn(`Could not schedule payment release for ${appointmentId}: ${(err as Error).message}`);
+        }
+    }
+
+    async scheduleNoShowSweep() {
+        try {
+            await this.queue.add(
+                JOB_NO_SHOW_SWEEP,
+                {},
+                {
+                    jobId: "no-show-sweep",
+                    repeat: { every: 30 * 60 * 1000 }, // every 30 minutes
+                    removeOnComplete: true,
+                    removeOnFail: 50,
+                },
+            );
+        } catch (err) {
+            this.logger.warn(`Could not register no-show sweep job: ${(err as Error).message}`);
         }
     }
 

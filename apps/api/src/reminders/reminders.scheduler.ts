@@ -29,6 +29,8 @@ export class RemindersScheduler implements OnApplicationBootstrap {
             await this.reminders.scheduleInactivityNudge();
             // Register daily referral stall check.
             await this.reminders.scheduleReferralStallCheck();
+            // Register 30-minute no-show sweep to auto-refund missed sessions.
+            await this.reminders.scheduleNoShowSweep();
         } catch (err) {
             this.logger.warn(
                 `Boot reminder reschedule skipped — Redis unavailable: ${(err as Error).message}`,
