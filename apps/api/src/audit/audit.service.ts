@@ -21,7 +21,8 @@ export type AuditAction =
     | "booking.cancel"
     | "booking.dispute"
     | "note.sign"
-    | "note.addendum";
+    | "note.addendum"
+    | "wallet.deposit";
 
 @Injectable()
 export class AuditService {

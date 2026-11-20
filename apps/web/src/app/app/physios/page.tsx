@@ -135,7 +135,7 @@ type Filters = {
 const DEFAULT_FILTERS: Filters = { language: "", mode: "", specialty: "" };
 
 const LANGUAGES = ["English", "Yoruba", "Igbo", "Hausa"];
-const MODES = [{ value: "VIDEO", label: "Video" }, { value: "CHAT", label: "Chat" }, { value: "HOME", label: "In person" }];
+const MODES = [{ value: "VIDEO", label: "Video" }, { value: "CHAT", label: "Chat" }];
 const SPECIALTIES = ["Shoulder", "Back and neck", "Stroke", "Children", "Sports", "Post-op", "Neuro"];
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -289,7 +289,6 @@ function FindPhysioInner() {
                                             {!hasSlot && <span style={S.chip(false, "warn")}>No open times</span>}
                                             {p.sessionTypes.includes("VIDEO") && <span style={S.chip()}>Video</span>}
                                             {p.sessionTypes.includes("CHAT") && <span style={S.chip()}>Chat</span>}
-                                            {p.sessionTypes.includes("HOME") && <span style={S.chip()}>In person</span>}
                                         </div>
                                     </div>
                                 </div>

@@ -56,7 +56,7 @@ export default function BookPage() {
     const [slots, setSlots] = useState<Slot[]>([]);
     const [pro, setPro] = useState<Pro | null>(null);
     const [intake, setIntake] = useState<LatestIntake | undefined>(undefined);
-    const [sessionType, setSessionType] = useState<"VIDEO" | "HOME" | "CHAT">("VIDEO");
+    const [sessionType, setSessionType] = useState<"VIDEO" | "CHAT">("VIDEO");
     const [selectedDay, setSelectedDay] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function BookPage() {
                     setSelectedDay(firstDay);
                     // Auto-select the first available mode
                     const firstMode = all[0]!.mode;
-                    if (firstMode !== "ANY") setSessionType(firstMode);
+                    if (firstMode !== "ANY" && firstMode !== "HOME") setSessionType(firstMode);
                 }
             })
             .catch(e => setError((e as Error).message));
@@ -101,8 +101,8 @@ export default function BookPage() {
     const selectedSlot = timesForDay.find(s => s.startsAt === selectedTime) ?? null;
 
     const availableModes = Array.from(new Set(
-        slots.flatMap(s => s.mode === "ANY" ? ["VIDEO", "HOME", "CHAT"] : [s.mode])
-    )) as ("VIDEO" | "HOME" | "CHAT")[];
+        slots.flatMap(s => s.mode === "ANY" ? ["VIDEO", "CHAT"] : s.mode !== "HOME" ? [s.mode] : [])
+    )) as ("VIDEO" | "CHAT")[];
     const hasMultipleModes = availableModes.length > 1;
 
     // This page always books an ASSESSMENT (first consult) → ₦10,000
@@ -204,9 +204,6 @@ export default function BookPage() {
                         )}
                         {availableModes.includes("CHAT") && (
                             <button type="button" className={`slot${sessionType === "CHAT" ? " on" : ""}`} onClick={() => { setSessionType("CHAT"); setSelectedDay(null); setSelectedTime(null); }}>Chat</button>
-                        )}
-                        {availableModes.includes("HOME") && (
-                            <button type="button" className={`slot${sessionType === "HOME" ? " on" : ""}`} onClick={() => { setSessionType("HOME"); setSelectedDay(null); setSelectedTime(null); }}>In-person visit</button>
                         )}
                     </div>
                 </div>

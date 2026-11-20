@@ -59,7 +59,7 @@ export class ProgramsController {
     }
 
     @Delete(":id/items/:itemId")
-    @Roles("PHYSIO")
+    @Roles("PHYSIO", "ADMIN")
     removeItem(
         @CurrentUser() user: SessionUser,
         @Param("id") id: string,

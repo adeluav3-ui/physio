@@ -245,6 +245,7 @@ model PatientProfile {
   goalPlans         GoalPlan[]
   referralsAsPatient Referral[]
   packages           Package[]
+  walletEntries      WalletEntry[]
 }
 
 // ── Caregiver / Dependents ────────────────
@@ -862,4 +863,27 @@ model LicensingBody {
 
   @@unique([discipline, name, country])
   @@index([discipline, active])
+}
+
+// ── Patient wallet ────────────────────────
+// Append-only ledger of wallet credits and debits for each patient.
+// Credits: refunds, manual top-ups.  Debits: session payments using wallet credit.
+model WalletEntry {
+  id            String          @id @default(uuid())
+  patientId     String
+  amountKobo    Int             // positive = credit, negative = debit
+  type          WalletEntryType
+  ref           String?         // Paystack reference (deposits) or appointmentId (refunds/debits)
+  note          String?
+  createdAt     DateTime        @default(now())
+
+  patient       PatientProfile  @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+
+  @@index([patientId, createdAt])
+}
+
+enum WalletEntryType {
+  DEPOSIT
+  REFUND_CREDIT
+  SESSION_DEBIT
 }

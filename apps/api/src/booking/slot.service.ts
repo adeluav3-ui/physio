@@ -82,14 +82,13 @@ export class SlotService {
         const slots: Slot[] = [];
 
         for (let d = 0; d < daysAhead; d++) {
-            const day = new Date();
-            day.setHours(0, 0, 0, 0);
-            day.setDate(day.getDate() + d);
+            const now2 = new Date();
+            const day = new Date(Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate() + d));
 
             const dateKey = day.toISOString().slice(0, 10);
             if (daysOffSet.has(dateKey)) continue;
 
-            const weekday = day.getDay();
+            const weekday = day.getUTCDay();
             const todayBlocks = availability.filter((a) => a.weekday === weekday);
 
             for (const block of todayBlocks) {
@@ -98,8 +97,7 @@ export class SlotService {
                     m + sessionMin <= block.endMinute;
                     m += stepMin
                 ) {
-                    const startsAt = new Date(day);
-                    startsAt.setMinutes(m);
+                    const startsAt = new Date(day.getTime() + m * 60_000);
                     const endsAt = new Date(startsAt.getTime() + sessionMin * 60_000);
 
                     if (startsAt.getTime() - now < MIN_NOTICE_MS) continue;

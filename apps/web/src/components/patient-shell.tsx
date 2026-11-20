@@ -19,6 +19,9 @@ const IC_VISITS = (
 const IC_ME = (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>
 );
+const IC_WALLET = (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 14h.01M2 10h20"/></svg>
+);
 const IC_SIGNOUT = (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -30,6 +33,7 @@ const TABS = [
     { href: "/app/plan",         label: "Plan",    icon: IC_PLAN },
     { href: "/app/messages",     label: "Messages",icon: IC_MSG },
     { href: "/app/appointments", label: "Visits",  icon: IC_VISITS },
+    { href: "/app/wallet",       label: "Wallet",  icon: IC_WALLET },
     { href: "/app/profile",      label: "Me",      icon: IC_ME },
 ] as const;
 
@@ -39,7 +43,7 @@ export default function PatientShell({ children }: { children: React.ReactNode }
     const isActive = (href: string) =>
         href === "/app" ? pathname === "/app" : pathname.startsWith(href);
 
-    const bare = ["/app/onboarding", "/app/intake", "/app/session", "/app/triage", "/app/book", "/app/payments"].some(p => pathname.startsWith(p));
+    const bare = ["/app/onboarding", "/app/intake", "/app/session", "/app/triage", "/app/book", "/app/payments", "/app/wallet/callback"].some(p => pathname.startsWith(p));
     if (bare) return <>{children}</>;
 
     return (

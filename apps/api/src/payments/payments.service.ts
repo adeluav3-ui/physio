@@ -4,6 +4,7 @@ import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
+import { WalletService } from "../wallet/wallet.service.js";
 
 @Injectable()
 export class PaymentsService {
@@ -14,6 +15,7 @@ export class PaymentsService {
         private readonly prisma: PrismaService,
         private readonly audit: AuditService,
         private readonly events: EventEmitter2,
+        private readonly walletSvc: WalletService,
     ) { }
 
     async initializeCharge(input: InitChargeInput) {
@@ -130,20 +132,10 @@ export class PaymentsService {
     async refund(appointmentId: string, reason: string, adminId: string) {
         const payment = await this.prisma.client.payment.findUnique({
             where: { appointmentId },
+            include: { appointment: { select: { patientId: true } } },
         });
-        if (!payment || !payment.providerRef) return;
+        if (!payment) return;
         if (payment.status === "REFUNDED") return;
-
-        let result;
-        try {
-            result = await this.provider.refund({ reference: payment.providerRef });
-        } catch (err) {
-            this.logger.error(`refund failed for appointment ${appointmentId}`, err);
-            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Payment service is unavailable" });
-        }
-        if (result.status !== "success") {
-            throw new Error(`Refund failed: ${JSON.stringify(result.raw)}`);
-        }
 
         await this.prisma.client.$transaction(async (tx) => {
             await tx.payment.update({
@@ -162,6 +154,13 @@ export class PaymentsService {
             amountKobo: -payment.amountKobo,
             note: `Refund: ${reason}`,
         });
+
+        // Credit the patient's on-platform wallet — refunds stay as session credits.
+        await this.walletSvc.creditRefund(
+            payment.appointment.patientId,
+            payment.amountKobo,
+            appointmentId,
+        );
 
         await this.audit.record({
             actorId: adminId,
