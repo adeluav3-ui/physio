@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/session";
 import { apiFetch } from "@/lib/api";
-import { SignOutButton } from "@/components/sign-out-button";
 
 type Appointment = {
     id: string;
@@ -84,12 +83,9 @@ export default async function PatientDashboard() {
     return (
         <div style={{ padding: "24px 20px", fontFamily: "'Figtree', system-ui, sans-serif", color: NAV, maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", gap: 14 }}>
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                    <div style={{ font: "500 14px 'Figtree', sans-serif", color: MUTED }}>{greeting}</div>
-                    <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your day</h1>
-                </div>
-                <SignOutButton />
+            <div>
+                <div style={{ font: "500 14px 'Figtree', sans-serif", color: MUTED }}>{greeting}</div>
+                <h1 style={{ font: "700 26px 'Figtree', sans-serif", margin: 0 }}>Your day</h1>
             </div>
 
             {/* Profile incomplete nudge */}
