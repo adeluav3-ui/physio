@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FileUpload } from "@/components/file-upload";
 
 type Profile = {
     userId: string;
@@ -30,6 +31,7 @@ export default function ProProfilePage() {
     const [error, setError] = useState<string | null>(null);
 
     // Editable fields
+    const [photoUrl, setPhotoUrl] = useState("");
     const [bio, setBio] = useState("");
     const [specialties, setSpecialties] = useState("");
     const [languages, setLanguages] = useState<string[]>([]);
@@ -45,6 +47,7 @@ export default function ProProfilePage() {
             .then((p: Profile | null) => {
                 if (!p) return;
                 setProfile(p);
+                setPhotoUrl(p.photoUrl ?? "");
                 setBio(p.bio ?? "");
                 setSpecialties((p.specialties ?? []).join(", "));
                 setLanguages(p.languages ?? []);
@@ -83,6 +86,7 @@ export default function ProProfilePage() {
                     languages,
                     serviceArea: serviceArea.trim(),
                     sessionTypes,
+                    ...(photoUrl ? { photoUrl } : {}),
                 }),
             });
             if (!r1.ok) {
@@ -161,6 +165,22 @@ export default function ProProfilePage() {
                             transition: "left .2s", display: "block",
                         }} />
                     </button>
+                </div>
+
+                {/* Profile photo */}
+                <div className="card">
+                    <div className="flabel">Profile photo</div>
+                    <p className="muted" style={{ font: "400 13px 'Figtree',sans-serif", margin: "0 0 12px" }}>
+                        Shown to patients on your public profile and in search results.
+                    </p>
+                    <FileUpload
+                        label=""
+                        accept=".jpg,.jpeg,.png,.webp"
+                        value={photoUrl}
+                        onChange={setPhotoUrl}
+                        preview={true}
+                        hint="JPG, PNG or WEBP · max 8 MB"
+                    />
                 </div>
 
                 {/* Bio */}
