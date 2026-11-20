@@ -4,6 +4,7 @@ import {
     Injectable,
     NotFoundException,
 } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import type { SessionUser } from "@physio/shared";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
+import { PaymentsService } from "../payments/payments.service.js";
 
 @Injectable()
 export class PackagesService {
@@ -20,6 +22,7 @@ export class PackagesService {
         private readonly prisma: PrismaService,
         private readonly audit: AuditService,
         private readonly events: EventEmitter2,
+        private readonly payments: PaymentsService,
     ) {}
 
     async purchase(user: SessionUser, physioId: string, size: 3 | 5 | 10) {
@@ -195,6 +198,94 @@ export class PackagesService {
         });
 
         return session;
+    }
+
+    async checkout(user: SessionUser, physioId: string, size: 3 | 5 | 10) {
+        if (user.role !== "PATIENT") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Patient only" });
+        }
+        if (!(PACKAGE_SIZES as readonly number[]).includes(size)) {
+            throw new BadRequestException({ code: "INVALID_PACKAGE_SIZE", message: "Invalid package size" });
+        }
+
+        const physio = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: physioId },
+            include: { user: true },
+        });
+        if (!physio || physio.licenceStatus !== "VERIFIED") {
+            throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found or not verified" });
+        }
+
+        const priceKobo = size * FOLLOW_UP_PRICE_KOBO;
+        const expiresAt = new Date(Date.now() + PACKAGE_EXPIRY_DAYS * 24 * 3600 * 1000);
+        const reference = `pkg-${randomUUID()}`;
+
+        const pkg = await this.prisma.client.package.create({
+            data: {
+                patientId: user.id,
+                physioId,
+                size,
+                remaining: 0,
+                priceKobo,
+                status: "PENDING_PAYMENT",
+                expiresAt,
+            },
+        });
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const init = await this.payments.initializeCharge({
+            email: user.email,
+            amountKobo: priceKobo,
+            currency: "NGN",
+            reference,
+            callbackUrl: `${appUrl}/app/packages/callback?packageId=${pkg.id}&ref=${reference}`,
+            metadata: { packageId: pkg.id, physioId, size },
+        });
+
+        // Store the reference on the package so we can verify on callback
+        await this.prisma.client.package.update({
+            where: { id: pkg.id },
+            data: { status: `PENDING_PAYMENT:${reference}` },
+        });
+
+        return { authorizationUrl: init.authorizationUrl, packageId: pkg.id };
+    }
+
+    async confirmCheckout(user: SessionUser, packageId: string, reference: string) {
+        if (user.role !== "PATIENT") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Patient only" });
+        }
+
+        const pkg = await this.prisma.client.package.findUnique({ where: { id: packageId } });
+        if (!pkg) throw new NotFoundException({ code: "NOT_FOUND", message: "Package not found" });
+        if (pkg.patientId !== user.id) {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your package" });
+        }
+
+        // Already active — idempotent return
+        if (pkg.status === "ACTIVE") {
+            return { status: "ACTIVE", packageId: pkg.id };
+        }
+
+        const result = await this.payments.verifyRaw(reference);
+        if (result !== "success") {
+            return { status: "PENDING" };
+        }
+
+        const expiresAt = new Date(Date.now() + PACKAGE_EXPIRY_DAYS * 24 * 3600 * 1000);
+        await this.prisma.client.package.update({
+            where: { id: packageId },
+            data: { status: "ACTIVE", remaining: pkg.size, expiresAt },
+        });
+
+        await this.audit.record({
+            actorId: user.id,
+            action: "record.update",
+            entity: "Package",
+            entityId: packageId,
+        });
+
+        return { status: "ACTIVE", packageId: pkg.id };
     }
 
     async expireStale(): Promise<void> {

@@ -30,6 +30,12 @@ export class BookingController {
         return this.booking.book(user, body);
     }
 
+    @Get("my-specialists")
+    @Roles("PATIENT")
+    getMySpecialists(@CurrentUser() user: SessionUser) {
+        return this.booking.getMySpecialists(user);
+    }
+
     @Get("appointments")
     listMine(
         @CurrentUser() user: SessionUser,

@@ -12,6 +12,32 @@ type Appointment = {
 
 type TodaySummary = { doneToday: number; total: number; streak: number };
 
+type Specialist = {
+    physio: {
+        userId: string;
+        user: { name: string };
+        discipline: string;
+        photoUrl: string | null;
+        sessionTypes: string[];
+    };
+    lastVisit: string;
+    activePackage: { id: string; remaining: number; size: number; expiresAt: string } | null;
+    nextAvailableSlot: string | null;
+};
+
+const DISCIPLINE_LABELS: Record<string, string> = {
+    PHYSIOTHERAPY: "Physiotherapist",
+    OCCUPATIONAL_THERAPY: "Occupational therapist",
+    SPEECH_LANGUAGE_PATHOLOGY: "Speech therapist",
+    PROSTHETICS_ORTHOTICS: "Prosthetist / orthotist",
+    AUDIOLOGY: "Audiologist",
+    CHIROPRACTIC: "Chiropractor",
+    DIETETICS: "Dietitian",
+    PSYCHOLOGY: "Psychologist",
+    SPORTS_MEDICINE: "Sports medicine",
+    MASSAGE_THERAPY: "Massage therapist",
+};
+
 const NAV = "#022449";
 const GREEN = "#1b7d0e";
 const MUTED = "#4f6478";
@@ -23,12 +49,14 @@ export default async function PatientDashboard() {
     let nextAppointment: Appointment | null = null;
     let profileComplete = true;
     let today: TodaySummary = { doneToday: 0, total: 0, streak: 0 };
+    let specialists: Specialist[] = [];
 
     try {
-        const [appointments, profile, todayData] = await Promise.allSettled([
+        const [appointments, profile, todayData, specialistsData] = await Promise.allSettled([
             apiFetch<Appointment[]>("/booking/appointments"),
             apiFetch<{ dob?: string; sex?: string; location?: string; emergencyContact?: string }>("/patients/me"),
             apiFetch<TodaySummary>("/programs/today"),
+            apiFetch<Specialist[]>("/booking/my-specialists"),
         ]);
 
         if (appointments.status === "fulfilled") {
@@ -42,6 +70,9 @@ export default async function PatientDashboard() {
         }
         if (todayData.status === "fulfilled") {
             today = todayData.value ?? today;
+        }
+        if (specialistsData.status === "fulfilled") {
+            specialists = specialistsData.value ?? [];
         }
     } catch { }
 
@@ -73,6 +104,71 @@ export default async function PatientDashboard() {
                     </Link>
                 </div>
             )}
+
+            {/* My Specialists */}
+            {specialists.length > 0 && (
+                <div>
+                    <div style={{ font: "700 17px 'Figtree', sans-serif", marginBottom: 10 }}>My specialist{specialists.length > 1 ? "s" : ""}</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {specialists.map((s) => (
+                            <div key={s.physio.userId} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
+                                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+                                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#cfe3ee", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", font: "700 18px 'Figtree',sans-serif", color: "#07506b" }}>
+                                        {s.physio.photoUrl
+                                            ? <img src={s.physio.photoUrl} alt={s.physio.user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            : s.physio.user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style={{ font: "700 15px 'Figtree',sans-serif" }}>{s.physio.user.name}</div>
+                                        <div style={{ font: "400 13px 'Figtree',sans-serif", color: MUTED }}>
+                                            {DISCIPLINE_LABELS[s.physio.discipline] ?? s.physio.discipline}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {s.activePackage && (
+                                    <div style={{ background: "#f0f8f0", borderRadius: 10, padding: "8px 12px", marginBottom: 10, font: "500 13px 'Figtree',sans-serif", color: "#1b7d0e" }}>
+                                        Package: {s.activePackage.remaining} of {s.activePackage.size} sessions remaining
+                                        {" · "}expires {new Date(s.activePackage.expiresAt).toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
+                                    </div>
+                                )}
+
+                                {s.nextAvailableSlot && (
+                                    <div style={{ font: "400 13px 'Figtree',sans-serif", color: MUTED, marginBottom: 10 }}>
+                                        Next available: {new Date(s.nextAvailableSlot).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                    </div>
+                                )}
+
+                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                    <Link
+                                        href={`/app/book/${s.physio.userId}/followup`}
+                                        style={{ flex: 1, minWidth: 120, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 40, borderRadius: 10, background: NAV, color: "#fff", font: "600 14px 'Figtree',sans-serif", textDecoration: "none" }}
+                                    >
+                                        Book follow-up
+                                    </Link>
+                                    <Link
+                                        href={`/app/packages/${s.physio.userId}`}
+                                        style={{ flex: 1, minWidth: 120, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 40, borderRadius: 10, background: "#fff", border: `1px solid ${BORDER}`, color: NAV, font: "600 14px 'Figtree',sans-serif", textDecoration: "none" }}
+                                    >
+                                        View packages
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* New problem intake nudge */}
+            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
+                <p style={{ font: "600 15px 'Figtree',sans-serif", margin: 0 }}>New problem?</p>
+                <p style={{ font: "400 14px 'Figtree',sans-serif", color: MUTED, margin: "4px 0 12px" }}>
+                    Report a new complaint and get matched to a specialist.
+                </p>
+                <Link href="/app/intake/complaint" style={{ font: "600 14px 'Figtree',sans-serif", color: GREEN }}>
+                    Start new intake
+                </Link>
+            </div>
 
             {/* Next session card */}
             {nextAppointment ? (

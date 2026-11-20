@@ -34,6 +34,55 @@ export class BookingService {
         });
     }
 
+    async getMySpecialists(user: SessionUser) {
+        if (user.role !== "PATIENT") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Patient only" });
+        }
+
+        const appointments = await this.prisma.client.appointment.findMany({
+            where: {
+                patientId: user.id,
+                status: { in: ["CONFIRMED", "COMPLETED", "IN_PROGRESS"] },
+            },
+            orderBy: { startsAt: "desc" },
+            distinct: ["physioId"],
+            select: {
+                physioId: true,
+                startsAt: true,
+                physio: {
+                    select: {
+                        userId: true,
+                        discipline: true,
+                        photoUrl: true,
+                        sessionTypes: true,
+                        user: { select: { name: true } },
+                    },
+                },
+            },
+        });
+
+        const physioIds = appointments.map((a) => a.physioId);
+
+        const [packages, nextSlots] = await Promise.all([
+            this.prisma.client.package.findMany({
+                where: { patientId: user.id, physioId: { in: physioIds }, status: "ACTIVE" },
+                select: { id: true, physioId: true, size: true, remaining: true, expiresAt: true },
+            }),
+            Promise.all(
+                physioIds.map((id) =>
+                    this.slots.nextAvailable(id).then((s) => ({ physioId: id, next: s })),
+                ),
+            ),
+        ]);
+
+        return appointments.map((a) => ({
+            physio: a.physio,
+            lastVisit: a.startsAt,
+            activePackage: packages.find((p) => p.physioId === a.physioId) ?? null,
+            nextAvailableSlot: nextSlots.find((s) => s.physioId === a.physioId)?.next ?? null,
+        }));
+    }
+
     async listForPhysio(user: SessionUser, from?: Date, to?: Date) {
         const appts = await this.prisma.client.appointment.findMany({
             where: {

@@ -25,6 +25,15 @@ export class PaymentsService {
         }
     }
 
+    async verifyRaw(reference: string): Promise<"success" | "pending"> {
+        try {
+            const result = await this.provider.verifyCharge(reference);
+            return result.status === "success" ? "success" : "pending";
+        } catch {
+            throw new BadGatewayException({ code: "PAYMENT_UNAVAILABLE", message: "Could not verify payment" });
+        }
+    }
+
     async verifyCharge(user: SessionUser, reference: string) {
         const payment = await this.prisma.client.payment.findFirst({
             where: { providerRef: reference },
