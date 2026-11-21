@@ -15,6 +15,7 @@ import {
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
+import { WalletService } from "../wallet/wallet.service.js";
 
 @Injectable()
 export class PackagesService {
@@ -23,6 +24,7 @@ export class PackagesService {
         private readonly audit: AuditService,
         private readonly events: EventEmitter2,
         private readonly payments: PaymentsService,
+        private readonly wallet: WalletService,
     ) {}
 
     async purchase(user: SessionUser, physioId: string, size: 3 | 5 | 10) {
@@ -217,9 +219,41 @@ export class PackagesService {
         }
 
         const priceKobo = size * FOLLOW_UP_PRICE_KOBO;
-        const expiresAt = new Date(Date.now() + PACKAGE_EXPIRY_DAYS * 24 * 3600 * 1000);
         const reference = `pkg-${randomUUID()}`;
 
+        const walletBalance = await this.wallet.getBalanceInternal(user.id);
+        const walletPortion = Math.min(walletBalance, priceKobo);
+        const paystackAmount = priceKobo - walletPortion;
+        const expiresAt = new Date(Date.now() + PACKAGE_EXPIRY_DAYS * 24 * 3600 * 1000);
+
+        if (paystackAmount === 0) {
+            // Wallet fully covers the package — activate immediately.
+            const pkg = await this.prisma.client.package.create({
+                data: {
+                    patientId: user.id,
+                    physioId,
+                    size,
+                    remaining: size,
+                    priceKobo,
+                    status: "ACTIVE",
+                    expiresAt,
+                },
+            });
+
+            // Debit wallet once per package (use pkg.id as ref).
+            await this.wallet.sessionDebit(user.id, priceKobo, pkg.id);
+
+            await this.audit.record({
+                actorId: user.id,
+                action: "record.update",
+                entity: "Package",
+                entityId: pkg.id,
+            });
+
+            return { authorizationUrl: null, packageId: pkg.id };
+        }
+
+        // Paystack covers all or part.
         const pkg = await this.prisma.client.package.create({
             data: {
                 patientId: user.id,
@@ -235,17 +269,16 @@ export class PackagesService {
         const appUrl = process.env.APP_URL ?? "http://localhost:3000";
         const init = await this.payments.initializeCharge({
             email: user.email,
-            amountKobo: priceKobo,
+            amountKobo: paystackAmount,
             currency: "NGN",
             reference,
             callbackUrl: `${appUrl}/app/packages/callback?packageId=${pkg.id}&ref=${reference}`,
-            metadata: { packageId: pkg.id, physioId, size },
+            metadata: { packageId: pkg.id, physioId, size, walletAmountKobo: walletPortion },
         });
 
-        // Store the reference on the package so we can verify on callback
         await this.prisma.client.package.update({
             where: { id: pkg.id },
-            data: { status: `PENDING_PAYMENT:${reference}` },
+            data: { status: `PENDING_PAYMENT:${reference}:w${walletPortion}` },
         });
 
         return { authorizationUrl: init.authorizationUrl, packageId: pkg.id };
@@ -272,11 +305,22 @@ export class PackagesService {
             return { status: "PENDING" };
         }
 
+        // Extract the wallet portion that was reserved at checkout (stored in status tag).
+        const walletPortion = (() => {
+            const m = pkg.status.match(/:w(\d+)$/);
+            return m ? Number(m[1]) : 0;
+        })();
+
         const expiresAt = new Date(Date.now() + PACKAGE_EXPIRY_DAYS * 24 * 3600 * 1000);
         await this.prisma.client.package.update({
             where: { id: packageId },
             data: { status: "ACTIVE", remaining: pkg.size, expiresAt },
         });
+
+        // Debit wallet portion now that Paystack confirmed.
+        if (walletPortion > 0) {
+            await this.wallet.sessionDebit(user.id, walletPortion, packageId);
+        }
 
         await this.audit.record({
             actorId: user.id,

@@ -1,0 +1,1 @@
+ALTER TABLE "Payment" ADD COLUMN "walletAmountKobo" INTEGER NOT NULL DEFAULT 0;

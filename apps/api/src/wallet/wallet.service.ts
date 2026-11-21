@@ -146,4 +146,36 @@ export class WalletService {
             },
         });
     }
+
+    /** Internal: returns current wallet balance for a patient without auth check. */
+    async getBalanceInternal(patientId: string): Promise<number> {
+        const entries = await this.prisma.client.walletEntry.findMany({
+            where: { patientId },
+            select: { amountKobo: true },
+        });
+        return entries.reduce((sum, e) => sum + e.amountKobo, 0);
+    }
+
+    /** Internal: debit the wallet for a session payment. Idempotent on appointmentId. */
+    async sessionDebit(patientId: string, amountKobo: number, appointmentId: string) {
+        const existing = await this.prisma.client.walletEntry.findFirst({
+            where: { patientId, ref: appointmentId, type: "SESSION_DEBIT" },
+        });
+        if (existing) return;
+
+        // Debit only what is actually available to prevent going negative.
+        const balance = await this.getBalanceInternal(patientId);
+        const debit = Math.min(amountKobo, balance);
+        if (debit <= 0) return;
+
+        await this.prisma.client.walletEntry.create({
+            data: {
+                patientId,
+                amountKobo: -debit,
+                type: "SESSION_DEBIT",
+                ref: appointmentId,
+                note: "Session payment from wallet",
+            },
+        });
+    }
 }

@@ -11,11 +11,13 @@ import { SlotHoldProcessor } from "./slot-hold.processor.js";
 import { BookingConfirmListener } from "./booking-confirm.listener.js";
 import { PaymentsModule } from "../payments/payments.module.js";
 import { PatientsModule } from "../patients/patients.module.js";
+import { WalletModule } from "../wallet/wallet.module.js";
 
 @Module({
     imports: [
         PaymentsModule,
         PatientsModule,
+        WalletModule,
         BullModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => {

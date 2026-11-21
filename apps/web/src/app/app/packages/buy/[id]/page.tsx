@@ -60,8 +60,12 @@ export default function PackagesBuyPage() {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.message ?? "Could not start checkout. Please try again.");
             }
-            const { authorizationUrl } = await res.json();
-            window.location.href = authorizationUrl;
+            const { authorizationUrl, packageId } = await res.json();
+            if (authorizationUrl) {
+                window.location.href = authorizationUrl;
+            } else {
+                router.replace(`/app/packages/${packageId}`);
+            }
         } catch (err) {
             setError((err as Error).message);
         } finally {

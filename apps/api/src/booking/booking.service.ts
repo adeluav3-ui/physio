@@ -13,6 +13,7 @@ import { SlotHoldService } from "./slot-hold.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PatientsService } from "../patients/patients.service.js";
+import { WalletService } from "../wallet/wallet.service.js";
 
 @Injectable()
 export class BookingService {
@@ -24,6 +25,7 @@ export class BookingService {
         private readonly audit: AuditService,
         private readonly notifications: NotificationsService,
         private readonly patients: PatientsService,
+        private readonly wallet: WalletService,
     ) { }
 
     async listForPatient(user: SessionUser) {
@@ -167,10 +169,68 @@ export class BookingService {
 
         const reference = `appt-${randomUUID()}`;
 
+        // Check wallet balance and compute how much Paystack needs to charge.
+        const walletBalance = await this.wallet.getBalanceInternal(user.id);
+        const walletPortion = Math.min(walletBalance, amountKobo);
+        const paystackAmount = amountKobo - walletPortion;
+
         // Create a slot hold so the slot is blocked during checkout.
         const hold = await this.holds.createHold(input.physioId, user.id, startsAt, endsAt);
 
-        const { appointment, payment } = await this.prisma.client.$transaction(async (tx) => {
+        if (paystackAmount === 0) {
+            // Wallet fully covers the cost — confirm immediately, no Paystack redirect.
+            const appointment = await this.prisma.client.$transaction(async (tx) => {
+                const appt = await tx.appointment.create({
+                    data: {
+                        patientId: user.id,
+                        physioId: input.physioId,
+                        type: input.type,
+                        mode: input.mode,
+                        startsAt,
+                        endsAt,
+                        status: "CONFIRMED",
+                        intakeId: input.type === "ASSESSMENT" ? (input.intakeId ?? null) : null,
+                    },
+                });
+                await tx.payment.create({
+                    data: {
+                        appointmentId: appt.id,
+                        amountKobo,
+                        walletAmountKobo: amountKobo,
+                        status: "HELD",
+                        providerRef: reference,
+                    },
+                });
+                return appt;
+            });
+
+            await this.holds.confirmHold(hold.id, appointment.id);
+            await this.wallet.sessionDebit(user.id, amountKobo, appointment.id);
+            await this.payments.recordLedger({
+                appointmentId: appointment.id,
+                type: "CHARGE",
+                amountKobo,
+                note: "Paid from wallet",
+            });
+            await this.payments.recordLedger({
+                appointmentId: appointment.id,
+                type: "HOLD",
+                amountKobo: -amountKobo,
+                note: "Held pending session completion",
+            });
+            await this.audit.record({
+                actorId: user.id,
+                action: "booking.create",
+                entity: "Appointment",
+                entityId: appointment.id,
+            });
+            await this.notifications.sendAppointmentConfirmed(appointment.id);
+
+            return { appointmentId: appointment.id, authorizationUrl: null, reference };
+        }
+
+        // Paystack covers all or part — wallet portion (may be 0) debited on confirmation.
+        const { appointment } = await this.prisma.client.$transaction(async (tx) => {
             const appointment = await tx.appointment.create({
                 data: {
                     patientId: user.id,
@@ -183,27 +243,24 @@ export class BookingService {
                     intakeId: input.type === "ASSESSMENT" ? (input.intakeId ?? null) : null,
                 },
             });
-
-            const payment = await tx.payment.create({
+            await tx.payment.create({
                 data: {
                     appointmentId: appointment.id,
                     amountKobo,
+                    walletAmountKobo: walletPortion,
                     status: "PENDING",
                     providerRef: reference,
                 },
             });
-
-            return { appointment, payment };
+            return { appointment };
         });
 
-        // Link the hold to the appointment so the expiry job knows not to delete it
-        // once confirmed. The hold stays until confirmAfterPayment() converts it.
         await this.holds.confirmHold(hold.id, appointment.id);
 
         const appUrl = process.env.APP_URL ?? "http://localhost:3000";
         const init = await this.payments.initializeCharge({
             email: user.email,
-            amountKobo,
+            amountKobo: paystackAmount,
             currency: "NGN",
             reference,
             callbackUrl: `${appUrl}/app/payments/callback`,
@@ -382,7 +439,7 @@ export class BookingService {
             appointmentId,
             type: "CHARGE",
             amountKobo: appt.payment!.amountKobo,
-            note: `Paystack charge ${providerRef}`,
+            note: `Paystack charge ${providerRef}${appt.payment!.walletAmountKobo > 0 ? ` + ₦${appt.payment!.walletAmountKobo / 100} wallet` : ""}`,
         });
         await this.payments.recordLedger({
             appointmentId,
@@ -390,6 +447,11 @@ export class BookingService {
             amountKobo: -appt.payment!.amountKobo,
             note: "Held pending session completion",
         });
+
+        // Debit any wallet portion that was reserved at booking time.
+        if (appt.payment!.walletAmountKobo > 0) {
+            await this.wallet.sessionDebit(appt.patientId, appt.payment!.walletAmountKobo, appointmentId);
+        }
 
         await this.notifications.sendAppointmentConfirmed(appt.id);
     }

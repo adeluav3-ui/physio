@@ -133,8 +133,12 @@ export default function BookPage() {
                 if (code === "INTAKE_REQUIRED") { router.push("/app/intake/complaint"); return; }
                 throw new Error(userFriendlyError(code));
             }
-            const { authorizationUrl } = await res.json();
-            window.location.href = authorizationUrl;
+            const { authorizationUrl, appointmentId } = await res.json();
+            if (authorizationUrl) {
+                window.location.href = authorizationUrl;
+            } else {
+                router.replace(`/app/appointments/${appointmentId}`);
+            }
         } catch (err) {
             setError((err as Error).message);
         } finally {

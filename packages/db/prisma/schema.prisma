@@ -384,18 +384,19 @@ model Appointment {
 
 // ── Payments ─────────────────────────────
 model Payment {
-  id            String        @id @default(uuid())
-  appointmentId String        @unique
-  amountKobo    Int
-  currency      String        @default("NGN")
-  status        PaymentStatus @default(PENDING)
-  providerRef   String?
-  payoutRef     String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id               String        @id @default(uuid())
+  appointmentId    String        @unique
+  amountKobo       Int
+  walletAmountKobo Int           @default(0) // wallet portion reserved at booking
+  currency         String        @default("NGN")
+  status           PaymentStatus @default(PENDING)
+  providerRef      String?
+  payoutRef        String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  entries       LedgerEntry[]
+  appointment      Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  entries          LedgerEntry[]
 
   @@index([status])
 }

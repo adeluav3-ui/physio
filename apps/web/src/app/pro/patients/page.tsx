@@ -30,8 +30,9 @@ export default function PatientsPage() {
                 // Deduplicate by patientId, pick most recent / next appointment
                 const map = new Map<string, Patient>();
                 const now = new Date();
+                const realStatuses = new Set(["CONFIRMED", "IN_PROGRESS", "COMPLETED"]);
 
-                for (const a of appts) {
+                for (const a of appts.filter(a => realStatuses.has(a.status))) {
                     const pid = a.patientId;
                     const existing = map.get(pid);
                     const isUpcoming = new Date(a.startsAt) > now && a.status === "CONFIRMED";
