@@ -64,10 +64,16 @@ export default async function AdminAppointmentsPage() {
                                         ? `${a.payment.status} · ₦${(a.payment.amountKobo / 100).toLocaleString()}`
                                         : "—"}
                                 </td>
-                                <td className="px-4 py-2">
+                                <td className="px-4 py-2 flex gap-3">
+                                    <Link
+                                        href={`/app/appointments/${a.id}`}
+                                        className="text-xs text-primary-600 underline"
+                                    >
+                                        View
+                                    </Link>
                                     <Link
                                         href={`/admin/payments`}
-                                        className="text-xs text-primary-600 underline"
+                                        className="text-xs text-text-muted underline"
                                     >
                                         Ledger
                                     </Link>
