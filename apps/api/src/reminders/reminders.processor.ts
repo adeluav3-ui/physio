@@ -41,23 +41,35 @@ export class RemindersProcessor extends WorkerHost {
     }
 
     private async handleNoShowSweep() {
-        // Any CONFIRMED appointment whose session window (endsAt + hard-end grace) is in
-        // the past was missed by both parties. Mark it NO_SHOW and credit the patient's wallet.
+        const now = new Date();
         const cutoff = new Date(Date.now() - SESSION_HARD_END_MIN * 60_000);
+
+        // CONFIRMED appointments past their session window → no-show, refund to wallet.
         const missed = await this.prisma.client.appointment.findMany({
             where: { status: "CONFIRMED", endsAt: { lt: cutoff } },
             select: { id: true },
         });
-
         let refunded = 0;
         for (const appt of missed) {
-            // refund() marks the appointment REFUNDED and credits the patient wallet.
             await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
             refunded++;
         }
-
         if (refunded > 0) {
             this.logger.log(`No-show sweep: marked ${refunded} appointment(s) NO_SHOW and credited wallets`);
+        }
+
+        // PENDING_PAYMENT appointments whose slot has already started → payment never arrived,
+        // cancel silently (no money was captured so no refund is needed).
+        const stalePending = await this.prisma.client.appointment.findMany({
+            where: { status: "PENDING_PAYMENT", startsAt: { lt: now } },
+            select: { id: true },
+        });
+        if (stalePending.length > 0) {
+            await this.prisma.client.appointment.updateMany({
+                where: { id: { in: stalePending.map((a) => a.id) } },
+                data: { status: "CANCELLED", cancelReason: "Payment not received before session time" },
+            });
+            this.logger.log(`No-show sweep: cancelled ${stalePending.length} stale PENDING_PAYMENT appointment(s)`);
         }
     }
 

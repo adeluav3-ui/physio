@@ -47,7 +47,7 @@ export class SlotService {
             this.prisma.client.appointment.findMany({
                 where: {
                     physioId,
-                    status: { in: ["CONFIRMED", "IN_PROGRESS", "PENDING_PAYMENT"] },
+                    status: { in: ["CONFIRMED", "IN_PROGRESS"] },
                     startsAt: { gte: windowStart, lt: windowEnd },
                 },
                 select: { startsAt: true, endsAt: true },
@@ -158,7 +158,7 @@ export class SlotService {
         const clash = await this.prisma.client.appointment.findFirst({
             where: {
                 physioId,
-                status: { in: ["CONFIRMED", "IN_PROGRESS", "PENDING_PAYMENT"] },
+                status: { in: ["CONFIRMED", "IN_PROGRESS"] },
                 OR: [{ startsAt: { lt: endsAt }, endsAt: { gt: startsAt } }],
             },
         });
