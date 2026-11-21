@@ -4,7 +4,6 @@ import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
 import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
-import { WalletService } from "../wallet/wallet.service.js";
 
 @Injectable()
 export class PaymentsService {
@@ -15,7 +14,6 @@ export class PaymentsService {
         private readonly prisma: PrismaService,
         private readonly audit: AuditService,
         private readonly events: EventEmitter2,
-        private readonly walletSvc: WalletService,
     ) { }
 
     async initializeCharge(input: InitChargeInput) {
@@ -137,6 +135,8 @@ export class PaymentsService {
         if (!payment) return;
         if (payment.status === "REFUNDED") return;
 
+        // Write status updates and wallet credit atomically.
+        // This prevents the appointment showing REFUNDED without a matching wallet entry.
         await this.prisma.client.$transaction(async (tx) => {
             await tx.payment.update({
                 where: { appointmentId },
@@ -146,6 +146,22 @@ export class PaymentsService {
                 where: { id: appointmentId },
                 data: { status: "REFUNDED" },
             });
+
+            // Idempotent: skip if a credit for this appointment already exists.
+            const existingCredit = await tx.walletEntry.findFirst({
+                where: { patientId: payment.appointment.patientId, ref: appointmentId, type: "REFUND_CREDIT" },
+            });
+            if (!existingCredit) {
+                await tx.walletEntry.create({
+                    data: {
+                        patientId: payment.appointment.patientId,
+                        amountKobo: payment.amountKobo,
+                        type: "REFUND_CREDIT",
+                        ref: appointmentId,
+                        note: "Refund credited to wallet",
+                    },
+                });
+            }
         });
 
         await this.recordLedger({
@@ -154,13 +170,6 @@ export class PaymentsService {
             amountKobo: -payment.amountKobo,
             note: `Refund: ${reason}`,
         });
-
-        // Credit the patient's on-platform wallet — refunds stay as session credits.
-        await this.walletSvc.creditRefund(
-            payment.appointment.patientId,
-            payment.amountKobo,
-            appointmentId,
-        );
 
         await this.audit.record({
             actorId: adminId,

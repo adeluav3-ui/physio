@@ -32,6 +32,17 @@ export class WalletService {
     async getBalance(user: SessionUser) {
         this.assertPatient(user);
 
+        // Heal any REFUNDED appointments whose wallet credit was never written
+        // (can happen if creditRefund threw after the status transaction committed).
+        const refundedAppts = await this.prisma.client.appointment.findMany({
+            where: { patientId: user.id, status: "REFUNDED" },
+            include: { payment: { select: { amountKobo: true } } },
+        });
+        for (const appt of refundedAppts) {
+            if (!appt.payment || appt.payment.amountKobo <= 0) continue;
+            await this.creditRefund(user.id, appt.payment.amountKobo, appt.id);
+        }
+
         const entries = await this.prisma.client.walletEntry.findMany({
             where: { patientId: user.id },
             orderBy: { createdAt: "desc" },
