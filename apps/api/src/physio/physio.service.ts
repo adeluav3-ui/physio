@@ -57,6 +57,8 @@ export class PhysioService {
         };
         if (filters?.discipline) where!.discipline = filters.discipline as import("@physio/db").Discipline;
         if (filters?.maxRateKobo) where!.rateKobo = { lte: filters.maxRateKobo };
+        if (filters?.language) (where as any).languages = { has: filters.language };
+        if (filters?.mode) (where as any).sessionTypes = { has: filters.mode };
 
         const rows = await this.prisma.client.physioProfile.findMany({
             where,
@@ -77,9 +79,7 @@ export class PhysioService {
             orderBy: { createdAt: "desc" },
         });
 
-        let list = rows
-            .filter((r) => !filters?.language || r.languages.includes(filters.language))
-            .filter((r) => !filters?.mode || r.sessionTypes.includes(filters.mode));
+        let list = rows;
 
         // keyword match against specialties
         if (filters?.specialtyKeyword) {

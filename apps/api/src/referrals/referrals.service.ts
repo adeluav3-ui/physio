@@ -352,26 +352,27 @@ export class ReferralsService {
             select: { id: true, status: true, fromProfessionalId: true },
         });
 
-        let expired = 0;
+        if (stale.length === 0) return 0;
+
+        await this.prisma.client.$transaction([
+            this.prisma.client.referral.updateMany({
+                where: { id: { in: stale.map((r) => r.id) } },
+                data: { status: "EXPIRED" as any },
+            }),
+            this.prisma.client.referralAudit.createMany({
+                data: stale.map((ref) => ({
+                    referralId: ref.id,
+                    actorId: null,
+                    fromStatus: ref.status as any,
+                    toStatus: "EXPIRED" as any,
+                    note: `Auto-expired: no response within ${REFERRAL_STALL_DAYS} days`,
+                })),
+            }),
+        ]);
+
         for (const ref of stale) {
-            await this.prisma.client.$transaction(async (tx) => {
-                await tx.referral.update({
-                    where: { id: ref.id },
-                    data: { status: "EXPIRED" as any },
-                });
-                await tx.referralAudit.create({
-                    data: {
-                        referralId: ref.id,
-                        actorId: null,
-                        fromStatus: ref.status as any,
-                        toStatus: "EXPIRED" as any,
-                        note: `Auto-expired: no response within ${REFERRAL_STALL_DAYS} days`,
-                    },
-                });
-            });
             this.events.emit("referral.stalled", { referralId: ref.id, fromProfessionalId: ref.fromProfessionalId });
-            expired++;
         }
-        return expired;
+        return stale.length;
     }
 }

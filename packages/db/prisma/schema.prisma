@@ -380,6 +380,8 @@ model Appointment {
   @@index([patientId, startsAt])
   @@index([physioId, startsAt])
   @@index([status])
+  @@index([dependentId])
+  @@index([intakeId])
 }
 
 // ── Payments ─────────────────────────────
@@ -597,6 +599,7 @@ model SessionExercise {
   exercise    Exercise    @relation(fields: [exerciseId], references: [id])
 
   @@index([appointmentId])
+  @@index([exerciseId])
 }
 
 // ── Messaging ────────────────────────────
@@ -881,6 +884,7 @@ model WalletEntry {
   patient       PatientProfile  @relation(fields: [patientId], references: [userId], onDelete: Cascade)
 
   @@index([patientId, createdAt])
+  @@index([patientId, ref, type])
 }
 
 enum WalletEntryType {

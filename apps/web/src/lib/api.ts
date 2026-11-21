@@ -23,7 +23,11 @@ export async function apiFetch<T>(
     const token = init?.token ?? (await cookies()).get("physio_token")?.value;
     if (token) headers.set("Authorization", `Bearer ${token}`);
 
-    const res = await fetch(`${API_URL}/api${path}`, { ...init, headers });
+    const res = await fetch(`${API_URL}/api${path}`, {
+        signal: AbortSignal.timeout(15_000),
+        ...init,
+        headers,
+    });
 
     if (!res.ok) {
         const body = await res.json().catch(() => ({}));

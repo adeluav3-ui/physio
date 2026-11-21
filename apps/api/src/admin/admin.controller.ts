@@ -44,6 +44,7 @@ export class AdminController {
     async waitlist() {
         return this.prisma.client.waitlistEntry.findMany({
             orderBy: { createdAt: "desc" },
+            take: 200,
         });
     }
 
@@ -207,7 +208,7 @@ export class AdminController {
                 },
             },
             orderBy: { sentAt: "desc" },
-            take: 2000,
+            take: 500,
         });
         return messages.filter((m) => hasRedFlagWords(m.body));
     }
@@ -228,6 +229,7 @@ export class AdminController {
                 },
             },
             orderBy: { createdAt: "desc" },
+            take: 100,
         });
     }
 
