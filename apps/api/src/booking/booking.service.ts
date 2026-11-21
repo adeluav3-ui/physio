@@ -14,6 +14,7 @@ import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PatientsService } from "../patients/patients.service.js";
 import { WalletService } from "../wallet/wallet.service.js";
+import { RemindersService } from "../reminders/reminders.service.js";
 
 @Injectable()
 export class BookingService {
@@ -26,6 +27,7 @@ export class BookingService {
         private readonly notifications: NotificationsService,
         private readonly patients: PatientsService,
         private readonly wallet: WalletService,
+        private readonly reminders: RemindersService,
     ) { }
 
     async listForPatient(user: SessionUser) {
@@ -366,6 +368,8 @@ export class BookingService {
                 cancelReason: reason ?? null,
             },
         });
+
+        await this.reminders.cancelSessionReminders(appointmentId);
 
         await this.audit.record({
             actorId: user.id,

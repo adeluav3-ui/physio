@@ -78,6 +78,17 @@ export class RemindersService {
         }
     }
 
+    async cancelSessionReminders(appointmentId: string) {
+        const offsets = [24 * 60, 60] as const;
+        for (const minutesBefore of offsets) {
+            try {
+                await this.queue.remove(`${appointmentId}-${minutesBefore}m`);
+            } catch {
+                // Job may have already fired or never been scheduled — not an error.
+            }
+        }
+    }
+
     async scheduleSessionReminder(appointmentId: string, startsAt: Date) {
         const offsets = [24 * 60, 60] as const;
         for (const minutesBefore of offsets) {

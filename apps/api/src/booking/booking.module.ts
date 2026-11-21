@@ -12,12 +12,14 @@ import { BookingConfirmListener } from "./booking-confirm.listener.js";
 import { PaymentsModule } from "../payments/payments.module.js";
 import { PatientsModule } from "../patients/patients.module.js";
 import { WalletModule } from "../wallet/wallet.module.js";
+import { RemindersModule } from "../reminders/reminders.module.js";
 
 @Module({
     imports: [
         PaymentsModule,
         PatientsModule,
         WalletModule,
+        RemindersModule,
         BullModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => {
