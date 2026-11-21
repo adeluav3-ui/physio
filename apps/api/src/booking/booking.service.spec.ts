@@ -95,7 +95,8 @@ describe("BookingService booking guards", () => {
         const notifications = { sendAppointmentConfirmed: jest.fn().mockResolvedValue(undefined) };
         const patients = { isComplete: jest.fn().mockResolvedValue(true) };
         const holds = { createHold: jest.fn().mockResolvedValue({ id: "hold-1" }), confirmHold: jest.fn().mockResolvedValue(undefined) };
-        return new BookingService(prisma, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any);
+        const wallet = { getBalanceInternal: jest.fn().mockResolvedValue(0), sessionDebit: jest.fn().mockResolvedValue(undefined) };
+        return new BookingService(prisma, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any, wallet as any);
     }
 
     it("throws TRIAGE_RED when intake has level RED", async () => {
@@ -133,7 +134,8 @@ describe("BookingService booking guards", () => {
         const notifications = { sendAppointmentConfirmed: jest.fn() };
         const patients = { isComplete: jest.fn().mockResolvedValue(true) };
         const holds = { createHold: jest.fn().mockResolvedValue({ id: "hold-1" }), confirmHold: jest.fn().mockResolvedValue(undefined) };
-        const svc = new BookingService(prisma as any, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any);
+        const wallet = { getBalanceInternal: jest.fn().mockResolvedValue(0), sessionDebit: jest.fn().mockResolvedValue(undefined) };
+        const svc = new BookingService(prisma as any, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any, wallet as any);
         await expect(svc.book(patientUser, makeInput())).rejects.toMatchObject({
             response: expect.objectContaining({ code: "SLOT_UNAVAILABLE" }),
         });
@@ -187,7 +189,8 @@ describe("BookingService audit logging", () => {
         const payments = { initializeCharge: jest.fn() };
         const notifications = { sendAppointmentConfirmed: jest.fn() };
         const patients = { isComplete: jest.fn() };
-        const svc = new BookingService(prisma, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any);
+        const wallet = { getBalanceInternal: jest.fn().mockResolvedValue(0), sessionDebit: jest.fn().mockResolvedValue(undefined) };
+        const svc = new BookingService(prisma, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any, wallet as any);
         return { svc, audit };
     }
 
