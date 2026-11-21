@@ -8,7 +8,34 @@ export type Slot = {
     mode: "VIDEO" | "HOME" | "CHAT" | "ANY";
 };
 
+// Minimum notice before a slot can be booked. Configurable per-pro later.
 const MIN_NOTICE_MS = 1 * 60 * 60 * 1000; // 1 hour
+
+// Platform timezone offset in minutes (Africa/Lagos = WAT = UTC+1).
+// Availability startMinute/endMinute are stored as local-time minutes from midnight,
+// so slot generation must interpret them relative to local midnight, not UTC midnight.
+const PLATFORM_TZ_OFFSET_MIN = 60;
+
+/** Convert a UTC Date to local minute-of-day (hours*60+minutes) in platform TZ. */
+function toLocalMinute(utcDate: Date): number {
+    const local = new Date(utcDate.getTime() + PLATFORM_TZ_OFFSET_MIN * 60_000);
+    return local.getUTCHours() * 60 + local.getUTCMinutes();
+}
+
+/** Local weekday (0=Sun) for a UTC Date in platform TZ. */
+function toLocalWeekday(utcDate: Date): number {
+    return new Date(utcDate.getTime() + PLATFORM_TZ_OFFSET_MIN * 60_000).getUTCDay();
+}
+
+/** YYYY-MM-DD date string in platform TZ for a UTC Date. */
+function toLocalDateKey(utcDate: Date): string {
+    return new Date(utcDate.getTime() + PLATFORM_TZ_OFFSET_MIN * 60_000).toISOString().slice(0, 10);
+}
+
+/** UTC timestamp for local midnight + minuteOffset on the given local date. */
+function localMidnightUTC(year: number, month: number, date: number): number {
+    return Date.UTC(year, month, date) - PLATFORM_TZ_OFFSET_MIN * 60_000;
+}
 
 @Injectable()
 export class SlotService {
@@ -69,9 +96,8 @@ export class SlotService {
             }),
         ]);
 
-        const daysOffSet = new Set(
-            daysOff.map((d) => d.date.toISOString().slice(0, 10)),
-        );
+        // Days-off are stored as UTC midnight dates; convert to local date strings for comparison.
+        const daysOffSet = new Set(daysOff.map((d) => toLocalDateKey(d.date)));
 
         const busyRanges = [
             ...existing.map((a) => ({ start: a.startsAt.getTime(), end: a.endsAt.getTime() })),
@@ -82,13 +108,19 @@ export class SlotService {
         const slots: Slot[] = [];
 
         for (let d = 0; d < daysAhead; d++) {
-            const now2 = new Date();
-            const day = new Date(Date.UTC(now2.getUTCFullYear(), now2.getUTCMonth(), now2.getUTCDate() + d));
+            // Determine today's date in platform timezone (WAT).
+            const localNow = new Date(Date.now() + PLATFORM_TZ_OFFSET_MIN * 60_000);
+            const midnightUtc = localMidnightUTC(
+                localNow.getUTCFullYear(),
+                localNow.getUTCMonth(),
+                localNow.getUTCDate() + d,
+            );
 
-            const dateKey = day.toISOString().slice(0, 10);
+            // dateKey and weekday derived from local date, not UTC.
+            const dateKey = toLocalDateKey(new Date(midnightUtc));
             if (daysOffSet.has(dateKey)) continue;
 
-            const weekday = day.getUTCDay();
+            const weekday = toLocalWeekday(new Date(midnightUtc));
             const todayBlocks = availability.filter((a) => a.weekday === weekday);
 
             for (const block of todayBlocks) {
@@ -97,7 +129,7 @@ export class SlotService {
                     m + sessionMin <= block.endMinute;
                     m += stepMin
                 ) {
-                    const startsAt = new Date(day.getTime() + m * 60_000);
+                    const startsAt = new Date(midnightUtc + m * 60_000);
                     const endsAt = new Date(startsAt.getTime() + sessionMin * 60_000);
 
                     if (startsAt.getTime() - now < MIN_NOTICE_MS) continue;
@@ -131,8 +163,9 @@ export class SlotService {
         durationMinutes: number,
         mode: "VIDEO" | "HOME" | "CHAT",
     ): Promise<boolean> {
-        const weekday = startsAt.getDay();
-        const startMinute = startsAt.getHours() * 60 + startsAt.getMinutes();
+        // Convert to platform-local time for availability block matching.
+        const weekday = toLocalWeekday(startsAt);
+        const startMinute = toLocalMinute(startsAt);
         const endMinute = startMinute + durationMinutes;
 
         // Match either the exact mode or ANY (pro accepts all modes for this block)
@@ -149,7 +182,8 @@ export class SlotService {
 
         const endsAt = new Date(startsAt.getTime() + durationMinutes * 60_000);
 
-        const dateKey = startsAt.toISOString().slice(0, 10);
+        // Date key in platform timezone for dayOff lookup.
+        const dateKey = toLocalDateKey(startsAt);
         const dayOff = await this.prisma.client.dayOff.findUnique({
             where: { physioId_date: { physioId, date: new Date(dateKey) } },
         });
