@@ -35,16 +35,11 @@ function makeProvider() {
     };
 }
 
-function makeWallet() {
-    return { creditRefund: jest.fn().mockResolvedValue(undefined) };
-}
-
 function buildService(lastBalance: number) {
     const prisma = makePrisma(lastBalance);
     const audit = makeAudit();
     const events = { emit: jest.fn() };
-    const wallet = makeWallet();
-    const svc = new PaymentsService(prisma as any, audit as any, events as any, wallet as any);
+    const svc = new PaymentsService(prisma as any, audit as any, events as any);
     (svc as any).provider = makeProvider();
     return { svc, prisma };
 }
@@ -105,8 +100,7 @@ describe("ledger arithmetic — RELEASE sequence nets zero", () => {
         };
         const audit = makeAudit();
         const events = { emit: jest.fn() };
-        const wallet = makeWallet();
-        const svc = new PaymentsService(prisma as any, audit as any, events as any, wallet as any);
+        const svc = new PaymentsService(prisma as any, audit as any, events as any);
 
         await svc.releaseToPhysio(APPT_ID);
 
