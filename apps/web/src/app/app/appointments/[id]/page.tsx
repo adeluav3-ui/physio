@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/session";
 import { apiFetch, ApiError } from "@/lib/api";
 import { AutoConfirmPayment } from "../auto-confirm-payment";
 import { AdminForceRefundButton } from "./admin-force-refund-button";
+import { JoinSection } from "./join-section";
 
 type AppointmentDetail = {
     id: string;
@@ -19,14 +20,6 @@ type AppointmentDetail = {
     videoSession: { roomId: string } | null;
 };
 
-const JOIN_WINDOW_MS = 15 * 60 * 1000;
-
-function isInJoinWindow(startsAt: string, endsAt: string) {
-    const now = Date.now();
-    const start = new Date(startsAt).getTime();
-    const end = new Date(endsAt).getTime();
-    return now >= start - JOIN_WINDOW_MS && now <= end + 90 * 60 * 1000;
-}
 
 export default async function PatientAppointmentDetailPage({
     params,
@@ -43,10 +36,6 @@ export default async function PatientAppointmentDetailPage({
         if (err instanceof ApiError && err.status === 404) notFound();
         throw err;
     }
-
-    const joinable =
-        (appt.status === "CONFIRMED" || appt.status === "IN_PROGRESS") &&
-        isInJoinWindow(appt.startsAt, appt.endsAt);
 
     const pendingPayment = appt.payment?.status === "PENDING";
 
@@ -100,27 +89,18 @@ export default async function PatientAppointmentDetailPage({
             </Card>
 
             <div className="mt-4 flex flex-col gap-3">
-                {joinable && appt.mode === "VIDEO" && (
-                    <Link
-                        href={`/app/session/${appt.id}`}
-                        className="block rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-primary-700"
-                    >
-                        Join session
-                    </Link>
-                )}
+                <JoinSection
+                    appointmentId={appt.id}
+                    startsAt={appt.startsAt}
+                    endsAt={appt.endsAt}
+                    mode={appt.mode}
+                    status={appt.status}
+                />
 
                 {pendingPayment && (
                     <Card>
                         <p className="text-sm font-medium text-amber-700">Payment received</p>
                         <AutoConfirmPayment appointmentId={appt.id} />
-                    </Card>
-                )}
-
-                {!joinable && appt.status === "CONFIRMED" && appt.mode === "VIDEO" && (
-                    <Card>
-                        <p className="text-sm text-text-muted">
-                            The Join session button will appear 15 minutes before your appointment.
-                        </p>
                     </Card>
                 )}
 
