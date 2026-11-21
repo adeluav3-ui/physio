@@ -27,6 +27,7 @@ export interface VideoProvider {
     createRoom(appointmentId: string): Promise<Room>;
     issueToken(roomId: string, userId: string, role: VideoRole): Promise<Token>;
     endRoom(roomId: string): Promise<void>;
+    verifyRoom(roomId: string): Promise<boolean>;
     getMetrics(roomId: string): Promise<QualityMetrics>;
     startRecording(roomId: string): Promise<void>;
     stopRecording(roomId: string): Promise<void>;

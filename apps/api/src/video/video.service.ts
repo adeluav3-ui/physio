@@ -44,6 +44,15 @@ export class VideoService {
         }
     }
 
+    async verifyRoom(roomId: string): Promise<boolean> {
+        if (!this.provider) return false;
+        try {
+            return await this.provider.verifyRoom(roomId);
+        } catch {
+            return true; // fail open — don't break join on a transient network hiccup
+        }
+    }
+
     async endRoom(roomId: string) {
         if (!this.provider) return;
         try {

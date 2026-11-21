@@ -16,6 +16,9 @@ export class InHouseProvider implements VideoProvider {
     async endRoom(_roomId: string): Promise<void> {
         throw new Error("InHouseProvider not implemented yet");
     }
+    async verifyRoom(_roomId: string): Promise<boolean> {
+        return true;
+    }
     async getMetrics(_roomId: string): Promise<QualityMetrics> {
         throw new Error("InHouseProvider not implemented yet");
     }

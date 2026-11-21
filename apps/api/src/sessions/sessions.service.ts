@@ -75,6 +75,17 @@ export class SessionsService {
                     roomId,
                 },
             });
+        } else {
+            // Room may have expired — verify it still exists and recreate if not.
+            const stillValid = await this.video.verifyRoom(roomId!);
+            if (!stillValid) {
+                const room = await this.video.createRoom(appt.id);
+                roomId = room.id;
+                await this.prisma.client.videoSession.update({
+                    where: { appointmentId: appt.id },
+                    data: { roomId },
+                });
+            }
         }
 
         if (appt.status === "CONFIRMED") {
@@ -276,12 +287,12 @@ export class SessionsService {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Not your appointment" });
         }
 
-        await this.audit.record({
+        this.audit.record({
             actorId: user.id,
             action: "record.view",
             entity: "Appointment",
             entityId: appt.id,
-        });
+        }).catch(() => {});
 
         return appt;
     }

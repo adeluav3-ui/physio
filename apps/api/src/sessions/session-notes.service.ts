@@ -73,12 +73,12 @@ export class SessionNotesService {
         });
         if (!note) return null;
 
-        await this.audit.record({
+        this.audit.record({
             actorId: user.id,
             action: "record.view",
             entity: "SessionNote",
             entityId: note.id,
-        });
+        }).catch(() => {});
 
         return note;
     }

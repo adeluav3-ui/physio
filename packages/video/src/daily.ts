@@ -25,8 +25,17 @@ export class DailyProvider implements VideoProvider {
         return (await res.json()) as T;
     }
 
+    async verifyRoom(roomId: string): Promise<boolean> {
+        try {
+            await this.call(`/rooms/${roomId}`);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     async createRoom(appointmentId: string): Promise<Room> {
-        const expirySeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 2;
+        const expirySeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 6; // 6-hour window
         const data = await this.call<{ id: string; url: string; created_at: string; config: { exp: number } }>(
             "/rooms",
             {

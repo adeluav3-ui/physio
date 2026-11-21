@@ -180,7 +180,7 @@ export default function PatientSessionPage() {
     if (phase === "in-session" && join) {
         const isYouTube = pendingExercise && pendingExercise.exercise.videoUrl.length === 11;
         return (
-            <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif" }}>
+            <div style={{ display: "flex", height: "100dvh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif", overflow: "hidden" }}>
                 <div style={{ flex: 1, position: "relative" }}>
                     <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} />
                 </div>
@@ -362,9 +362,9 @@ export default function PatientSessionPage() {
     const isJoining = phase === "joining";
 
     return (
-        <div style={{ minHeight: "100vh", background: "#e9eff5", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Figtree', system-ui, sans-serif" }}>
-            <div style={{ width: "100%", maxWidth: 420, background: "#f4f8fb", borderRadius: 24, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                <div style={{ padding: "28px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ minHeight: "100dvh", background: "#e9eff5", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 16, fontFamily: "'Figtree', system-ui, sans-serif", overflowY: "auto" }}>
+            <div style={{ width: "100%", maxWidth: 420, background: "#f4f8fb", borderRadius: 24, overflow: "hidden", display: "flex", flexDirection: "column", marginBlock: "auto" }}>
+                <div style={{ padding: "20px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
                     <h1 style={{ font: "700 26px 'Figtree', sans-serif", color: NAV, margin: 0 }}>Almost time</h1>
                     <p style={{ font: "400 16px 'Figtree', sans-serif", color: MUTED, margin: 0, marginTop: -8 }}>
                         Your session is about to start.
@@ -377,10 +377,10 @@ export default function PatientSessionPage() {
                             autoPlay
                             muted
                             playsInline
-                            style={{ height: 200, width: "100%", borderRadius: 16, objectFit: "cover", background: "#000" }}
+                            style={{ height: 160, width: "100%", borderRadius: 16, objectFit: "cover", background: "#000" }}
                         />
                     ) : (
-                        <div style={{ height: 200, borderRadius: 16, background: "#cdddea", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED }}>
+                        <div style={{ height: 120, borderRadius: 16, background: "#cdddea", display: "flex", alignItems: "center", justifyContent: "center", color: MUTED }}>
                             <span style={{ font: "500 15px 'Figtree', sans-serif" }}>
                                 {camOk === null ? "Starting camera…" : "Camera unavailable"}
                             </span>
