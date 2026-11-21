@@ -283,7 +283,7 @@ model Intake {
   patient        PatientProfile @relation(fields: [patientId], references: [userId], onDelete: Cascade)
   dependent      Dependent?     @relation("dependent_intakes", fields: [dependentId], references: [id])
   triage         TriageResult?
-  appointment    Appointment?
+  appointments   Appointment[]
 
   @@index([patientId])
 }
