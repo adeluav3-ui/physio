@@ -155,16 +155,18 @@ export default async function PatientDashboard() {
                 </div>
             )}
 
-            {/* New problem intake nudge */}
-            <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
-                <p style={{ font: "600 15px 'Figtree',sans-serif", margin: 0 }}>New problem?</p>
-                <p style={{ font: "400 14px 'Figtree',sans-serif", color: MUTED, margin: "4px 0 12px" }}>
-                    Report a new complaint and get matched to a specialist.
-                </p>
-                <Link href="/app/intake/complaint" style={{ font: "600 14px 'Figtree',sans-serif", color: GREEN }}>
-                    Start new intake
-                </Link>
-            </div>
+            {/* New problem intake nudge — only once a specialist relationship exists */}
+            {specialists.length > 0 && (
+                <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
+                    <p style={{ font: "600 15px 'Figtree',sans-serif", margin: 0 }}>New problem?</p>
+                    <p style={{ font: "400 14px 'Figtree',sans-serif", color: MUTED, margin: "4px 0 12px" }}>
+                        Report a new complaint and get matched to a specialist.
+                    </p>
+                    <Link href="/app/intake/complaint" style={{ font: "600 14px 'Figtree',sans-serif", color: GREEN }}>
+                        Start new intake
+                    </Link>
+                </div>
+            )}
 
             {/* Next session card */}
             {nextAppointment ? (
