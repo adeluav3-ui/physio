@@ -35,7 +35,8 @@ function fmtTime(iso: string) {
 }
 
 function ApptCard({ a }: { a: Appointment }) {
-    const canStart = a.status === "CONFIRMED" || a.status === "IN_PROGRESS";
+    const sessionLive = new Date(a.endsAt) > new Date();
+    const canStart = (a.status === "CONFIRMED" || a.status === "IN_PROGRESS") && sessionLive;
     return (
         <div className="card" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 20px" }}>
             <div style={{ flex: 1, minWidth: 0 }}>

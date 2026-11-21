@@ -3,6 +3,7 @@ import {
     BadRequestException,
     ForbiddenException,
     Injectable,
+    Logger,
     NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
@@ -16,6 +17,7 @@ const MAX_DEPOSIT_KOBO = 50_000_000; // ₦500,000 maximum
 
 @Injectable()
 export class WalletService {
+    private readonly logger = new Logger(WalletService.name);
     private readonly provider = getPaymentProvider();
 
     constructor(
@@ -32,15 +34,22 @@ export class WalletService {
     async getBalance(user: SessionUser) {
         this.assertPatient(user);
 
-        // Heal any REFUNDED appointments whose wallet credit was never written
-        // (can happen if creditRefund threw after the status transaction committed).
-        const refundedAppts = await this.prisma.client.appointment.findMany({
-            where: { patientId: user.id, status: "REFUNDED" },
-            include: { payment: { select: { amountKobo: true } } },
-        });
-        for (const appt of refundedAppts) {
-            if (!appt.payment || appt.payment.amountKobo <= 0) continue;
-            await this.creditRefund(user.id, appt.payment.amountKobo, appt.id);
+        // Heal any REFUNDED appointments whose wallet credit was never written.
+        try {
+            const refundedAppts = await this.prisma.client.appointment.findMany({
+                where: { patientId: user.id, status: "REFUNDED" },
+                include: { payment: { select: { amountKobo: true } } },
+            });
+            for (const appt of refundedAppts) {
+                if (!appt.payment || appt.payment.amountKobo <= 0) continue;
+                try {
+                    await this.creditRefund(user.id, appt.payment.amountKobo, appt.id);
+                } catch (err) {
+                    this.logger.warn(`creditRefund heal failed for appointment ${appt.id}: ${(err as Error).message}`);
+                }
+            }
+        } catch (err) {
+            this.logger.warn(`lazy-heal query failed: ${(err as Error).message}`);
         }
 
         const entries = await this.prisma.client.walletEntry.findMany({
