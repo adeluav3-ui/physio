@@ -44,18 +44,30 @@ export class RemindersProcessor extends WorkerHost {
         const now = new Date();
         const cutoff = new Date(Date.now() - SESSION_HARD_END_MIN * 60_000);
 
-        // CONFIRMED appointments past their session window → no-show, refund to wallet.
+        // CONFIRMED or IN_PROGRESS appointments past their session window → auto-close.
+        // CONFIRMED means nobody joined; IN_PROGRESS means session was started but SOAP note
+        // was never signed so the appointment never transitioned to COMPLETED.
         const missed = await this.prisma.client.appointment.findMany({
-            where: { status: "CONFIRMED", endsAt: { lt: cutoff } },
-            select: { id: true },
+            where: { status: { in: ["CONFIRMED", "IN_PROGRESS"] }, endsAt: { lt: cutoff } },
+            select: { id: true, status: true },
         });
-        let refunded = 0;
+        let swept = 0;
         for (const appt of missed) {
-            await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
-            refunded++;
+            if (appt.status === "CONFIRMED") {
+                // Nobody joined → refund patient.
+                await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
+            } else {
+                // IN_PROGRESS past cutoff → session happened, auto-complete and release funds.
+                await this.prisma.client.appointment.update({
+                    where: { id: appt.id },
+                    data: { status: "COMPLETED" },
+                });
+                await this.payments.releaseToPhysio(appt.id);
+            }
+            swept++;
         }
-        if (refunded > 0) {
-            this.logger.log(`No-show sweep: marked ${refunded} appointment(s) NO_SHOW and credited wallets`);
+        if (swept > 0) {
+            this.logger.log(`No-show sweep: auto-closed ${swept} appointment(s)`);
         }
 
         // PENDING_PAYMENT appointments whose slot has already started → payment never arrived,

@@ -90,19 +90,25 @@ export default function PhysioAppointmentsPage() {
     const now = new Date();
     const todayKey = now.toDateString();
 
+    // A session is "live" if it hasn't ended yet (endsAt in the future).
+    const isLive = (a: Appointment) => new Date(a.endsAt) > now;
+    const isActive = (a: Appointment) =>
+        (a.status === "CONFIRMED" || a.status === "IN_PROGRESS") && isLive(a);
+
     const today = appointments.filter(a =>
-        (a.status === "CONFIRMED" || a.status === "IN_PROGRESS") &&
-        new Date(a.startsAt).toDateString() === todayKey
+        isActive(a) && new Date(a.startsAt).toDateString() === todayKey
     ).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
     const upcoming = appointments.filter(a =>
-        a.status === "CONFIRMED" &&
+        isActive(a) &&
         new Date(a.startsAt).toDateString() !== todayKey &&
         new Date(a.startsAt) > now
     ).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
     const past = appointments.filter(a =>
-        a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW"
+        a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW" ||
+        // CONFIRMED/IN_PROGRESS whose endsAt already passed — awaiting SOAP note or sweep
+        ((a.status === "CONFIRMED" || a.status === "IN_PROGRESS") && !isLive(a))
     ).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
 
     const cancelled = appointments.filter(a => a.status === "CANCELLED")
@@ -113,7 +119,7 @@ export default function PhysioAppointmentsPage() {
             <div style={{ marginBottom: "24px" }}>
                 <h1 style={{ font: "700 24px 'Figtree',sans-serif", margin: 0 }}>Schedule</h1>
                 <p className="muted" style={{ font: "400 14px 'Figtree',sans-serif", marginTop: "4px" }}>
-                    {appointments.filter(a => a.status === "CONFIRMED" || a.status === "IN_PROGRESS").length} upcoming appointment{appointments.filter(a => a.status === "CONFIRMED" || a.status === "IN_PROGRESS").length !== 1 ? "s" : ""}
+                    {today.length + upcoming.length} upcoming appointment{today.length + upcoming.length !== 1 ? "s" : ""}
                 </p>
             </div>
 
