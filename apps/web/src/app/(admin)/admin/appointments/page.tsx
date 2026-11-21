@@ -47,7 +47,14 @@ export default async function AdminAppointmentsPage() {
                         {appointments.map((a) => (
                             <tr key={a.id} className="border-t border-border">
                                 <td className="px-4 py-2 text-xs">
-                                    {new Date(a.startsAt).toLocaleString()}
+                                    {new Date(a.startsAt).toLocaleString("en-NG", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    timeZone: "Africa/Lagos",
+                                })}
                                 </td>
                                 <td className="px-4 py-2">{a.patient.user.name}</td>
                                 <td className="px-4 py-2">{a.physio.user.name}</td>
