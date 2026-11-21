@@ -38,17 +38,32 @@ export default function WalletPage() {
     const router = useRouter();
     const [data, setData] = useState<WalletData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [showDeposit, setShowDeposit] = useState(false);
     const [amountInput, setAmountInput] = useState("");
     const [depositing, setDepositing] = useState(false);
     const [depositError, setDepositError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetch("/api/proxy/wallet/me")
+    function fetchBalance(showSpinner = false) {
+        if (showSpinner) setRefreshing(true);
+        return fetch("/api/proxy/wallet/me")
             .then(r => r.ok ? r.json() : null)
             .then((d: WalletData | null) => { if (d) setData(d); })
             .catch(() => { })
-            .finally(() => setLoading(false));
+            .finally(() => { setLoading(false); if (showSpinner) setRefreshing(false); });
+    }
+
+    useEffect(() => {
+        fetchBalance();
+
+        // Re-fetch when user switches back to this tab so a just-processed
+        // refund shows up without requiring a manual page reload.
+        function onVisible() {
+            if (document.visibilityState === "visible") fetchBalance();
+        }
+        document.addEventListener("visibilitychange", onVisible);
+        return () => document.removeEventListener("visibilitychange", onVisible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function handleDeposit() {
@@ -91,11 +106,21 @@ export default function WalletPage() {
 
     return (
         <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 20px", fontFamily: "'Figtree',system-ui,sans-serif", color: NAV, display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-                <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Wallet</h1>
-                <p style={{ font: "400 14px 'Figtree',sans-serif", color: MUTED, marginTop: 4 }}>
-                    Your session credits and refunds
-                </p>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                <div>
+                    <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Wallet</h1>
+                    <p style={{ font: "400 14px 'Figtree',sans-serif", color: MUTED, marginTop: 4 }}>
+                        Your session credits and refunds
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => fetchBalance(true)}
+                    disabled={refreshing}
+                    style={{ background: "none", border: "none", cursor: refreshing ? "default" : "pointer", color: MUTED, font: "500 13px 'Figtree',sans-serif", padding: "4px 0", marginTop: 4 }}
+                >
+                    {refreshing ? "Syncing…" : "↻ Sync"}
+                </button>
             </div>
 
             {/* Balance card */}
