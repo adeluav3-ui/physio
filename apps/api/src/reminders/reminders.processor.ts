@@ -44,30 +44,21 @@ export class RemindersProcessor extends WorkerHost {
         const now = new Date();
         const cutoff = new Date(Date.now() - SESSION_HARD_END_MIN * 60_000);
 
-        // CONFIRMED or IN_PROGRESS appointments past their session window → auto-close.
-        // CONFIRMED means nobody joined; IN_PROGRESS means session was started but SOAP note
-        // was never signed so the appointment never transitioned to COMPLETED.
+        // CONFIRMED appointments past their session window → both parties no-showed, refund patient.
+        // IN_PROGRESS appointments are intentionally excluded: the session was joined and
+        // the physio must sign the SOAP note to complete it. Auto-completing would release
+        // funds before the note is signed, which is incorrect.
         const missed = await this.prisma.client.appointment.findMany({
-            where: { status: { in: ["CONFIRMED", "IN_PROGRESS"] }, endsAt: { lt: cutoff } },
-            select: { id: true, status: true },
+            where: { status: "CONFIRMED", endsAt: { lt: cutoff } },
+            select: { id: true },
         });
-        let swept = 0;
+        let refunded = 0;
         for (const appt of missed) {
-            if (appt.status === "CONFIRMED") {
-                // Nobody joined → refund patient.
-                await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
-            } else {
-                // IN_PROGRESS past cutoff → session happened, auto-complete and release funds.
-                await this.prisma.client.appointment.update({
-                    where: { id: appt.id },
-                    data: { status: "COMPLETED" },
-                });
-                await this.payments.releaseToPhysio(appt.id);
-            }
-            swept++;
+            await this.payments.refund(appt.id, "No-show: session missed by both parties", "system");
+            refunded++;
         }
-        if (swept > 0) {
-            this.logger.log(`No-show sweep: auto-closed ${swept} appointment(s)`);
+        if (refunded > 0) {
+            this.logger.log(`No-show sweep: refunded ${refunded} no-show appointment(s)`);
         }
 
         // PENDING_PAYMENT appointments whose slot has already started → payment never arrived,

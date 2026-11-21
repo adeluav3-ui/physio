@@ -4,6 +4,7 @@ import { Card } from "@physio/ui";
 import { requireSession } from "@/lib/session";
 import { apiFetch, ApiError } from "@/lib/api";
 import { AutoConfirmPayment } from "../auto-confirm-payment";
+import { AdminForceRefundButton } from "./admin-force-refund-button";
 
 type AppointmentDetail = {
     id: string;
@@ -32,7 +33,7 @@ export default async function PatientAppointmentDetailPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
-    await requireSession(["PATIENT"]);
+    const session = await requireSession(["PATIENT", "ADMIN"]);
     const { id } = await params;
 
     let appt: AppointmentDetail;
@@ -130,6 +131,10 @@ export default async function PatientAppointmentDetailPage({
                     >
                         Leave a review
                     </Link>
+                )}
+
+                {session.role === "ADMIN" && (appt.status === "COMPLETED" || appt.status === "CONFIRMED" || appt.status === "IN_PROGRESS") && (
+                    <AdminForceRefundButton appointmentId={appt.id} />
                 )}
             </div>
         </div>
