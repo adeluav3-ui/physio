@@ -8,6 +8,7 @@ import { CancelPendingButton } from "./cancel-pending-button";
 type Appointment = {
     id: string;
     startsAt: string;
+    endsAt: string;
     status: string;
     mode: string;
     type: string;
@@ -44,8 +45,22 @@ function fmtTime(iso: string) {
     return new Date(iso).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 }
 
-function ApptCard({ a }: { a: Appointment }) {
+const JOIN_WINDOW_MS = 15 * 60 * 1000;
+
+function isJoinable(a: Appointment, now: number) {
+    if (a.mode !== "VIDEO") return false;
+    if (a.status === "IN_PROGRESS") return true;
+    if (a.status === "CONFIRMED") {
+        const start = new Date(a.startsAt).getTime();
+        const end = new Date(a.endsAt).getTime();
+        return now >= start - JOIN_WINDOW_MS && now <= end + 90 * 60 * 1000;
+    }
+    return false;
+}
+
+function ApptCard({ a, now }: { a: Appointment; now: number }) {
     const chip = STATUS_CHIP[a.status] ?? { background: "#f3f4f6", color: "#6b7280" };
+    const joinable = isJoinable(a, now);
     return (
         <div className="card" style={{ padding: "14px 20px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px" }}>
@@ -62,10 +77,19 @@ function ApptCard({ a }: { a: Appointment }) {
                     {STATUS_LABEL[a.status] ?? a.status}
                 </span>
             </div>
-            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", flexWrap: "wrap" }}>
-                <Link href={`/app/appointments/${a.id}`} style={{ font: "600 13px 'Figtree',sans-serif", color: "var(--blue-dark)", textDecoration: "none" }}>
-                    View details
-                </Link>
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                {joinable ? (
+                    <Link
+                        href={`/app/session/${a.id}`}
+                        style={{ display: "inline-block", padding: "8px 20px", borderRadius: 10, background: "var(--blue-dark)", color: "#fff", font: "600 13px 'Figtree',sans-serif", textDecoration: "none" }}
+                    >
+                        Join session
+                    </Link>
+                ) : (
+                    <Link href={`/app/appointments/${a.id}`} style={{ font: "600 13px 'Figtree',sans-serif", color: "var(--blue-dark)", textDecoration: "none" }}>
+                        View details
+                    </Link>
+                )}
                 {a.status === "PENDING_PAYMENT" && (
                     <>
                         <AutoConfirmPayment appointmentId={a.id} />
@@ -87,11 +111,13 @@ export default async function PatientAppointmentsPage() {
         // show empty state
     }
 
-    const now = new Date();
+    const nowMs = Date.now();
+    const now = new Date(nowMs);
 
     const pending  = appointments.filter(a => a.status === "PENDING_PAYMENT");
+    // IN_PROGRESS is always "upcoming" regardless of startsAt — session is live
     const upcoming = appointments
-        .filter(a => (a.status === "CONFIRMED" || a.status === "IN_PROGRESS") && new Date(a.startsAt) >= now)
+        .filter(a => a.status === "IN_PROGRESS" || (a.status === "CONFIRMED" && new Date(a.startsAt) >= now))
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     const past = appointments
         .filter(a => a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW")
@@ -112,7 +138,7 @@ export default async function PatientAppointmentsPage() {
                     </div>
                 ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        {items.map(a => <ApptCard key={a.id} a={a} />)}
+                        {items.map(a => <ApptCard key={a.id} a={a} now={nowMs} />)}
                     </div>
                 )}
             </div>
