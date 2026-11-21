@@ -440,22 +440,6 @@ export class BookingService {
             });
         });
 
-        // Guard against a concurrent payment race: if another appointment was confirmed
-        // for the same physio+time window while ours was in flight, refund ourselves.
-        const conflict = await this.prisma.client.appointment.findFirst({
-            where: {
-                physioId: appt.physioId,
-                id: { not: appointmentId },
-                status: "CONFIRMED",
-                startsAt: { lt: appt.endsAt },
-                endsAt: { gt: appt.startsAt },
-            },
-        });
-        if (conflict) {
-            await this.payments.refund(appointmentId, "Slot taken by concurrent booking", "system");
-            return;
-        }
-
         await this.payments.recordLedger({
             appointmentId,
             type: "CHARGE",

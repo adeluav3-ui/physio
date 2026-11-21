@@ -35,7 +35,6 @@ export class WalletService {
         const entries = await this.prisma.client.walletEntry.findMany({
             where: { patientId: user.id },
             orderBy: { createdAt: "desc" },
-            take: 50,
         });
 
         const balanceKobo = entries.reduce((sum, e) => sum + e.amountKobo, 0);
@@ -134,8 +133,13 @@ export class WalletService {
         return { status: "CREDITED", balanceKobo };
     }
 
-    /** Called by payments service when an appointment is refunded. */
+    /** Called by payments service when an appointment is refunded. Idempotent on appointmentId. */
     async creditRefund(patientId: string, amountKobo: number, appointmentId: string) {
+        const existing = await this.prisma.client.walletEntry.findFirst({
+            where: { patientId, ref: appointmentId, type: "REFUND_CREDIT" },
+        });
+        if (existing) return;
+
         await this.prisma.client.walletEntry.create({
             data: {
                 patientId,
