@@ -6,15 +6,16 @@ import { useState } from "react";
 import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
-    { href: "/admin",           label: "Home" },
-    { href: "/admin/physios",   label: "Verification" },
-    { href: "/admin/users",     label: "Users & professionals" },
-    { href: "/admin/referrals", label: "Referrals" },
-    { href: "/admin/payments",  label: "Payments & ledger" },
-    { href: "/admin/incidents", label: "Incidents" },
-    { href: "/admin/library",   label: "Library" },
-    { href: "/admin/waitlist",  label: "Waitlist" },
-    { href: "/admin/audit",     label: "Audit log" },
+    { href: "/admin",                label: "Home" },
+    { href: "/admin/physios",        label: "Verification" },
+    { href: "/admin/users",          label: "Users & professionals" },
+    { href: "/admin/appointments",   label: "Appointments" },
+    { href: "/admin/referrals",      label: "Referrals" },
+    { href: "/admin/payments",       label: "Payments & ledger" },
+    { href: "/admin/incidents",      label: "Incidents" },
+    { href: "/admin/library",        label: "Library" },
+    { href: "/admin/waitlist",       label: "Waitlist" },
+    { href: "/admin/audit",          label: "Audit log" },
 ];
 
 const IC_MENU = (
