@@ -350,7 +350,7 @@ model Appointment {
   patientId      String
   physioId       String
   dependentId    String?
-  intakeId       String?           @unique
+  intakeId       String?
   type           AppointmentType
   mode           SessionMode
   startsAt       DateTime
