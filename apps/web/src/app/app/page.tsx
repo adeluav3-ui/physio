@@ -177,6 +177,7 @@ export default async function PatientDashboard() {
                             weekday: "long",
                             hour: "2-digit",
                             minute: "2-digit",
+                            timeZone: "Africa/Lagos",
                         })}
                     </div>
                     <div style={{ font: "400 15px 'Figtree', sans-serif", marginTop: 2, color: "#c9d9ec" }}>

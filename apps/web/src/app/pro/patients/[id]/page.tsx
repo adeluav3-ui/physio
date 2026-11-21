@@ -315,7 +315,7 @@ export default function PatientRecordPage() {
                                         Triage · {triage.level}
                                     </div>
                                     <div style={{ font: "400 13px 'Figtree',sans-serif", color: triageColors.text, marginTop: "2px" }}>
-                                        Completed {new Date(intake!.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                                        Completed {new Date(intake!.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" })}
                                     </div>
                                 </div>
                             </div>
@@ -374,7 +374,7 @@ export default function PatientRecordPage() {
                         <div className="card">
                             <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: "0 0 14px" }}>Patient details</h2>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "14px" }}>
-                                <Detail label="Date of birth" value={p.patientProfile.dob ? new Date(p.patientProfile.dob).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" }) : "—"} />
+                                <Detail label="Date of birth" value={p.patientProfile.dob ? new Date(p.patientProfile.dob).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" }) : "—"} />
                                 <Detail label="Sex" value={p.patientProfile.sex ?? "—"} />
                                 <Detail label="Location" value={p.patientProfile.location ?? "—"} />
                                 <Detail label="Emergency contact" value={p.patientProfile.emergencyContact ?? "—"} />
@@ -394,8 +394,8 @@ export default function PatientRecordPage() {
                         <div key={a.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                             <div>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif" }}>
-                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-                                    {" · "}{new Date(a.startsAt).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" })}
+                                    {new Date(a.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" })}
+                                    {" · "}{new Date(a.startsAt).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })}
                                 </div>
                                 <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>{a.mode} · {a.type}</div>
                             </div>
@@ -420,7 +420,7 @@ export default function PatientRecordPage() {
                         <div key={n.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
-                                    {new Date(n.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                                    {new Date(n.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" })}
                                 </div>
                                 {n.signedAt ? <span className="chip ok">Signed</span> : <span className="chip">Draft</span>}
                             </div>
@@ -442,7 +442,7 @@ export default function PatientRecordPage() {
                                     <div style={{ font: "600 12px 'Figtree',sans-serif", color: "#4f6478", marginBottom: "8px" }}>Addenda</div>
                                     {n.addenda.map(ad => (
                                         <div key={ad.id} style={{ font: "400 13px 'Figtree',sans-serif", color: "#022449", marginBottom: "6px" }}>
-                                            <span style={{ color: "#4f6478", marginRight: "6px" }}>{new Date(ad.addedAt).toLocaleDateString()}</span>
+                                            <span style={{ color: "#4f6478", marginRight: "6px" }}>{new Date(ad.addedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" })}</span>
                                             {ad.body}
                                         </div>
                                     ))}
@@ -466,7 +466,7 @@ export default function PatientRecordPage() {
                         <div key={doc.id} className="card">
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
                                 <div style={{ font: "600 15px 'Figtree',sans-serif", color: "#022449" }}>
-                                    {new Date(doc.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric" })} · Patient summary
+                                    {new Date(doc.appointment.startsAt).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" })} · Patient summary
                                 </div>
                                 {doc.approvedAt ? <span className="chip ok">Approved</span> : <span className="chip">Draft</span>}
                             </div>

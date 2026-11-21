@@ -71,13 +71,14 @@ export default async function PatientAppointmentDetailPage({
                     <div>
                         <dt className="text-xs uppercase tracking-wide text-text-muted">When</dt>
                         <dd className="mt-0.5">
-                            {new Date(appt.startsAt).toLocaleString(undefined, {
+                            {new Date(appt.startsAt).toLocaleString("en-NG", {
                                 weekday: "long",
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
+                                timeZone: "Africa/Lagos",
                             })}
                         </dd>
                     </div>

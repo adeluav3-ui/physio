@@ -33,13 +33,15 @@ const STATUS_CHIP: Record<string, { background: string; color: string }> = {
     REFUNDED:        { background: "#f3f4f6", color: "#6b7280" },
 };
 
+const TZ = "Africa/Lagos";
+
 function fmt(iso: string) {
     return new Date(iso).toLocaleDateString("en-NG", {
-        weekday: "short", day: "numeric", month: "short", year: "numeric",
+        weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: TZ,
     });
 }
 function fmtTime(iso: string) {
-    return new Date(iso).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit" });
+    return new Date(iso).toLocaleTimeString("en-NG", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 }
 
 function ApptCard({ a }: { a: Appointment }) {

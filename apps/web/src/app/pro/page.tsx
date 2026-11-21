@@ -86,7 +86,7 @@ export default async function ProHome() {
                         today.map(a => (
                             <div key={a.id} className="row" style={{ marginTop: "10px" }}>
                                 <span style={{ width: "64px", font: "700 15px 'Figtree',sans-serif" }}>
-                                    {new Date(a.startsAt).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit" })}
+                                    {new Date(a.startsAt).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })}
                                 </span>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ font: "600 15px 'Figtree',sans-serif" }}>{a.patient.user.name}</div>
