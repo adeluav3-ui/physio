@@ -8,7 +8,7 @@ export type Slot = {
     mode: "VIDEO" | "HOME" | "CHAT" | "ANY";
 };
 
-const MIN_NOTICE_MS = 2 * 60 * 60 * 1000; // 2 hours
+const MIN_NOTICE_MS = 1 * 60 * 60 * 1000; // 1 hour
 
 @Injectable()
 export class SlotService {
