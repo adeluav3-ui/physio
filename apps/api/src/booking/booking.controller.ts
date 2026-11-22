@@ -30,6 +30,12 @@ export class BookingController {
         return this.booking.book(user, body);
     }
 
+    @Post("express")
+    @Roles("PATIENT")
+    bookExpress(@CurrentUser() user: SessionUser, @Body() body: { physioId: string }) {
+        return this.booking.bookExpress(user, body.physioId);
+    }
+
     @Get("my-specialists")
     @Roles("PATIENT")
     getMySpecialists(@CurrentUser() user: SessionUser) {

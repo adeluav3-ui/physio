@@ -20,6 +20,7 @@ function CallbackInner() {
     const router = useRouter();
     const params = useSearchParams();
     const reference = params.get("reference") ?? params.get("trxref");
+    const appointmentId = params.get("appointmentId");
     const [state, setState] = useState<State>("verifying");
     const attempts = useRef(0);
 
@@ -39,7 +40,8 @@ function CallbackInner() {
 
                 if (status === "CONFIRMED") {
                     if (!cancelled) setState("confirmed");
-                    setTimeout(() => { if (!cancelled) router.replace("/app/appointments"); }, 2500);
+                    const dest = appointmentId ? `/app/appointments/${appointmentId}` : "/app/appointments";
+                    setTimeout(() => { if (!cancelled) router.replace(dest); }, 2500);
                     return;
                 }
 
@@ -98,7 +100,7 @@ function CallbackInner() {
             </p>
             <button
                 type="button"
-                onClick={() => router.replace("/app/appointments")}
+                onClick={() => router.replace(appointmentId ? `/app/appointments/${appointmentId}` : "/app/appointments")}
                 style={{ marginTop: "20px", padding: "12px 24px", borderRadius: "12px", background: "#1b7d0e", color: "#fff", font: "600 15px 'Figtree',sans-serif", border: 0, cursor: "pointer" }}
             >
                 View my appointments

@@ -311,6 +311,110 @@ export class BookingService {
         return appt;
     }
 
+    async bookExpress(user: SessionUser, physioId: string) {
+        if (user.role !== "PATIENT") {
+            throw new ForbiddenException({ code: "FORBIDDEN", message: "Only patients can book" });
+        }
+
+        const physio = await this.prisma.client.physioProfile.findUnique({
+            where: { userId: physioId },
+            include: { user: true },
+        });
+        if (!physio) throw new NotFoundException({ code: "PHYSIO_NOT_FOUND", message: "Physio not found" });
+        if (physio.licenceStatus !== "VERIFIED") {
+            throw new BadRequestException({ code: "PHYSIO_NOT_VERIFIED", message: "This physio is not yet verified" });
+        }
+
+        const complete = await this.patients.isComplete(user.id);
+        if (!complete) {
+            throw new BadRequestException({
+                code: "PROFILE_INCOMPLETE",
+                message: "Please complete your profile details before booking",
+            });
+        }
+
+        const now = new Date();
+        const startsAt = new Date(now.getTime() - 60_000);
+        const endsAt = new Date(now.getTime() + 89 * 60_000);
+        const baseAmountKobo = FIRST_CONSULT_PRICE_KOBO;
+        const amountKobo = baseAmountKobo + calcServiceFee(baseAmountKobo);
+        const reference = `appt-${randomUUID()}`;
+
+        const walletBalance = await this.wallet.getBalanceInternal(user.id);
+        const walletPortion = Math.min(walletBalance, amountKobo);
+        const paystackAmount = amountKobo - walletPortion;
+
+        if (paystackAmount === 0) {
+            const appointment = await this.prisma.client.$transaction(async (tx) => {
+                const appt = await tx.appointment.create({
+                    data: {
+                        patientId: user.id,
+                        physioId,
+                        type: "ASSESSMENT",
+                        mode: "VIDEO",
+                        startsAt,
+                        endsAt,
+                        status: "CONFIRMED",
+                    },
+                });
+                await tx.payment.create({
+                    data: {
+                        appointmentId: appt.id,
+                        amountKobo,
+                        walletAmountKobo: amountKobo,
+                        status: "HELD",
+                        providerRef: reference,
+                    },
+                });
+                return appt;
+            });
+
+            await this.wallet.sessionDebit(user.id, amountKobo, appointment.id);
+            await this.payments.recordLedger({ appointmentId: appointment.id, type: "CHARGE", amountKobo, note: "Paid from wallet (express)" });
+            await this.payments.recordLedger({ appointmentId: appointment.id, type: "HOLD", amountKobo: -amountKobo, note: "Held pending session completion" });
+            await this.audit.record({ actorId: user.id, action: "booking.create", entity: "Appointment", entityId: appointment.id });
+            await this.notifications.sendAppointmentConfirmed(appointment.id);
+            return { appointmentId: appointment.id, authorizationUrl: null, reference };
+        }
+
+        const appointment = await this.prisma.client.$transaction(async (tx) => {
+            const appt = await tx.appointment.create({
+                data: {
+                    patientId: user.id,
+                    physioId,
+                    type: "ASSESSMENT",
+                    mode: "VIDEO",
+                    startsAt,
+                    endsAt,
+                    status: "PENDING_PAYMENT",
+                },
+            });
+            await tx.payment.create({
+                data: {
+                    appointmentId: appt.id,
+                    amountKobo,
+                    walletAmountKobo: walletPortion,
+                    status: "PENDING",
+                    providerRef: reference,
+                },
+            });
+            return appt;
+        });
+
+        const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+        const init = await this.payments.initializeCharge({
+            email: user.email,
+            amountKobo: paystackAmount,
+            currency: "NGN",
+            reference,
+            callbackUrl: `${appUrl}/app/payments/callback?appointmentId=${appointment.id}`,
+            metadata: { appointmentId: appointment.id },
+        });
+
+        await this.audit.record({ actorId: user.id, action: "booking.create", entity: "Appointment", entityId: appointment.id });
+        return { appointmentId: appointment.id, authorizationUrl: init.authorizationUrl, reference };
+    }
+
     async listAll(user: SessionUser, limit = 50, offset = 0) {
         const appts = await this.prisma.client.appointment.findMany({
             orderBy: { startsAt: "desc" },
