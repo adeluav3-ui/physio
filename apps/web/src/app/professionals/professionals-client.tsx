@@ -118,7 +118,6 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
                                 <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif" }}>per session</div>
                                 <div style={{ font: "700 18px 'Figtree',sans-serif", marginTop: "6px" }}>₦{(p.rateKobo / 100).toLocaleString()}</div>
                                 <Link href={`/professionals/${p.userId}`} className="btn" style={{ marginTop: "10px", width: "100%", display: "inline-flex" }}>Book</Link>
-                                <Link href={`/app/book/express/${p.userId}`} className="btn" style={{ marginTop: "8px", width: "100%", display: "inline-flex", background: "#0d6e8a" }}>Express meeting</Link>
                             </div>
                         </div>
                     ))

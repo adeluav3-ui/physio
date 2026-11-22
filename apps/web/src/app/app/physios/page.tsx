@@ -304,7 +304,10 @@ function FindPhysioInner() {
                                                 <div style={{ font: "700 15px 'Figtree',sans-serif" }}>₦10,000</div>
                                                 <div style={{ font: "400 11px 'Figtree',sans-serif", color: "#4f6478" }}>first consult</div>
                                             </div>
-                                            <Link href={`/app/book/${p.userId}`} style={{ ...S.btn(true), flexShrink: 0 }}>Book</Link>
+                                            <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
+                                                <Link href={`/app/book/${p.userId}`} style={{ ...S.btn(true) }}>Book</Link>
+                                                <Link href={`/app/book/express/${p.userId}`} style={{ ...S.btn(true), background: "#0d6e8a" }}>Express</Link>
+                                            </div>
                                         </>
                                     ) : (
                                         <>
