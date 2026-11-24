@@ -46,14 +46,19 @@ function fmtTime(iso: string) {
 }
 
 const JOIN_WINDOW_MS = 15 * 60 * 1000;
+const HARD_END_MS = 90 * 60 * 1000; // matches SESSION_HARD_END_MIN in shared
+
+function isStaleInProgress(a: Appointment, now: number) {
+    return a.status === "IN_PROGRESS" && new Date(a.endsAt).getTime() + HARD_END_MS < now;
+}
 
 function isJoinable(a: Appointment, now: number) {
     if (a.mode !== "VIDEO") return false;
-    if (a.status === "IN_PROGRESS") return true;
+    if (a.status === "IN_PROGRESS") return !isStaleInProgress(a, now);
     if (a.status === "CONFIRMED") {
         const start = new Date(a.startsAt).getTime();
         const end = new Date(a.endsAt).getTime();
-        return now >= start - JOIN_WINDOW_MS && now <= end + 90 * 60 * 1000;
+        return now >= start - JOIN_WINDOW_MS && now <= end + HARD_END_MS;
     }
     return false;
 }
@@ -115,12 +120,19 @@ export default async function PatientAppointmentsPage() {
     const now = new Date(nowMs);
 
     const pending  = appointments.filter(a => a.status === "PENDING_PAYMENT");
-    // IN_PROGRESS is always "upcoming" regardless of startsAt — session is live
+    // Active IN_PROGRESS (still in join window) + future CONFIRMED → Upcoming
+    // Stale IN_PROGRESS (window passed 90+ min ago) falls through to Past
     const upcoming = appointments
-        .filter(a => a.status === "IN_PROGRESS" || (a.status === "CONFIRMED" && new Date(a.startsAt) >= now))
+        .filter(a =>
+            (a.status === "IN_PROGRESS" && !isStaleInProgress(a, nowMs)) ||
+            (a.status === "CONFIRMED" && new Date(a.startsAt) >= now)
+        )
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     const past = appointments
-        .filter(a => a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW")
+        .filter(a =>
+            a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW" ||
+            isStaleInProgress(a, nowMs)
+        )
         .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     const cancelled = appointments
         .filter(a => a.status === "CANCELLED")

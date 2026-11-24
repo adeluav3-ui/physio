@@ -57,6 +57,14 @@ export class SessionsService {
             });
         }
         if (now > late) {
+            // Auto-complete stale IN_PROGRESS sessions so they don't stay stuck forever.
+            if (appt.status === "IN_PROGRESS") {
+                await this.prisma.client.appointment.update({
+                    where: { id: appt.id },
+                    data: { status: "COMPLETED" },
+                });
+                this.events.emit("session.completed", { appointmentId: appt.id });
+            }
             throw new BadRequestException({ code: "TOO_LATE", message: "This session window has passed" });
         }
 
