@@ -5,6 +5,7 @@ import {
     useDaily,
     useParticipantIds,
     DailyVideo,
+    DailyAudio,
     useLocalSessionId,
     useDailyEvent,
 } from "@daily-co/daily-react";
@@ -19,7 +20,13 @@ interface DailyCallFrameProps {
 
 export function DailyCallFrame({ url, token, micOn = true, cameraOn = true }: DailyCallFrameProps) {
     return (
-        <DailyProvider url={url} token={token} dailyConfig={{ useDevicePreferenceCookies: true }}>
+        <DailyProvider
+            url={url}
+            token={token}
+            dailyConfig={{
+                useDevicePreferenceCookies: true,
+            }}
+        >
             <CallContent micOn={micOn} cameraOn={cameraOn} />
         </DailyProvider>
     );
@@ -35,7 +42,6 @@ function CallContent({ micOn, cameraOn }: { micOn: boolean; cameraOn: boolean })
     });
 
     useEffect(() => {
-        // Join with initial device state; ongoing changes handled by effects below.
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         daily?.join({ startAudioOff: !micOn, startVideoOff: !cameraOn });
         return () => {
@@ -45,7 +51,7 @@ function CallContent({ micOn, cameraOn }: { micOn: boolean; cameraOn: boolean })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [daily]);
 
-    // Sync mic after joining (localId becomes non-null once we're in the room).
+    // Sync mic after joining.
     useEffect(() => {
         if (!localId || !daily) return;
         daily.setLocalAudio(micOn);
@@ -59,6 +65,9 @@ function CallContent({ micOn, cameraOn }: { micOn: boolean; cameraOn: boolean })
 
     return (
         <div className="relative h-full w-full bg-black">
+            {/* DailyAudio renders an <audio> element for every remote participant */}
+            <DailyAudio />
+
             {remoteIds.length > 0 ? (
                 remoteIds.map((id) => (
                     <DailyVideo

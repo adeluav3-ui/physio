@@ -178,7 +178,9 @@ export default function PatientSessionPage() {
     }
 
     if (phase === "in-session" && join) {
-        const isYouTube = pendingExercise && pendingExercise.exercise.videoUrl.length === 11;
+        const rawUrl = pendingExercise?.exercise.videoUrl ?? "";
+        const isYouTube = rawUrl.length === 11 && !rawUrl.includes("/");
+        const isHttpUrl = rawUrl.startsWith("http");
         return (
             <div style={{ display: "flex", height: "100dvh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif", overflow: "hidden" }}>
                 <div style={{ flex: 1, position: "relative" }}>
@@ -238,16 +240,16 @@ export default function PatientSessionPage() {
                                 {/* Animation / video */}
                                 {isYouTube ? (
                                     <iframe
-                                        src={`https://www.youtube-nocookie.com/embed/${pendingExercise.exercise.videoUrl}?autoplay=0&rel=0`}
+                                        src={`https://www.youtube-nocookie.com/embed/${rawUrl}?autoplay=0&rel=0`}
                                         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         style={{ width: "100%", height: 220, border: 0, display: "block" }}
                                         title={pendingExercise.exercise.name}
                                     />
-                                ) : pendingExercise.exercise.videoUrl ? (
+                                ) : isHttpUrl ? (
                                     <div style={{ width: "100%", background: "#0a0a0a", display: "flex", justifyContent: "center" }}>
                                         <img
-                                            src={pendingExercise.exercise.videoUrl}
+                                            src={rawUrl}
                                             alt={pendingExercise.exercise.name}
                                             style={{ maxHeight: 220, maxWidth: "100%", objectFit: "contain", display: "block" }}
                                         />

@@ -11,8 +11,8 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@daily-co/daily-js": "^0.74.0",
-        "@daily-co/daily-react": "^0.22.0",
+        "@daily-co/daily-js": "^0.95.0",
+        "@daily-co/daily-react": "^0.26.1",
         "@physio/shared": "workspace:*",
         "@physio/ui": "workspace:*",
         "@radix-ui/react-dialog": "^1.1.2",

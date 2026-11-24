@@ -500,7 +500,7 @@ export default function PhysioSessionPage() {
                                         return (
                                             <div key={ex.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderTop: `1px solid #e4ebf2` }}>
                                                 <div style={{ width: 64, height: 48, borderRadius: 8, background: "#cdddea", flexShrink: 0, overflow: "hidden" }}>
-                                                    {ex.videoUrl && ex.videoUrl.length !== 11 && (
+                                                    {ex.videoUrl?.startsWith("http") && (
                                                         <img src={ex.videoUrl} alt={ex.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                                     )}
                                                 </div>
