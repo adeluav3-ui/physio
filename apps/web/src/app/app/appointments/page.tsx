@@ -120,18 +120,19 @@ export default async function PatientAppointmentsPage() {
     const now = new Date(nowMs);
 
     const pending  = appointments.filter(a => a.status === "PENDING_PAYMENT");
-    // Active IN_PROGRESS (still in join window) + future CONFIRMED → Upcoming
-    // Stale IN_PROGRESS (window passed 90+ min ago) falls through to Past
+    // Upcoming: active IN_PROGRESS + any CONFIRMED whose join window hasn't closed
+    // (use endsAt not startsAt so express meetings with startsAt in the past are included)
     const upcoming = appointments
         .filter(a =>
             (a.status === "IN_PROGRESS" && !isStaleInProgress(a, nowMs)) ||
-            (a.status === "CONFIRMED" && new Date(a.startsAt) >= now)
+            (a.status === "CONFIRMED" && new Date(a.endsAt).getTime() + HARD_END_MS >= nowMs)
         )
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     const past = appointments
         .filter(a =>
             a.status === "COMPLETED" || a.status === "REFUNDED" || a.status === "NO_SHOW" ||
-            isStaleInProgress(a, nowMs)
+            isStaleInProgress(a, nowMs) ||
+            (a.status === "CONFIRMED" && new Date(a.endsAt).getTime() + HARD_END_MS < nowMs)
         )
         .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     const cancelled = appointments
