@@ -168,7 +168,7 @@ export default async function PatientDashboard() {
                 </div>
             )}
 
-            {/* Next session card */}
+            {/* Next session card — always shown when there is one; "no upcoming" only shown to new patients without a specialist yet */}
             {nextAppointment ? (
                 <div style={{ background: NAV, border: `1px solid ${NAV}`, borderRadius: 16, padding: 16, color: "#fff" }}>
                     <div style={{ font: "600 13px 'Figtree', sans-serif", color: "#9fc1e0" }}>Next session</div>
@@ -190,7 +190,7 @@ export default async function PatientDashboard() {
                         View appointment
                     </Link>
                 </div>
-            ) : (
+            ) : specialists.length === 0 ? (
                 <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 16 }}>
                     <p style={{ font: "400 15px 'Figtree', sans-serif", color: MUTED, margin: 0 }}>
                         No upcoming appointments.
@@ -199,7 +199,7 @@ export default async function PatientDashboard() {
                         Start intake
                     </Link>
                 </div>
-            )}
+            ) : null}
 
             {/* Today's tasks */}
             {today.total > 0 && (

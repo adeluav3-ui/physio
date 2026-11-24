@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { TriageResultCard } from "@physio/ui";
 
 type TriageLevel = "GREEN" | "AMBER" | "RED";
+type Specialist = { physio: { userId: string; user: { name: string } } };
 
 export default function TriageResultPage() {
     const searchParams = useSearchParams();
@@ -14,15 +15,25 @@ export default function TriageResultPage() {
     const [level, setLevel] = useState<TriageLevel | null>(null);
     const [reasons, setReasons] = useState<string[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [specialists, setSpecialists] = useState<Specialist[]>([]);
 
     useEffect(() => {
         if (!id) { setError("No result found."); return; }
-        fetch(`/api/proxy/triage/${id}`)
-            .then(async (r) => {
-                if (!r.ok) throw new Error("Could not load result.");
-                return r.json() as Promise<{ triage: { level: TriageLevel; reasons: string[] } }>;
+        Promise.all([
+            fetch(`/api/proxy/triage/${id}`)
+                .then(async (r) => {
+                    if (!r.ok) throw new Error("Could not load result.");
+                    return r.json() as Promise<{ triage: { level: TriageLevel; reasons: string[] } }>;
+                }),
+            fetch("/api/proxy/booking/my-specialists")
+                .then((r) => r.ok ? r.json() as Promise<Specialist[]> : [])
+                .catch(() => [] as Specialist[]),
+        ])
+            .then(([d, specs]) => {
+                setLevel(d.triage.level);
+                setReasons(d.triage.reasons);
+                setSpecialists(specs);
             })
-            .then((d) => { setLevel(d.triage.level); setReasons(d.triage.reasons); })
             .catch(() => setError("Could not load your result. Please try again."));
     }, [id]);
 
@@ -42,20 +53,36 @@ export default function TriageResultPage() {
         );
     }
 
+    const existingSpecialist = specialists[0] ?? null;
+
+    const primaryAction = level !== "RED" ? {
+        label: existingSpecialist
+            ? `Book with ${existingSpecialist.physio.user.name.split(" ")[0]}`
+            : "Find a professional",
+        onClick: () => router.push(
+            existingSpecialist
+                ? `/app/book/${existingSpecialist.physio.userId}/followup`
+                : "/app/physios"
+        ),
+    } : undefined;
+
+    const secondaryAction = {
+        label: level === "RED"
+            ? "I understand"
+            : existingSpecialist
+                ? "Choose a different specialist"
+                : "Back to home",
+        onClick: () => router.push(
+            level === "RED" || !existingSpecialist ? "/app" : "/app/physios"
+        ),
+    };
+
     return (
         <TriageResultCard
             level={level}
             reasons={reasons}
-            {...(level !== "RED" && {
-                primaryAction: {
-                    label: "Find a professional",
-                    onClick: () => router.push("/app/physios"),
-                },
-            })}
-            secondaryAction={{
-                label: level === "RED" ? "I understand" : "Back to home",
-                onClick: () => router.push("/app"),
-            }}
+            {...(primaryAction ? { primaryAction } : {})}
+            secondaryAction={secondaryAction}
             {...(level === "RED"
                 ? {
                     emergencyContacts: [
