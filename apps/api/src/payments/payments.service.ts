@@ -1,7 +1,7 @@
 import { BadGatewayException, BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
-import { type SessionUser, PLATFORM_FEE_BPS, RELEASE_DELAY_HOURS } from "@physio/shared";
+import { type SessionUser, PLATFORM_FEE_BPS, RELEASE_DELAY_HOURS, SERVICE_FEE_BPS, SERVICE_FEE_CAP_KOBO } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 
@@ -90,8 +90,19 @@ export class PaymentsService {
         });
         if (!payment || payment.status !== "HELD") return;
 
-        const platformFee = Math.round((payment.amountKobo * PLATFORM_FEE_BPS) / 10_000);
-        const physioPayout = payment.amountKobo - platformFee;
+        // Strip service fee from gross total to get the base booking price,
+        // then apply commission only to that base. Service fee always passes
+        // through to the platform unchanged.
+        const totalKobo = payment.amountKobo;
+        const potentialBase = Math.round((totalKobo * 10_000) / (10_000 + SERVICE_FEE_BPS));
+        const potentialServiceFee = Math.round((potentialBase * SERVICE_FEE_BPS) / 10_000);
+        const baseKobo = potentialServiceFee < SERVICE_FEE_CAP_KOBO
+            ? potentialBase
+            : totalKobo - SERVICE_FEE_CAP_KOBO;
+        const commission = Math.round((baseKobo * PLATFORM_FEE_BPS) / 10_000);
+        const serviceFee = totalKobo - baseKobo;
+        const platformFee = commission + serviceFee;
+        const physioPayout = baseKobo - commission;
 
         await this.prisma.client.$transaction(async (tx) => {
             await tx.payment.update({
@@ -317,9 +328,14 @@ export class PaymentsService {
         const pendingPayouts = pendingAppts.map((a) => {
             const signedAt = a.notes!.signedAt!;
             const releaseAt = new Date(signedAt.getTime() + RELEASE_DELAY_HOURS * 3_600_000);
-            const estimatedKobo = a.payment
-                ? Math.round(a.payment.amountKobo * (1 - PLATFORM_FEE_BPS / 10_000))
-                : 0;
+            const estimatedKobo = (() => {
+                if (!a.payment) return 0;
+                const tot = a.payment.amountKobo;
+                const potBase = Math.round((tot * 10_000) / (10_000 + SERVICE_FEE_BPS));
+                const potFee = Math.round((potBase * SERVICE_FEE_BPS) / 10_000);
+                const base = potFee < SERVICE_FEE_CAP_KOBO ? potBase : tot - SERVICE_FEE_CAP_KOBO;
+                return base - Math.round((base * PLATFORM_FEE_BPS) / 10_000);
+            })();
             return {
                 appointmentId: a.id,
                 startsAt: a.startsAt.toISOString(),
