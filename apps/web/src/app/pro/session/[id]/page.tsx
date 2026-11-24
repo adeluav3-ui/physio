@@ -119,6 +119,8 @@ export default function PhysioSessionPage() {
     const [referError, setReferError] = useState<string | null>(null);
     const [diagnostics, setDiagnostics] = useState<DiagnosticEntry[]>([]);
     const [sendingDx, setSendingDx] = useState<string | null>(null);
+    const [chatOpen, setChatOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
     // Join + load session data in parallel
@@ -392,7 +394,7 @@ export default function PhysioSessionPage() {
                 {/* ── Center: video ── */}
                 <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ flex: 1, borderRadius: 18, background: NAV, position: "relative", overflow: "hidden", minHeight: 0 }}>
-                        <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} />
+                        <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} chatOpen={chatOpen} onUnreadMessage={() => setUnreadCount((c) => c + 1)} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "center", gap: 10, flexShrink: 0, paddingBottom: 4 }}>
                         <button
@@ -410,10 +412,10 @@ export default function PhysioSessionPage() {
                         <button style={roundBtn}>Audio only</button>
                         <button style={roundBtn}>Share screen</button>
                         <button
-                            onClick={() => setActiveTab("notes")}
-                            style={{ ...roundBtn, background: "#e6f4e1", borderColor: GREEN, color: "#0f5a08" }}
+                            onClick={() => { setChatOpen((v) => !v); setUnreadCount(0); }}
+                            style={{ ...roundBtn, ...(chatOpen ? { background: "#e6f4e1", borderColor: GREEN, color: "#0f5a08" } : {}), position: "relative" }}
                         >
-                            Chat
+                            Chat{unreadCount > 0 && !chatOpen ? ` (${unreadCount})` : ""}
                         </button>
                     </div>
                 </main>
@@ -497,11 +499,15 @@ export default function PhysioSessionPage() {
                                     {filteredEx.map((ex) => {
                                         const alreadySent = diagnostics.some((d) => d.exerciseId === ex.id);
                                         const isSending = sendingDx === ex.id;
+                                        const ytId = ex.videoUrl && ex.videoUrl.length === 11 && !ex.videoUrl.includes("/") ? ex.videoUrl : null;
+                                        const imgSrc = ytId
+                                            ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`
+                                            : (ex.videoUrl?.startsWith("http") ? ex.videoUrl : null);
                                         return (
                                             <div key={ex.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderTop: `1px solid #e4ebf2` }}>
                                                 <div style={{ width: 64, height: 48, borderRadius: 8, background: "#cdddea", flexShrink: 0, overflow: "hidden" }}>
-                                                    {ex.videoUrl?.startsWith("http") && (
-                                                        <img src={ex.videoUrl} alt={ex.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                                    {imgSrc && (
+                                                        <img src={imgSrc} alt={ex.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                                     )}
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: 0 }}>

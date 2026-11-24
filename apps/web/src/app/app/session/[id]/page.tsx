@@ -45,6 +45,8 @@ export default function PatientSessionPage() {
     const [dxPain, setDxPain] = useState(0);
     const [dxNote, setDxNote] = useState("");
     const [dxSubmitting, setDxSubmitting] = useState(false);
+    const [chatOpen, setChatOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     // Check devices on mount
     useEffect(() => {
@@ -184,7 +186,7 @@ export default function PatientSessionPage() {
         return (
             <div style={{ display: "flex", height: "100dvh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif", overflow: "hidden" }}>
                 <div style={{ flex: 1, position: "relative" }}>
-                    <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} />
+                    <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} chatOpen={chatOpen} onUnreadMessage={() => setUnreadCount((c) => c + 1)} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "center", gap: 12, padding: "20px 0 24px", background: NAV }}>
                     <button
@@ -197,7 +199,15 @@ export default function PatientSessionPage() {
                         style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: cameraOn ? "#fff" : "#fee2e2", color: cameraOn ? NAV : "#b91c1c", border: cameraOn ? "1px solid #c3d1de" : "1px solid #b91c1c", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
                         {cameraOn ? "Camera" : "No cam"}
                     </button>
-                    <button style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff", color: NAV, border: "1px solid #c3d1de", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer" }}>
+                    <button
+                        onClick={() => { setChatOpen((v) => !v); setUnreadCount(0); }}
+                        style={{ width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: chatOpen ? "#e6f4e1" : "#fff", color: chatOpen ? "#0f5a08" : NAV, border: chatOpen ? "1px solid #1b7d0e" : "1px solid #c3d1de", font: "600 12px 'Figtree', sans-serif", textAlign: "center", cursor: "pointer", position: "relative" }}
+                    >
+                        {unreadCount > 0 && !chatOpen ? (
+                            <span style={{ position: "absolute", top: 2, right: 2, width: 16, height: 16, borderRadius: "50%", background: "#b42318", color: "#fff", font: "700 10px 'Figtree', sans-serif", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                {unreadCount > 9 ? "9+" : unreadCount}
+                            </span>
+                        ) : null}
                         Chat
                     </button>
                     <button
