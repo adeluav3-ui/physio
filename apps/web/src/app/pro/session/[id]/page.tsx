@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { DailyCallFrame } from "@/components/daily-call";
+
+const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
 
 type JoinData = {
     roomUrl: string;
@@ -42,10 +45,12 @@ type Exercise = {
     id: string;
     name: string;
     region: string;
-    videoUrl: string;
+    videoUrl: string | null;
     cues: string;
     difficulty: number;
     clinicalReview: boolean;
+    poseKey: string | null;
+    poseData: unknown;
 };
 
 type DiagnosticEntry = {
@@ -505,10 +510,15 @@ export default function PhysioSessionPage() {
                                             : (ex.videoUrl?.startsWith("http") ? ex.videoUrl : null);
                                         return (
                                             <div key={ex.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderTop: `1px solid #e4ebf2` }}>
-                                                <div style={{ width: 64, height: 48, borderRadius: 8, background: "#cdddea", flexShrink: 0, overflow: "hidden" }}>
-                                                    {imgSrc && (
+                                                <div style={{ width: 80, height: 60, borderRadius: 8, background: "#cdddea", flexShrink: 0, overflow: "hidden" }}>
+                                                    {ex.poseKey ? (
+                                                        <ExerciseViewer
+                                                            csvId={ex.poseKey}
+                                                            poseOverride={ex.poseData ?? undefined}
+                                                        />
+                                                    ) : imgSrc ? (
                                                         <img src={imgSrc} alt={ex.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                                    )}
+                                                    ) : null}
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                     <div style={{ font: "600 14px 'Figtree', sans-serif" }}>{ex.name}</div>

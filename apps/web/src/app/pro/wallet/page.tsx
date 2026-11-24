@@ -281,7 +281,10 @@ export default function ProWalletPage() {
                                         {p.appointment.patient.user.name}
                                     </div>
                                     <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif", marginTop: "1px" }}>
-                                        Session on {fmtDate(p.appointment.startsAt)}
+                                        Session {fmtDate(p.appointment.startsAt)}
+                                    </div>
+                                    <div className="muted" style={{ font: "400 12px 'Figtree',sans-serif", marginTop: "1px" }}>
+                                        Released {fmtDate(p.createdAt)}
                                     </div>
                                 </div>
                                 <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#0f5a08", flexShrink: 0 }}>

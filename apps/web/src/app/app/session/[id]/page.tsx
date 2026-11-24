@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { DailyCallFrame } from "@/components/daily-call";
+
+const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { ssr: false });
 
 type JoinData = { roomUrl: string; token: string; appointment: { id: string; startsAt: string; endsAt: string } };
 
@@ -16,9 +19,11 @@ type DiagnosticExercise = {
         id: string;
         name: string;
         region: string;
-        videoUrl: string;
+        videoUrl: string | null;
         cues: string;
         contraindications: string | null;
+        poseKey: string | null;
+        poseData: unknown;
     };
 };
 
@@ -247,8 +252,15 @@ export default function PatientSessionPage() {
                             </div>
 
                             <div style={{ flex: 1, overflowY: "auto" }}>
-                                {/* Animation / video */}
-                                {isYouTube ? (
+                                {/* Animation / video — 3D pose viewer takes priority over YouTube */}
+                                {pendingExercise.exercise.poseKey ? (
+                                    <div style={{ padding: "12px 20px 0" }}>
+                                        <ExerciseViewer
+                                            csvId={pendingExercise.exercise.poseKey}
+                                            poseOverride={pendingExercise.exercise.poseData ?? undefined}
+                                        />
+                                    </div>
+                                ) : isYouTube ? (
                                     <iframe
                                         src={`https://www.youtube-nocookie.com/embed/${rawUrl}?autoplay=0&rel=0`}
                                         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

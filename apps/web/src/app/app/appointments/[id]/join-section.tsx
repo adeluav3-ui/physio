@@ -49,7 +49,7 @@ export function JoinSection({
         return (
             <Link
                 href={`/app/session/${appointmentId}`}
-                className="block rounded-lg bg-primary-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-primary-700"
+                style={{ display: "block", padding: "14px 20px", borderRadius: 10, background: "#076889", color: "#fff", fontFamily: "'Figtree',sans-serif", fontWeight: 600, fontSize: 15, textAlign: "center", textDecoration: "none" }}
             >
                 Join session
             </Link>
