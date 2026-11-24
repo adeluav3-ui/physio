@@ -23,11 +23,13 @@ interface DailyCallFrameProps {
     token: string;
     micOn?: boolean;
     cameraOn?: boolean;
+    screenShareOn?: boolean;
+    onScreenShareStop?: () => void;
     chatOpen?: boolean;
     onUnreadMessage?: () => void;
 }
 
-export function DailyCallFrame({ url, token, micOn = true, cameraOn = true, chatOpen, onUnreadMessage }: DailyCallFrameProps) {
+export function DailyCallFrame({ url, token, micOn = true, cameraOn = true, screenShareOn = false, onScreenShareStop, chatOpen, onUnreadMessage }: DailyCallFrameProps) {
     return (
         <DailyProvider
             url={url}
@@ -36,14 +38,16 @@ export function DailyCallFrame({ url, token, micOn = true, cameraOn = true, chat
                 useDevicePreferenceCookies: true,
             }}
         >
-            <CallContent micOn={micOn} cameraOn={cameraOn} chatOpen={chatOpen ?? false} onUnreadMessage={onUnreadMessage} />
+            <CallContent micOn={micOn} cameraOn={cameraOn} screenShareOn={screenShareOn} onScreenShareStop={onScreenShareStop} chatOpen={chatOpen ?? false} onUnreadMessage={onUnreadMessage} />
         </DailyProvider>
     );
 }
 
-function CallContent({ micOn, cameraOn, chatOpen, onUnreadMessage }: {
+function CallContent({ micOn, cameraOn, screenShareOn, onScreenShareStop, chatOpen, onUnreadMessage }: {
     micOn: boolean;
     cameraOn: boolean;
+    screenShareOn: boolean;
+    onScreenShareStop: (() => void) | undefined;
     chatOpen: boolean;
     onUnreadMessage: (() => void) | undefined;
 }) {
@@ -54,11 +58,18 @@ function CallContent({ micOn, cameraOn, chatOpen, onUnreadMessage }: {
     const [draft, setDraft] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const onUnreadRef = useRef(onUnreadMessage);
+    const onScreenShareStopRef = useRef(onScreenShareStop);
 
     useEffect(() => { onUnreadRef.current = onUnreadMessage; }, [onUnreadMessage]);
+    useEffect(() => { onScreenShareStopRef.current = onScreenShareStop; }, [onScreenShareStop]);
 
     useDailyEvent("left-meeting", () => {
         // The parent handles navigation.
+    });
+
+    // Browser-side stop (user clicks "Stop sharing" in OS/browser prompt).
+    useDailyEvent("local-screen-share-stopped", () => {
+        onScreenShareStopRef.current?.();
     });
 
     useEffect(() => {
@@ -82,6 +93,16 @@ function CallContent({ micOn, cameraOn, chatOpen, onUnreadMessage }: {
         if (!localId || !daily) return;
         daily.setLocalVideo(cameraOn);
     }, [daily, localId, cameraOn]);
+
+    // Sync screen share: start when prop flips on, stop when it flips off.
+    useEffect(() => {
+        if (!localId || !daily) return;
+        if (screenShareOn) {
+            void daily.startScreenShare();
+        } else {
+            void daily.stopScreenShare();
+        }
+    }, [daily, localId, screenShareOn]);
 
     // Receive in-session messages from the other participant.
     useDailyEvent("app-message", (evt) => {

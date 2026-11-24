@@ -127,6 +127,7 @@ export default function PhysioSessionPage() {
     const [sendingDx, setSendingDx] = useState<string | null>(null);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [screenShareOn, setScreenShareOn] = useState(false);
     const [planItems, setPlanItems] = useState<PlanItem[]>([]);
     const [sendingPlan, setSendingPlan] = useState(false);
     const [planSent, setPlanSent] = useState(false);
@@ -355,7 +356,7 @@ export default function PhysioSessionPage() {
     });
 
     return (
-        <div style={{ width: "100%", height: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Figtree', system-ui, sans-serif", background: GROUND, color: NAV, overflow: "hidden" }}>
+        <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", fontFamily: "'Figtree', system-ui, sans-serif", background: GROUND, color: NAV, overflow: "hidden" }}>
             {/* Rainbow stripe */}
             <div style={{ height: 5, background: "linear-gradient(90deg,#4eb91e 0%,#0eaf90 50%,#076889 100%)", flexShrink: 0 }} />
 
@@ -436,7 +437,7 @@ export default function PhysioSessionPage() {
                 {/* ── Center: video ── */}
                 <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ flex: 1, borderRadius: 18, background: NAV, position: "relative", overflow: "hidden", minHeight: 0 }}>
-                        <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} chatOpen={chatOpen} onUnreadMessage={() => setUnreadCount((c) => c + 1)} />
+                        <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} screenShareOn={screenShareOn} onScreenShareStop={() => setScreenShareOn(false)} chatOpen={chatOpen} onUnreadMessage={() => setUnreadCount((c) => c + 1)} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "center", gap: 10, flexShrink: 0, paddingBottom: 4 }}>
                         <button
@@ -451,8 +452,18 @@ export default function PhysioSessionPage() {
                         >
                             {cameraOn ? "Camera" : "No camera"}
                         </button>
-                        <button style={roundBtn}>Audio only</button>
-                        <button style={roundBtn}>Share screen</button>
+                        <button
+                            onClick={() => setCameraOn(false)}
+                            style={{ ...roundBtn, ...(!cameraOn ? { background: "#e6f4e1", borderColor: GREEN, color: "#0f5a08" } : {}) }}
+                        >
+                            Audio only
+                        </button>
+                        <button
+                            onClick={() => setScreenShareOn((v) => !v)}
+                            style={{ ...roundBtn, ...(screenShareOn ? { background: "#e6f4e1", borderColor: GREEN, color: "#0f5a08" } : {}) }}
+                        >
+                            {screenShareOn ? "Stop share" : "Share screen"}
+                        </button>
                         <button
                             onClick={() => { setChatOpen((v) => !v); setUnreadCount(0); }}
                             style={{ ...roundBtn, ...(chatOpen ? { background: "#e6f4e1", borderColor: GREEN, color: "#0f5a08" } : {}), position: "relative" }}

@@ -189,7 +189,7 @@ export default function PatientSessionPage() {
         const isYouTube = rawUrl.length === 11 && !rawUrl.includes("/");
         const isHttpUrl = rawUrl.startsWith("http");
         return (
-            <div style={{ display: "flex", height: "100dvh", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif", overflow: "hidden" }}>
+            <div style={{ position: "fixed", inset: 0, display: "flex", flexDirection: "column", background: NAV, fontFamily: "'Figtree', system-ui, sans-serif", overflow: "hidden" }}>
                 <div style={{ flex: 1, position: "relative" }}>
                     <DailyCallFrame url={join.roomUrl} token={join.token} micOn={micOn} cameraOn={cameraOn} chatOpen={chatOpen} onUnreadMessage={() => setUnreadCount((c) => c + 1)} />
                 </div>
