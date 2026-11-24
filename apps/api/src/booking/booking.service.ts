@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS, FIRST_CONSULT_PRICE_KOBO, FOLLOW_UP_PRICE_KOBO, calcServiceFee } from "@physio/shared";
+import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS, FIRST_CONSULT_PRICE_KOBO, FOLLOW_UP_PRICE_KOBO, calcServiceFee, HOME_VISITS_ENABLED } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { SlotService } from "./slot.service.js";
@@ -112,6 +112,10 @@ export class BookingService {
     async book(user: SessionUser, input: BookAppointmentInput) {
         if (user.role !== "PATIENT") {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Only patients can book" });
+        }
+
+        if (input.mode === "HOME" && !HOME_VISITS_ENABLED) {
+            throw new BadRequestException({ code: "FEATURE_DISABLED", message: "Home visit booking is not available yet" });
         }
 
         const startsAt = new Date(input.startsAt);
