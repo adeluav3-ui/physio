@@ -24,7 +24,7 @@ export type QualityMetrics = {
 export interface VideoProvider {
     readonly name: "DAILY" | "IN_HOUSE";
 
-    createRoom(appointmentId: string): Promise<Room>;
+    createRoom(appointmentId: string, endsAt?: string): Promise<Room>;
     issueToken(roomId: string, userId: string, role: VideoRole): Promise<Token>;
     endRoom(roomId: string): Promise<void>;
     verifyRoom(roomId: string): Promise<boolean>;

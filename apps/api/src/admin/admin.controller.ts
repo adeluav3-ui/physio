@@ -381,6 +381,29 @@ export class AdminController {
         });
     }
 
+    // ── Video usage ───────────────────────────────────────────────────────────
+
+    /**
+     * Returns total video-minutes consumed across all completed sessions.
+     * Computed from VideoSession rows that have both startedAt and endedAt.
+     * Used to monitor Daily.co billing exposure.
+     */
+    @Get("video-minutes")
+    async videoMinutes() {
+        const sessions = await this.prisma.client.videoSession.findMany({
+            where: { startedAt: { not: null }, endedAt: { not: null } },
+            select: { startedAt: true, endedAt: true },
+        });
+        const totalMinutes = sessions.reduce((sum, s) => {
+            const ms = s.endedAt!.getTime() - s.startedAt!.getTime();
+            return sum + ms / 60_000;
+        }, 0);
+        return {
+            sessionCount: sessions.length,
+            totalMinutes: Math.round(totalMinutes),
+        };
+    }
+
     // ── Payments ledger ───────────────────────────────────────────────────────
 
     @Get("payments/ledger")

@@ -1,3 +1,4 @@
+import { VIDEO_ROOM_GRACE_MIN } from "@physio/shared";
 import type { Room, Token, QualityMetrics, VideoProvider, VideoRole } from "./types.js";
 
 const DAILY_API = "https://api.daily.co/v1";
@@ -34,9 +35,12 @@ export class DailyProvider implements VideoProvider {
         }
     }
 
-    async createRoom(appointmentId: string): Promise<Room> {
+    async createRoom(appointmentId: string, endsAt?: string): Promise<Room> {
         const name = `appt-${appointmentId}`;
-        const expirySeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 6;
+        // Use the session's scheduled end time + grace period instead of a
+        // blanket 6-hour window, so rooms cannot linger and rack up Daily minutes.
+        const baseMs = endsAt ? new Date(endsAt).getTime() : Date.now() + 60 * 60 * 1000;
+        const expirySeconds = Math.floor(baseMs / 1000) + VIDEO_ROOM_GRACE_MIN * 60;
 
         type DailyRoom = { id: string; url: string; created_at: string | number; config?: { exp?: number } };
 
@@ -53,6 +57,8 @@ export class DailyProvider implements VideoProvider {
                         start_video_off: false,
                         start_audio_off: false,
                         eject_at_room_exp: true,
+                        enable_recording: "none",
+                        enable_recording_ui: false,
                     },
                 }),
             });

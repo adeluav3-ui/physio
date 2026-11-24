@@ -24,9 +24,9 @@ export class VideoService {
         return this.safeProvider.name;
     }
 
-    async createRoom(appointmentId: string) {
+    async createRoom(appointmentId: string, endsAt?: string) {
         try {
-            return await this.safeProvider.createRoom(appointmentId);
+            return await this.safeProvider.createRoom(appointmentId, endsAt);
         } catch (err) {
             if (err instanceof BadGatewayException) throw err;
             this.logger.error(`createRoom failed for appointment ${appointmentId}`, err);

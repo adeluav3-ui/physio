@@ -73,7 +73,7 @@ export class SessionsService {
         let provider = appt.videoSession?.provider;
 
         if (!appt.videoSession) {
-            const room = await this.video.createRoom(appt.id);
+            const room = await this.video.createRoom(appt.id, appt.endsAt.toISOString());
             roomId = room.id;
             provider = this.video.name;
             await this.prisma.client.videoSession.create({
@@ -87,7 +87,7 @@ export class SessionsService {
             // Room may have expired — verify it still exists and recreate if not.
             const stillValid = await this.video.verifyRoom(roomId!);
             if (!stillValid) {
-                const room = await this.video.createRoom(appt.id);
+                const room = await this.video.createRoom(appt.id, appt.endsAt.toISOString());
                 roomId = room.id;
                 await this.prisma.client.videoSession.update({
                     where: { appointmentId: appt.id },

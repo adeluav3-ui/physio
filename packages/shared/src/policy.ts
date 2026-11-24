@@ -35,6 +35,12 @@ export const JOIN_WINDOW_MIN = 15;
 export const SESSION_HARD_END_MIN = 90;
 
 /**
+ * How many minutes after the session's scheduled end time the Daily room stays
+ * open before auto-ejecting everyone.  Keeps rooms from lingering for hours.
+ */
+export const VIDEO_ROOM_GRACE_MIN = 30;
+
+/**
  * If video fails, the session falls back to chat after this many minutes
  * of unrecoverable failure.
  */
