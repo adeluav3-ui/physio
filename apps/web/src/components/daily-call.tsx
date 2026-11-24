@@ -147,53 +147,62 @@ function CallContent({ micOn, cameraOn, chatOpen, onUnreadMessage }: {
                 </div>
             )}
 
-            {/* In-session chat panel */}
+            {/* In-session chat — bottom sheet */}
             {chatOpen && (
                 <div style={{
-                    position: "absolute", top: 0, right: 0, bottom: 0, width: 280,
-                    background: "rgba(255,255,255,0.97)", display: "flex", flexDirection: "column",
+                    position: "absolute", bottom: 0, left: 0, right: 0,
+                    height: "52%", minHeight: 260, maxHeight: 420,
+                    background: "rgba(10, 20, 36, 0.94)",
+                    backdropFilter: "blur(16px)",
+                    display: "flex", flexDirection: "column",
                     fontFamily: "'Figtree', system-ui, sans-serif",
-                    boxShadow: "-4px 0 20px rgba(0,0,0,0.35)", zIndex: 10,
+                    borderTop: "1px solid rgba(255,255,255,0.12)",
+                    zIndex: 10,
                 }}>
-                    <div style={{ padding: "12px 14px", borderBottom: "1px solid #d9e3ec", font: "700 14px 'Figtree', sans-serif", color: "#022449", flexShrink: 0 }}>
-                        In-session chat
+                    {/* Header */}
+                    <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", font: "600 13px 'Figtree', sans-serif", color: "rgba(255,255,255,0.7)", flexShrink: 0, letterSpacing: "0.03em", textTransform: "uppercase" }}>
+                        Chat
                     </div>
-                    <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {/* Messages */}
+                    <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
                         {messages.length === 0 && (
-                            <div style={{ font: "400 13px 'Figtree', sans-serif", color: "#4f6478", textAlign: "center", marginTop: 40 }}>
+                            <div style={{ font: "400 13px 'Figtree', sans-serif", color: "rgba(255,255,255,0.3)", textAlign: "center", marginTop: 32 }}>
                                 No messages yet.
                             </div>
                         )}
                         {messages.map((m) => (
                             <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: m.fromLocal ? "flex-end" : "flex-start" }}>
                                 <div style={{
-                                    maxWidth: "85%", padding: "8px 12px",
-                                    borderRadius: m.fromLocal ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                                    background: m.fromLocal ? "#1b7d0e" : "#eef3f8",
-                                    color: m.fromLocal ? "#fff" : "#022449",
-                                    font: "400 13px/1.4 'Figtree', sans-serif",
+                                    maxWidth: "78%", padding: "9px 14px",
+                                    borderRadius: m.fromLocal ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                                    background: m.fromLocal ? "#1b7d0e" : "rgba(255,255,255,0.14)",
+                                    color: "#fff",
+                                    font: "400 14px/1.45 'Figtree', sans-serif",
+                                    wordBreak: "break-word",
                                 }}>
                                     {m.text}
                                 </div>
-                                <span style={{ font: "400 11px 'Figtree', sans-serif", color: "#4f6478", marginTop: 2 }}>{m.time}</span>
+                                <span style={{ font: "400 11px 'Figtree', sans-serif", color: "rgba(255,255,255,0.35)", marginTop: 3 }}>{m.time}</span>
                             </div>
                         ))}
                         <div ref={messagesEndRef} />
                     </div>
-                    <div style={{ padding: "10px 12px", borderTop: "1px solid #d9e3ec", display: "flex", gap: 8, flexShrink: 0 }}>
+                    {/* Input */}
+                    <div style={{ padding: "10px 14px 14px", borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: 10, flexShrink: 0, alignItems: "center" }}>
                         <input
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                            placeholder="Type a message…"
-                            style={{ flex: 1, border: "1px solid #c3d1de", borderRadius: 10, padding: "8px 10px", font: "14px 'Figtree', sans-serif", color: "#022449", outline: "none" }}
+                            placeholder="Message…"
+                            style={{ flex: 1, border: "1px solid rgba(255,255,255,0.18)", borderRadius: 24, padding: "10px 16px", font: "14px 'Figtree', sans-serif", color: "#fff", outline: "none", background: "rgba(255,255,255,0.1)", minWidth: 0 }}
                         />
                         <button
                             onClick={sendMessage}
                             disabled={!draft.trim()}
-                            style={{ padding: "8px 14px", borderRadius: 10, background: draft.trim() ? "#1b7d0e" : "#9db8a0", color: "#fff", font: "600 13px 'Figtree', sans-serif", border: 0, cursor: draft.trim() ? "pointer" : "not-allowed" }}
+                            aria-label="Send"
+                            style={{ width: 44, height: 44, borderRadius: "50%", background: draft.trim() ? "#1b7d0e" : "rgba(255,255,255,0.1)", color: "#fff", fontSize: 20, border: 0, cursor: draft.trim() ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
                         >
-                            Send
+                            ↑
                         </button>
                     </div>
                 </div>

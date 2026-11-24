@@ -24,11 +24,21 @@ type Withdrawal = {
     createdAt: string;
 };
 
+type PendingPayout = {
+    appointmentId: string;
+    startsAt: string;
+    signedAt: string;
+    releaseAt: string;
+    patientName: string;
+    estimatedKobo: number;
+};
+
 type Wallet = {
     availableKobo: number;
     totalEarnedKobo: number;
     payouts: Payout[];
     withdrawals: Withdrawal[];
+    pendingPayouts: PendingPayout[];
 };
 
 const NIGERIAN_BANKS = [
@@ -136,6 +146,7 @@ export default function ProWalletPage() {
     const totalEarned = wallet?.totalEarnedKobo ?? 0;
     const payouts = wallet?.payouts ?? [];
     const withdrawals = wallet?.withdrawals ?? [];
+    const pendingPayouts = wallet?.pendingPayouts ?? [];
 
     return (
         <div style={{ maxWidth: "680px" }}>
@@ -259,6 +270,45 @@ export default function ProWalletPage() {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Pending payouts (signed notes awaiting 24-hour release window) */}
+            {pendingPayouts.length > 0 && (
+                <div style={{ marginBottom: "24px" }}>
+                    <h2 style={{ font: "700 17px 'Figtree',sans-serif", margin: "0 0 12px" }}>Pending release</h2>
+                    <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+                        {pendingPayouts.map((p, i) => {
+                            const releaseMs = new Date(p.releaseAt).getTime() - Date.now();
+                            const hoursLeft = Math.max(0, Math.ceil(releaseMs / 3_600_000));
+                            return (
+                                <div
+                                    key={p.appointmentId}
+                                    style={{
+                                        display: "flex", alignItems: "center", gap: "12px",
+                                        padding: "14px 20px",
+                                        borderTop: i === 0 ? "none" : "1px solid var(--line)",
+                                        background: "#fdf8ed",
+                                    }}
+                                >
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ font: "600 14px 'Figtree',sans-serif" }}>
+                                            {p.patientName}
+                                        </div>
+                                        <div className="muted" style={{ font: "400 13px 'Figtree',sans-serif", marginTop: "1px" }}>
+                                            Session {fmtDate(p.startsAt)} · Note signed {fmtDate(p.signedAt)}
+                                        </div>
+                                        <div style={{ font: "400 12px 'Figtree',sans-serif", color: "#7a4f00", marginTop: "1px" }}>
+                                            Releasing in ~{hoursLeft}h
+                                        </div>
+                                    </div>
+                                    <div style={{ font: "700 15px 'Figtree',sans-serif", color: "#7a4f00", flexShrink: 0 }}>
+                                        ~{fmt(p.estimatedKobo)}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
 

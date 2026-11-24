@@ -1,7 +1,7 @@
 import { BadGatewayException, BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { getPaymentProvider, type InitChargeInput } from "@physio/payments";
-import { type SessionUser, PLATFORM_FEE_BPS } from "@physio/shared";
+import { type SessionUser, PLATFORM_FEE_BPS, RELEASE_DELAY_HOURS } from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { AuditService } from "../audit/audit.service.js";
 
@@ -269,7 +269,7 @@ export class PaymentsService {
     }
 
     async getWallet(physioId: string) {
-        const [payouts, withdrawals] = await Promise.all([
+        const [payouts, withdrawals, pendingAppts] = await Promise.all([
             this.prisma.client.ledgerEntry.findMany({
                 where: { type: "PHYSIO_PAYOUT", appointment: { physioId } },
                 include: {
@@ -287,6 +287,25 @@ export class PaymentsService {
                 where: { physioId },
                 orderBy: { createdAt: "desc" },
             }),
+            // Appointments with signed notes whose payout hasn't been released yet.
+            this.prisma.client.appointment.findMany({
+                where: {
+                    physioId,
+                    status: "COMPLETED",
+                    notes: { signedAt: { not: null } },
+                    ledger: { none: { type: "PHYSIO_PAYOUT" } },
+                    payment: { status: "HELD" },
+                },
+                select: {
+                    id: true,
+                    startsAt: true,
+                    payment: { select: { amountKobo: true } },
+                    patient: { select: { user: { select: { name: true } } } },
+                    notes: { select: { signedAt: true } },
+                },
+                orderBy: { updatedAt: "desc" },
+                take: 20,
+            }),
         ]);
 
         const totalEarnedKobo = payouts.reduce((s, e) => s + e.amountKobo, 0);
@@ -295,7 +314,23 @@ export class PaymentsService {
             .reduce((s, w) => s + w.amountKobo, 0);
         const availableKobo = Math.max(0, totalEarnedKobo - withdrawnKobo);
 
-        return { availableKobo, totalEarnedKobo, payouts, withdrawals };
+        const pendingPayouts = pendingAppts.map((a) => {
+            const signedAt = a.notes!.signedAt!;
+            const releaseAt = new Date(signedAt.getTime() + RELEASE_DELAY_HOURS * 3_600_000);
+            const estimatedKobo = a.payment
+                ? Math.round(a.payment.amountKobo * (1 - PLATFORM_FEE_BPS / 10_000))
+                : 0;
+            return {
+                appointmentId: a.id,
+                startsAt: a.startsAt.toISOString(),
+                signedAt: signedAt.toISOString(),
+                releaseAt: releaseAt.toISOString(),
+                patientName: a.patient?.user.name ?? "Patient",
+                estimatedKobo,
+            };
+        });
+
+        return { availableKobo, totalEarnedKobo, payouts, withdrawals, pendingPayouts };
     }
 
     async requestWithdrawal(

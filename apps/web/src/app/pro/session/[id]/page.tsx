@@ -65,6 +65,7 @@ type DiagnosticEntry = {
 };
 
 type NoteFields = { subjective: string; objective: string; assessment: string; plan: string };
+type PlanItem = { exerciseId: string; name: string; sets: number; reps: number; frequency: string };
 type Tab = "notes" | "exercises" | "plan" | "refer";
 
 const NAV = "#022449";
@@ -126,6 +127,10 @@ export default function PhysioSessionPage() {
     const [sendingDx, setSendingDx] = useState<string | null>(null);
     const [chatOpen, setChatOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [planItems, setPlanItems] = useState<PlanItem[]>([]);
+    const [sendingPlan, setSendingPlan] = useState(false);
+    const [planSent, setPlanSent] = useState(false);
+    const [planError, setPlanError] = useState<string | null>(null);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
     // Join + load session data in parallel
@@ -244,6 +249,38 @@ export default function PhysioSessionPage() {
         setNoteStatus("idle");
         clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => saveNote(updated), 1500);
+    }
+
+    async function sendPlan() {
+        if (!session || planItems.length === 0 || sendingPlan) return;
+        setSendingPlan(true);
+        setPlanError(null);
+        try {
+            const res = await fetch("/api/proxy/programs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    patientId: session.patientId,
+                    startsAt: new Date().toISOString(),
+                    items: planItems.map((p) => ({
+                        exerciseId: p.exerciseId,
+                        sets: p.sets,
+                        reps: p.reps,
+                        holdSeconds: 0,
+                        frequency: p.frequency,
+                    })),
+                }),
+            });
+            if (res.ok) {
+                setPlanSent(true);
+                setPlanItems([]);
+            } else {
+                const b = await res.json().catch(() => ({}));
+                setPlanError((b as { message?: string }).message ?? "Could not send plan");
+            }
+        } finally {
+            setSendingPlan(false);
+        }
     }
 
     async function onEnd() {
@@ -432,7 +469,7 @@ export default function PhysioSessionPage() {
                         {(["notes", "exercises", "plan", "refer"] as Tab[]).map((t) => (
                             <button key={t} onClick={() => setActiveTab(t)} style={tabStyle(t)}>
                                 {t.charAt(0).toUpperCase() + t.slice(1)}
-                                {t === "plan" && " (0)"}
+                                {t === "plan" && planItems.length > 0 ? ` (${planItems.length})` : ""}
                             </button>
                         ))}
                     </div>
@@ -543,9 +580,21 @@ export default function PhysioSessionPage() {
                                                     >
                                                         {alreadySent ? "Sent ✓" : isSending ? "…" : "Send"}
                                                     </button>
-                                                    <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 34, padding: "0 12px", borderRadius: 10, background: GREEN, color: "#fff", border: 0, font: "600 13px 'Figtree', sans-serif", cursor: "pointer" }}>
-                                                        Add
-                                                    </button>
+                                                    {(() => {
+                                                        const inPlan = planItems.some((p) => p.exerciseId === ex.id);
+                                                        return (
+                                                            <button
+                                                                onClick={() => setPlanItems((prev) =>
+                                                                    inPlan
+                                                                        ? prev.filter((p) => p.exerciseId !== ex.id)
+                                                                        : [...prev, { exerciseId: ex.id, name: ex.name, sets: 3, reps: 10, frequency: "DAILY" }]
+                                                                )}
+                                                                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 34, padding: "0 12px", borderRadius: 10, background: inPlan ? "#e3f4e8" : GREEN, color: inPlan ? "#1d5c34" : "#fff", border: inPlan ? "1px solid #a3d9b1" : 0, font: "600 13px 'Figtree', sans-serif", cursor: "pointer" }}
+                                                            >
+                                                                {inPlan ? "✓ Added" : "Add"}
+                                                            </button>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                         );
@@ -576,23 +625,80 @@ export default function PhysioSessionPage() {
                                     </div>
                                 )}
 
-                                <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ font: "600 14px 'Figtree', sans-serif" }}>0 in the plan</div>
-                                        <div style={{ font: "400 12px 'Figtree', sans-serif", color: MUTED }}>Edit doses in the Plan tab</div>
+                                <div style={{ flexShrink: 0, borderTop: `1px solid ${BORDER}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                                    {planError && (
+                                        <div style={{ font: "400 12px 'Figtree', sans-serif", color: "#b91c1c", padding: "6px 10px", background: "#fee2e2", borderRadius: 8 }}>{planError}</div>
+                                    )}
+                                    {planSent && (
+                                        <div style={{ font: "400 12px 'Figtree', sans-serif", color: "#1d5c34", padding: "6px 10px", background: "#e3f4e8", borderRadius: 8 }}>Plan sent to patient.</div>
+                                    )}
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ font: "600 14px 'Figtree', sans-serif" }}>{planItems.length} in the plan</div>
+                                            <div style={{ font: "400 12px 'Figtree', sans-serif", color: MUTED }}>Edit sets/reps in the Plan tab</div>
+                                        </div>
+                                        <button
+                                            onClick={sendPlan}
+                                            disabled={planItems.length === 0 || sendingPlan || planSent}
+                                            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 40, padding: "0 16px", borderRadius: 10, background: planItems.length === 0 || planSent ? "#9db8a0" : GREEN, color: "#fff", font: "600 14px 'Figtree', sans-serif", border: 0, cursor: planItems.length === 0 || planSent ? "not-allowed" : "pointer" }}
+                                        >
+                                            {sendingPlan ? "Sending…" : planSent ? "Sent ✓" : "Send plan to patient"}
+                                        </button>
                                     </div>
-                                    <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: 40, padding: "0 16px", borderRadius: 10, background: GREEN, color: "#fff", font: "600 14px 'Figtree', sans-serif", border: 0, cursor: "pointer" }}>
-                                        Send plan to patient
-                                    </button>
                                 </div>
                             </div>
                         )}
 
                         {/* Plan tab */}
                         {activeTab === "plan" && (
-                            <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                                <p style={{ font: "500 15px 'Figtree', sans-serif", color: NAV, textAlign: "center" }}>No exercises added yet.</p>
-                                <p style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, textAlign: "center" }}>Use the Exercises tab to add exercises to this session's plan.</p>
+                            <div style={{ padding: 16, flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+                                {planItems.length === 0 ? (
+                                    <div style={{ textAlign: "center", paddingTop: 32 }}>
+                                        <p style={{ font: "500 15px 'Figtree', sans-serif", color: NAV }}>No exercises added yet.</p>
+                                        <p style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, marginTop: 4 }}>Go to Exercises and click Add.</p>
+                                    </div>
+                                ) : planItems.map((item) => (
+                                    <div key={item.exerciseId} style={{ background: "#f4f8fb", border: `1px solid #d9e3ec`, borderRadius: 10, padding: "10px 12px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                                            <span style={{ font: "600 14px 'Figtree', sans-serif", color: NAV }}>{item.name}</span>
+                                            <button
+                                                onClick={() => setPlanItems((prev) => prev.filter((p) => p.exerciseId !== item.exerciseId))}
+                                                style={{ background: "none", border: "none", color: "#b91c1c", font: "600 12px 'Figtree', sans-serif", cursor: "pointer" }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                                            {(["sets", "reps"] as const).map((field) => (
+                                                <div key={field}>
+                                                    <label style={{ display: "block", font: "600 11px 'Figtree', sans-serif", color: MUTED, textTransform: "uppercase", marginBottom: 2 }}>{field}</label>
+                                                    <input
+                                                        type="number"
+                                                        min={1}
+                                                        max={field === "sets" ? 10 : 100}
+                                                        value={item[field]}
+                                                        onChange={(e) => setPlanItems((prev) => prev.map((p) => p.exerciseId === item.exerciseId ? { ...p, [field]: Math.max(1, Number(e.target.value)) } : p))}
+                                                        style={{ width: "100%", border: "1px solid #c3d1de", borderRadius: 8, padding: "5px 8px", font: "14px 'Figtree', sans-serif", color: NAV }}
+                                                    />
+                                                </div>
+                                            ))}
+                                            <div>
+                                                <label style={{ display: "block", font: "600 11px 'Figtree', sans-serif", color: MUTED, textTransform: "uppercase", marginBottom: 2 }}>Freq</label>
+                                                <select
+                                                    value={item.frequency}
+                                                    onChange={(e) => setPlanItems((prev) => prev.map((p) => p.exerciseId === item.exerciseId ? { ...p, frequency: e.target.value } : p))}
+                                                    style={{ width: "100%", border: "1px solid #c3d1de", borderRadius: 8, padding: "5px 8px", font: "13px 'Figtree', sans-serif", color: NAV }}
+                                                >
+                                                    <option value="DAILY">Daily</option>
+                                                    <option value="TWICE_DAILY">2× daily</option>
+                                                    <option value="ALTERNATE_DAYS">Alt days</option>
+                                                    <option value="THREE_TIMES_WEEKLY">3×/week</option>
+                                                    <option value="WEEKLY">Weekly</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
 
