@@ -35,13 +35,17 @@ export class DailyProvider implements VideoProvider {
     }
 
     async createRoom(appointmentId: string): Promise<Room> {
-        const expirySeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 6; // 6-hour window
-        const data = await this.call<{ id: string; url: string; created_at: string; config: { exp: number } }>(
-            "/rooms",
-            {
+        const name = `appt-${appointmentId}`;
+        const expirySeconds = Math.floor(Date.now() / 1000) + 60 * 60 * 6;
+
+        type DailyRoom = { id: string; url: string; created_at: string | number; config?: { exp?: number } };
+
+        let room: DailyRoom;
+        try {
+            room = await this.call<DailyRoom>("/rooms", {
                 method: "POST",
                 body: JSON.stringify({
-                    name: `appt-${appointmentId}`,
+                    name,
                     properties: {
                         exp: expirySeconds,
                         enable_chat: false,
@@ -51,13 +55,31 @@ export class DailyProvider implements VideoProvider {
                         eject_at_room_exp: true,
                     },
                 }),
-            },
-        );
+            });
+        } catch (e) {
+            // Room already exists (e.g. verifyRoom ran against a stale DB UUID
+            // rather than the name, failed, and triggered a redundant createRoom).
+            // Fetch the existing room instead of crashing.
+            if ((e as Error).message?.includes("already exists")) {
+                room = await this.call<DailyRoom>(`/rooms/${name}`);
+            } else {
+                throw e;
+            }
+        }
+
+        const exp = room.config?.exp ?? expirySeconds;
+        const rawCreatedAt = room.created_at;
+        const createdAt = typeof rawCreatedAt === "number"
+            ? new Date(rawCreatedAt * 1000).toISOString()
+            : new Date(rawCreatedAt).toISOString();
+
         return {
-            id: data.id,
-            url: data.url,
-            createdAt: new Date(data.created_at).toISOString(),
-            expiresAt: new Date(data.config.exp * 1000).toISOString(),
+            // Use the room NAME as the identifier — Daily routes all subsequent
+            // operations (GET/DELETE/issueToken) by name, not by its internal UUID.
+            id: name,
+            url: room.url,
+            createdAt,
+            expiresAt: new Date(exp * 1000).toISOString(),
         };
     }
 
