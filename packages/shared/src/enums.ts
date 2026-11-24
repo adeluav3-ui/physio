@@ -90,7 +90,11 @@ export const LedgerEntryType = z.enum([
     "CHARGE",
     "HOLD",
     "RELEASE",
-    "PLATFORM_FEE",
+    "PLATFORM_FEE",   // legacy — kept for existing rows; new code uses COMMISSION + SERVICE_FEE
+    "COMMISSION",
+    "SERVICE_FEE",
+    "VIDEO_ADDON",
+    "PROCESSOR_FEE",
     "PHYSIO_PAYOUT",
     "REFUND",
 ]);

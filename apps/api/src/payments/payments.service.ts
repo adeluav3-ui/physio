@@ -59,7 +59,7 @@ export class PaymentsService {
      */
     async recordLedger(input: {
         appointmentId: string;
-        type: "CHARGE" | "HOLD" | "RELEASE" | "PLATFORM_FEE" | "PHYSIO_PAYOUT" | "REFUND";
+        type: "CHARGE" | "HOLD" | "RELEASE" | "PLATFORM_FEE" | "COMMISSION" | "SERVICE_FEE" | "VIDEO_ADDON" | "PROCESSOR_FEE" | "PHYSIO_PAYOUT" | "REFUND";
         amountKobo: number;
         note?: string;
     }) {
@@ -119,9 +119,15 @@ export class PaymentsService {
         });
         await this.recordLedger({
             appointmentId,
-            type: "PLATFORM_FEE",
-            amountKobo: platformFee,
-            note: `${PLATFORM_FEE_BPS / 100}% platform fee`,
+            type: "COMMISSION",
+            amountKobo: commission,
+            note: `${PLATFORM_FEE_BPS / 100}% commission on base price`,
+        });
+        await this.recordLedger({
+            appointmentId,
+            type: "SERVICE_FEE",
+            amountKobo: serviceFee,
+            note: "Service fee (5% of base, capped ₦500)",
         });
         await this.recordLedger({
             appointmentId,

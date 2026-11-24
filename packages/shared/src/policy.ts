@@ -103,6 +103,52 @@ export function calcCommission(priceKobo: number): number {
 /** Partner clinic booking-and-payment service fee, in basis points. 10%. */
 export const PARTNER_CLINIC_SERVICE_FEE_BPS = 1000;
 
+/**
+ * Full fee breakdown for a session charge.
+ * Returns all amounts in kobo (integers).
+ *
+ * @param priceKobo   Base session price (e.g. FIRST_CONSULT_PRICE_KOBO)
+ * @param videoAddon  true if the video add-on should be included
+ */
+export function calcFeeBreakdown(priceKobo: number, videoAddon = false): {
+    serviceFeeKobo: number;
+    commissionKobo: number;
+    videoAddonKobo: number;
+    physioPayout: number;
+    platformRevenue: number;
+    patientTotal: number;
+} {
+    const serviceFeeKobo = calcServiceFee(priceKobo);
+    const commissionKobo = calcCommission(priceKobo);
+    const videoAddonKobo = videoAddon ? VIDEO_ADDON_KOBO : 0;
+    const physioPayout = priceKobo - commissionKobo;
+    const platformRevenue = commissionKobo + serviceFeeKobo + videoAddonKobo;
+    const patientTotal = priceKobo + serviceFeeKobo + videoAddonKobo;
+    return { serviceFeeKobo, commissionKobo, videoAddonKobo, physioPayout, platformRevenue, patientTotal };
+}
+
+/**
+ * Price of a video add-on when bundled with a text/chat consultation. ₦500.
+ * Placeholder value for launch — to be confirmed.
+ */
+export const VIDEO_ADDON_KOBO = 50_000;
+
+/**
+ * Number of free introductory video sessions per new patient.
+ * Placeholder for launch — not yet enforced in booking logic.
+ */
+export const FREE_INTRO_VIDEO_SESSIONS = 2;
+
+/**
+ * Price of a chat (messaging) session. Same as a follow-up at launch.
+ */
+export const CHAT_PRICE_KOBO = FOLLOW_UP_PRICE_KOBO;
+
+// ── Launch-ceiling validator ──────────────────────────────────────────────────
+// COMMISSION_BPS is already validated in its own IIFE (> 1000 throws).
+// This secondary check makes the invariant explicit for COMMISSION_BPS alias.
+if (COMMISSION_BPS > 1000) throw new Error("COMMISSION_BPS exceeds the launch ceiling of 1000 bps");
+
 // ── Payments / release ────────────────────────────────────────────────────────
 
 /**
