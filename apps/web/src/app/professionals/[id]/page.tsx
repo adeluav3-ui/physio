@@ -91,7 +91,7 @@ export default async function PublicProfilePage({ params }: Props) {
                                 </div>
                                 <div>
                                     <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>2. Meet</div>
-                                    <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "4px" }}>Join by video or receive a home visit.</p>
+                                    <p className="muted" style={{ font: "400 15px/1.5 'Figtree',sans-serif", marginTop: "4px" }}>Join your specialist by video from anywhere.</p>
                                 </div>
                                 <div>
                                     <div style={{ font: "700 14px 'Figtree',sans-serif", color: "#1b7d0e" }}>3. Follow your plan</div>

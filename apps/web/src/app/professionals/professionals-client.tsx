@@ -13,7 +13,6 @@ const DISCIPLINE_LABELS: Record<string, string> = {
 };
 
 const PILLS = ["All", "Physiotherapy", "Occupational therapy", "Speech therapy", "Prosthetics", "Orthotics"] as const;
-const SESSION_PILLS = ["Video", "Home visit", "Clinic"] as const;
 
 const AVATAR_COLORS = ["#cfe3ee", "#d9e6f2", "#efe3d3", "#dde9d5", "#e8dced"];
 
@@ -21,12 +20,10 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
     const [query, setQuery] = useState("");
     const [city, setCity] = useState("");
     const [discipline, setDiscipline] = useState("All");
-    const [sessionType, setSessionType] = useState("All");
 
     const filtered = professionals.filter(p => {
         const label = DISCIPLINE_LABELS[p.discipline] ?? p.discipline;
         if (discipline !== "All" && label !== discipline) return false;
-        if (sessionType !== "All" && !p.sessionTypes?.some(s => s.toLowerCase().includes(sessionType.toLowerCase()))) return false;
         if (city && !p.serviceArea?.toLowerCase().includes(city.toLowerCase())) return false;
         const q = query.toLowerCase();
         if (q && !p.user.name.toLowerCase().includes(q) && !label.toLowerCase().includes(q) && !p.specialties?.join(" ").toLowerCase().includes(q)) return false;
@@ -53,10 +50,8 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
                 {PILLS.map(p => (
                     <button key={p} type="button" className={`pill${discipline === p ? " pillon" : ""}`} onClick={() => setDiscipline(p)}>{p}</button>
                 ))}
-                <span style={{ marginLeft: "auto", display: "flex", gap: "8px", flexWrap: "wrap" as const }}>
-                    {SESSION_PILLS.map(p => (
-                        <button key={p} type="button" className={`pill${sessionType === p ? " pillon" : ""}`} onClick={() => setSessionType(prev => prev === p ? "All" : p)}>{p}</button>
-                    ))}
+                <span style={{ marginLeft: "auto" }}>
+                    <span className="chip-sm" style={{ font: "500 13px 'Figtree',sans-serif" }}>Video sessions</span>
                 </span>
             </div>
 
@@ -72,9 +67,9 @@ export default function ProfessionalsClient({ professionals }: { professionals: 
                 ) : filtered.length === 0 ? (
                     /* Sample cards when API has no data */
                     [
-                        { name: "[Professional name]", disc: "Physiotherapist", spec: "Sports injuries, back pain · English, Yoruba", sessions: ["Video", "Home visit"], bg: AVATAR_COLORS[0], next: "Tomorrow, 10:00 am" },
+                        { name: "[Professional name]", disc: "Physiotherapist", spec: "Sports injuries, back pain · English, Yoruba", sessions: ["Video"], bg: AVATAR_COLORS[0], next: "Tomorrow, 10:00 am" },
                         { name: "[Professional name]", disc: "Speech and language therapist", spec: "Children, stroke recovery · English", sessions: ["Video"], bg: AVATAR_COLORS[1], next: "Mon, 2:00 pm" },
-                        { name: "[Professional name]", disc: "Orthotist", spec: "Braces, footwear, spinal supports · English, Yoruba", sessions: ["Video consult", "Clinic fitting"], bg: AVATAR_COLORS[2], next: "Wed, 11:30 am" },
+                        { name: "[Professional name]", disc: "Orthotist", spec: "Braces, footwear, spinal supports · English, Yoruba", sessions: ["Video"], bg: AVATAR_COLORS[2], next: "Wed, 11:30 am" },
                     ].map((s, i) => (
                         <div key={i} className="card" style={{ display: "flex", flexWrap: "wrap" as const, gap: "20px", alignItems: "center" }}>
                             <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: s.bg, flexShrink: 0 }}></div>

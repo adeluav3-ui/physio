@@ -354,7 +354,7 @@ export default function ProfessionalApplyPage() {
                                     </div>
                                     <div style={{ flex: "1 1 140px" }}>
                                         <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>Session types offered</label>
-                                        <input className="in" value={sessionTypes} onChange={e => setSessionTypes(e.target.value)} placeholder="Video, home visit" />
+                                        <input className="in" value={sessionTypes} onChange={e => setSessionTypes(e.target.value)} placeholder="Video" />
                                     </div>
                                 </div>
                                 <div style={{ marginTop: "24px", display: "grid", gap: "10px" }}>

@@ -78,7 +78,7 @@ export default function LandingPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "24px", marginTop: "32px" }}>
                         {[
                             { n: "1", title: "Tell us what is wrong", desc: "A few questions check for anything urgent and point you to the right kind of specialist." },
-                            { n: "2", title: "Meet your specialist",   desc: "Book a video session or a home visit with a professional whose licence we have checked." },
+                            { n: "2", title: "Meet your specialist",   desc: "Book a video session with a professional whose licence we have checked." },
                             { n: "3", title: "Follow your plan at home", desc: "Exercises, goals and reminders on your phone, with messages to your specialist when you are unsure." },
                         ].map(s => (
                             <div key={s.n} className="card" style={{ background: "#f4f8fb" }}>
