@@ -250,6 +250,7 @@ model PatientProfile {
   referralsAsPatient Referral[]
   packages           Package[]
   walletEntries      WalletEntry[]
+  fallbackCases      FallbackCase[]
 }
 
 // ── Caregiver / Dependents ────────────────
@@ -288,6 +289,7 @@ model Intake {
   dependent      Dependent?     @relation("dependent_intakes", fields: [dependentId], references: [id])
   triage         TriageResult?
   appointments   Appointment[]
+  fallbackCase   FallbackCase?
 
   @@index([patientId])
 }
@@ -895,4 +897,32 @@ enum WalletEntryType {
   DEPOSIT
   REFUND_CREDIT
   SESSION_DEBIT
+}
+
+// ── Fallback cases ────────────────────────
+// Patients triaged IN_PERSON_REQUIRED are logged here so the admin team
+// can follow up and signpost them to appropriate in-person services.
+
+enum FallbackCaseStatus {
+  OPEN
+  CONTACTED
+  RESOLVED
+  CLOSED
+}
+
+model FallbackCase {
+  id          String             @id @default(uuid())
+  intakeId    String             @unique
+  patientId   String
+  status      FallbackCaseStatus @default(OPEN)
+  adminNote   String?
+  resolvedAt  DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  intake      Intake             @relation(fields: [intakeId], references: [id], onDelete: Cascade)
+  patient     PatientProfile     @relation(fields: [patientId], references: [userId], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([patientId])
 }

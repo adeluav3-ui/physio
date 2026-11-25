@@ -404,6 +404,46 @@ export class AdminController {
         };
     }
 
+    // ── Fallback cases ────────────────────────────────────────────────────────
+
+    @Get("fallback-cases")
+    async listFallbackCases(@Query("status") status?: string) {
+        return this.prisma.client.fallbackCase.findMany({
+            where: status ? { status: status as "OPEN" | "CONTACTED" | "RESOLVED" | "CLOSED" } : undefined,
+            include: {
+                intake: {
+                    select: {
+                        complaint: true,
+                        bodyRegion: true,
+                        painScore: true,
+                        createdAt: true,
+                        triage: { select: { level: true, reasons: true } },
+                    },
+                },
+                patient: { select: { user: { select: { name: true, email: true } } } },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    @Patch("fallback-cases/:id")
+    async updateFallbackCase(
+        @Param("id") id: string,
+        @Body() body: { status?: "OPEN" | "CONTACTED" | "RESOLVED" | "CLOSED"; adminNote?: string },
+    ) {
+        const existing = await this.prisma.client.fallbackCase.findUnique({ where: { id } });
+        if (!existing) throw new NotFoundException({ code: "NOT_FOUND", message: "Fallback case not found" });
+
+        const data: { status?: "OPEN" | "CONTACTED" | "RESOLVED" | "CLOSED"; adminNote?: string; resolvedAt?: Date | null } = {};
+        if (body.status) data.status = body.status;
+        if (body.adminNote !== undefined) data.adminNote = body.adminNote;
+        if (body.status === "RESOLVED" || body.status === "CLOSED") {
+            data.resolvedAt = new Date();
+        }
+
+        return this.prisma.client.fallbackCase.update({ where: { id }, data });
+    }
+
     // ── Payments ledger ───────────────────────────────────────────────────────
 
     @Get("payments/ledger")

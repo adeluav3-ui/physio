@@ -49,6 +49,14 @@ export class TriageService {
                 },
             });
 
+            // Automatically open a fallback case so the admin team can follow up
+            // with patients who cannot be served online.
+            if (decision.level === "IN_PERSON_REQUIRED") {
+                await tx.fallbackCase.create({
+                    data: { intakeId: intake.id, patientId: user.id },
+                });
+            }
+
             return { intake, triage };
         });
 

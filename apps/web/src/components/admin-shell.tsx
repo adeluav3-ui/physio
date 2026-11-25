@@ -14,8 +14,9 @@ const NAV = [
     { href: "/admin/payments",       label: "Payments & ledger" },
     { href: "/admin/incidents",      label: "Incidents" },
     { href: "/admin/library",        label: "Library" },
-    { href: "/admin/waitlist",       label: "Waitlist" },
-    { href: "/admin/audit",          label: "Audit log" },
+    { href: "/admin/waitlist",        label: "Waitlist" },
+    { href: "/admin/fallback-cases",  label: "Fallback queue" },
+    { href: "/admin/audit",           label: "Audit log" },
 ];
 
 const IC_MENU = (
