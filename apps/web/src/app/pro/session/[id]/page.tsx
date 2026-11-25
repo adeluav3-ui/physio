@@ -80,8 +80,8 @@ function chip(label: string, bg: string, color: string) {
 }
 
 function triageChip(level: string | null | undefined) {
-    if (level === "RED") return chip("Urgent", "#fce4e4", "#7f1d1d");
-    if (level === "AMBER") return chip("Caution", "#fdf1d8", "#7a4f00");
+    if (level === "IN_PERSON_REQUIRED") return chip("Urgent", "#fce4e4", "#7f1d1d");
+    if (level === "FLAG") return chip("Caution", "#fdf1d8", "#7a4f00");
     return chip("OK", "#e3f4e8", "#1d5c34");
 }
 
@@ -409,8 +409,8 @@ export default function PhysioSessionPage() {
                             <div style={{ font: "600 12px 'Figtree', sans-serif", color: MUTED, letterSpacing: "0.04em", textTransform: "uppercase", marginTop: 18 }}>Safety check</div>
                             <div style={{ marginTop: 6 }}>
                                 <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 99, font: "600 12px 'Figtree', sans-serif", background: tc.bg, color: tc.color }}>{tc.label}</span>
-                                {intake.triage?.level === "AMBER" && <span style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, marginLeft: 6 }}>Review carefully</span>}
-                                {intake.triage?.level === "RED" && <span style={{ font: "400 13px 'Figtree', sans-serif", color: "#7f1d1d", marginLeft: 6 }}>Refer urgently</span>}
+                                {intake.triage?.level === "FLAG" && <span style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, marginLeft: 6 }}>Review carefully</span>}
+                                {intake.triage?.level === "IN_PERSON_REQUIRED" && <span style={{ font: "400 13px 'Figtree', sans-serif", color: "#7f1d1d", marginLeft: 6 }}>Refer urgently</span>}
                                 {(!intake.triage?.level || intake.triage.level === "GREEN") && <span style={{ font: "400 13px 'Figtree', sans-serif", color: MUTED, marginLeft: 6 }}>No red flags</span>}
                             </div>
 

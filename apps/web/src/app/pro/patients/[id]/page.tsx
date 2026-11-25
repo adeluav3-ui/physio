@@ -11,7 +11,7 @@ const ExerciseViewer = dynamic(() => import("@/components/exercise-viewer"), { s
 
 type TriageResult = {
     id: string;
-    level: "GREEN" | "AMBER" | "RED";
+    level: "GREEN" | "FLAG" | "IN_PERSON_REQUIRED";
     reasons: string[];
 };
 

@@ -49,7 +49,7 @@ export type UserStatus = z.infer<typeof UserStatus>;
 export const LicenceStatus = z.enum(["UNVERIFIED", "VERIFIED", "REJECTED", "EXPIRED"]);
 export type LicenceStatus = z.infer<typeof LicenceStatus>;
 
-export const TriageLevel = z.enum(["GREEN", "AMBER", "RED"]);
+export const TriageLevel = z.enum(["GREEN", "FLAG", "IN_PERSON_REQUIRED"]);
 export type TriageLevel = z.infer<typeof TriageLevel>;
 
 export const AppointmentType = z.enum([

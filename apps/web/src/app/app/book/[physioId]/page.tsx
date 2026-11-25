@@ -13,7 +13,7 @@ function calcServiceFee(priceNaira: number) {
 }
 
 type Slot = { startsAt: string; durationMinutes: number; mode: "VIDEO" | "HOME" | "CHAT" | "ANY" };
-type TriageLevel = "GREEN" | "AMBER" | "RED";
+type TriageLevel = "GREEN" | "FLAG" | "IN_PERSON_REQUIRED";
 type LatestIntake = { id: string; triage: { level: TriageLevel } | null } | null;
 type Pro = {
     userId: string;
@@ -146,8 +146,8 @@ export default function BookPage() {
         }
     }
 
-    /* RED triage */
-    if (intake?.triage?.level === "RED") {
+    /* IN_PERSON_REQUIRED triage */
+    if (intake?.triage?.level === "IN_PERSON_REQUIRED") {
         return (
             <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f4f8fb", color: "#022449" }}>
                 <div className="card" style={{ background: "#fde8e8", borderColor: "#f3b4b4" }}>
@@ -177,7 +177,7 @@ export default function BookPage() {
         <div style={{ maxWidth: "430px", margin: "0 auto", padding: "28px 20px", fontFamily: "'Figtree',system-ui,sans-serif", minHeight: "100dvh", display: "flex", flexDirection: "column", gap: "14px", background: "#f4f8fb", color: "#022449" }}>
             <h1 style={{ font: "700 26px 'Figtree',sans-serif", margin: 0 }}>Book a session</h1>
 
-            {intake?.triage?.level === "AMBER" && (
+            {intake?.triage?.level === "FLAG" && (
                 <div className="card" style={{ background: "#fdf1d8", borderColor: "#ecd49b", color: "#5f3f00", font: "400 14px/1.5 'Figtree',sans-serif" }}>
                     Your health assessment flagged some concerns. Your specialist will discuss options after booking.
                 </div>

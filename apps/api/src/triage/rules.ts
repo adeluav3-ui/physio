@@ -6,7 +6,7 @@ import type { TriageLevel } from "@physio/shared";
  *
  * Clinician sign-off required before changing anything in this file.
  */
-export const RULES_VERSION = "2026-10-01";
+export const RULES_VERSION = "2026-11-24";
 
 export type Rule = {
     id: string;
@@ -17,82 +17,82 @@ export type Rule = {
 };
 
 export const RULES: Rule[] = [
-    // ── RED: block online booking ──────────────────────────
+    // ── IN_PERSON_REQUIRED: block online booking ───────────────────────────────
     {
-        id: "red.major_trauma",
-        level: "RED",
+        id: "in_person.major_trauma",
+        level: "IN_PERSON_REQUIRED",
         questionId: "major_trauma",
         description: "You reported a recent major injury or suspected fracture.",
         clinicianNote: "Recent major trauma or suspected fracture — requires in-person imaging/assessment.",
     },
     {
-        id: "red.neuro_progressive_weakness",
-        level: "RED",
+        id: "in_person.neuro_progressive_weakness",
+        level: "IN_PERSON_REQUIRED",
         questionId: "neuro_progressive_weakness",
         description: "You reported weakness that is getting worse over time.",
         clinicianNote: "Progressive neurological weakness — urgent in-person assessment.",
     },
     {
-        id: "red.neuro_bladder_bowel",
-        level: "RED",
+        id: "in_person.neuro_bladder_bowel",
+        level: "IN_PERSON_REQUIRED",
         questionId: "neuro_bladder_bowel",
         description: "You reported new loss of bladder or bowel control.",
         clinicianNote: "Cauda equina red flag — emergency referral.",
     },
     {
-        id: "red.neuro_saddle_numbness",
-        level: "RED",
+        id: "in_person.neuro_saddle_numbness",
+        level: "IN_PERSON_REQUIRED",
         questionId: "neuro_saddle_numbness",
         description: "You reported numbness around the saddle area.",
         clinicianNote: "Cauda equina red flag — emergency referral.",
     },
     {
-        id: "red.cardioresp",
-        level: "RED",
+        id: "in_person.cardioresp",
+        level: "IN_PERSON_REQUIRED",
         questionId: "cardioresp",
         description: "You reported chest pain, breathlessness, or signs of a clot.",
         clinicianNote: "Cardiorespiratory red flag — urgent medical review.",
     },
     {
-        id: "red.systemic",
-        level: "RED",
+        id: "in_person.systemic",
+        level: "IN_PERSON_REQUIRED",
         questionId: "systemic",
         description: "You reported unexplained weight loss, fever, or night pain with systemic symptoms.",
         clinicianNote: "Systemic red flag — possible malignancy or infection.",
     },
     {
-        id: "red.post_op_complication",
-        level: "RED",
+        id: "in_person.post_op_complication",
+        level: "IN_PERSON_REQUIRED",
         questionId: "post_op_complication",
         description: "You reported wound or swelling complications after recent surgery.",
         clinicianNote: "Post-op complication — surgical review needed.",
     },
     {
-        id: "red.severe_worsening",
-        level: "RED",
+        id: "in_person.severe_worsening",
+        level: "IN_PERSON_REQUIRED",
         questionId: "severe_worsening",
         description: "You reported severe pain that is rapidly getting worse.",
         clinicianNote: "Rapidly worsening severe pain — urgent review.",
     },
 
-    // ── AMBER: online first, home visit likely ─────────────
+    // ── FLAG: online OK, physio should review carefully ───────────────────────
     {
-        id: "amber.post_op_planned",
-        level: "AMBER",
+        id: "flag.post_op_planned",
+        level: "FLAG",
         questionId: "post_op_planned",
         description: "You are recovering from recent surgery and may need hands-on care.",
         clinicianNote: "Planned post-op rehab — online assessment OK, home visit may be needed.",
     },
     {
-        id: "amber.mobility_limited",
-        level: "AMBER",
+        id: "flag.mobility_limited",
+        level: "FLAG",
         questionId: "mobility_limited",
         description: "Your mobility is significantly limited and a home visit may be needed.",
         clinicianNote: "Limited mobility — consider home visit for assessment.",
     },
     {
-        id: "amber.pain_high",
-        level: "AMBER",
+        id: "flag.pain_high",
+        level: "FLAG",
         questionId: "pain_high",
         description: "Your pain score is high and may need in-person assessment.",
         clinicianNote: "Pain >= 8 — online assessment OK, flag for possible escalation.",

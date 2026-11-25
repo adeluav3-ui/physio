@@ -14,14 +14,14 @@ const config: Record<
         tone: "text-success-700",
         border: "border-success-500",
     },
-    AMBER: {
-        title: "Start online — a home visit may be needed",
+    FLAG: {
+        title: "Start online — your specialist will review your case",
         icon: "!",
         tone: "text-warning-700",
         border: "border-warning-500",
     },
-    RED: {
-        title: "You need urgent in-person care",
+    IN_PERSON_REQUIRED: {
+        title: "In-person care is required for your symptoms",
         icon: "⚠",
         tone: "text-danger-700",
         border: "border-danger-500",
@@ -58,7 +58,7 @@ export function TriageResultCard({
                     ))}
                 </ul>
 
-                {level === "RED" && emergencyContacts && (
+                {level === "IN_PERSON_REQUIRED" && emergencyContacts && (
                     <div className="mt-6 rounded-md bg-danger-50 p-4">
                         <p className="mb-2 text-sm font-semibold text-danger-700">
                             Call emergency services now
@@ -76,7 +76,7 @@ export function TriageResultCard({
                 )}
 
                 <div className="mt-8 flex flex-col gap-3">
-                    {primaryAction && level !== "RED" && (
+                    {primaryAction && level !== "IN_PERSON_REQUIRED" && (
                         <Button onClick={primaryAction.onClick} fullWidth>
                             {primaryAction.label}
                         </Button>

@@ -70,8 +70,8 @@ enum LicenceStatus {
 
 enum TriageLevel {
   GREEN
-  AMBER
-  RED
+  FLAG
+  IN_PERSON_REQUIRED
 }
 
 enum AppointmentType {

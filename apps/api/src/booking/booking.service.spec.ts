@@ -44,7 +44,7 @@ function makePrisma(opts: {
                 findUnique: jest.fn().mockResolvedValue(
                     opts.intakeTriage !== undefined
                         ? {
-                            id: opts.intakeTriage === "RED" ? INTAKE_RED_ID : INTAKE_GREEN_ID,
+                            id: opts.intakeTriage === "IN_PERSON_REQUIRED" ? INTAKE_RED_ID : INTAKE_GREEN_ID,
                             patientId: PATIENT_USER_ID,
                             triage: opts.intakeTriage ? { level: opts.intakeTriage } : null,
                         }
@@ -99,11 +99,11 @@ describe("BookingService booking guards", () => {
         return new BookingService(prisma, slots as any, holds as any, payments as any, audit as any, notifications as any, patients as any, wallet as any, { cancelSessionReminders: jest.fn() } as any);
     }
 
-    it("throws TRIAGE_RED when intake has level RED", async () => {
-        const prisma = makePrisma({ intakeTriage: "RED" });
+    it("throws TRIAGE_IN_PERSON_REQUIRED when intake has level IN_PERSON_REQUIRED", async () => {
+        const prisma = makePrisma({ intakeTriage: "IN_PERSON_REQUIRED" });
         const svc = buildService(prisma);
         await expect(svc.book(patientUser, makeInput({ intakeId: INTAKE_RED_ID }))).rejects.toMatchObject({
-            response: expect.objectContaining({ code: "TRIAGE_RED" }),
+            response: expect.objectContaining({ code: "TRIAGE_IN_PERSON_REQUIRED" }),
         });
     });
 
@@ -113,8 +113,8 @@ describe("BookingService booking guards", () => {
         await expect(svc.book(patientUser, makeInput())).resolves.toBeDefined();
     });
 
-    it("allows AMBER triage to proceed (online booking OK)", async () => {
-        const prisma = makePrisma({ intakeTriage: "AMBER" });
+    it("allows FLAG triage to proceed (online booking OK)", async () => {
+        const prisma = makePrisma({ intakeTriage: "FLAG" });
         const svc = buildService(prisma);
         await expect(svc.book(patientUser, makeInput())).resolves.toBeDefined();
     });

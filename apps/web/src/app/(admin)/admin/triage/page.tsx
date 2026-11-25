@@ -19,8 +19,8 @@ type TriageEntry = {
 };
 
 const LEVEL_STYLES: Record<string, string> = {
-    RED: "bg-[#fde8e8] text-[#8f1d1d]",
-    AMBER: "bg-[#fdf1d8] text-[#7a4f00]",
+    IN_PERSON_REQUIRED: "bg-[#fde8e8] text-[#8f1d1d]",
+    FLAG: "bg-[#fdf1d8] text-[#7a4f00]",
     GREEN: "bg-[#e3f4e8] text-[#1d5c34]",
 };
 
@@ -46,7 +46,7 @@ export default async function AdminTriagePage() {
             <p className="mt-1 text-sm text-text-muted">{entries.length} triage records.</p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-                {(["RED", "AMBER", "GREEN"] as const).map((level) => (
+                {(["IN_PERSON_REQUIRED", "FLAG", "GREEN"] as const).map((level) => (
                     <span
                         key={level}
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${

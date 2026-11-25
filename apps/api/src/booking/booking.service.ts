@@ -123,7 +123,7 @@ export class BookingService {
             throw new BadRequestException({ code: "INVALID_DATE", message: "Invalid start time" });
         }
 
-        // For ASSESSMENT, intake must exist, belong to user, and be GREEN/AMBER (not RED).
+        // For ASSESSMENT, intake must exist, belong to user, and be GREEN/FLAG (not IN_PERSON_REQUIRED).
         if (input.type === "ASSESSMENT") {
             if (!input.intakeId) {
                 throw new BadRequestException({ code: "INTAKE_REQUIRED", message: "Intake required before assessment" });
@@ -135,9 +135,9 @@ export class BookingService {
             if (!intake || intake.patientId !== user.id) {
                 throw new ForbiddenException({ code: "INVALID_INTAKE", message: "Intake not found for this patient" });
             }
-            if (intake.triage?.level === "RED") {
+            if (intake.triage?.level === "IN_PERSON_REQUIRED") {
                 throw new BadRequestException({
-                    code: "TRIAGE_RED",
+                    code: "TRIAGE_IN_PERSON_REQUIRED",
                     message: "Online booking is not available for this case. Please seek in-person care.",
                 });
             }

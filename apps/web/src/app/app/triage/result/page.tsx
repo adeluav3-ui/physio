@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { TriageResultCard } from "@physio/ui";
 
-type TriageLevel = "GREEN" | "AMBER" | "RED";
+type TriageLevel = "GREEN" | "FLAG" | "IN_PERSON_REQUIRED";
 type Specialist = { physio: { userId: string; user: { name: string } } };
 
 export default function TriageResultPage() {
@@ -55,7 +55,7 @@ export default function TriageResultPage() {
 
     const existingSpecialist = specialists[0] ?? null;
 
-    const primaryAction = level !== "RED" ? {
+    const primaryAction = level !== "IN_PERSON_REQUIRED" ? {
         label: existingSpecialist
             ? `Book with ${existingSpecialist.physio.user.name.split(" ")[0]}`
             : "Find a professional",
@@ -67,13 +67,13 @@ export default function TriageResultPage() {
     } : undefined;
 
     const secondaryAction = {
-        label: level === "RED"
+        label: level === "IN_PERSON_REQUIRED"
             ? "I understand"
             : existingSpecialist
                 ? "Choose a different specialist"
                 : "Back to home",
         onClick: () => router.push(
-            level === "RED" || !existingSpecialist ? "/app" : "/app/physios"
+            level === "IN_PERSON_REQUIRED" || !existingSpecialist ? "/app" : "/app/physios"
         ),
     };
 
@@ -83,7 +83,7 @@ export default function TriageResultPage() {
             reasons={reasons}
             {...(primaryAction ? { primaryAction } : {})}
             secondaryAction={secondaryAction}
-            {...(level === "RED"
+            {...(level === "IN_PERSON_REQUIRED"
                 ? {
                     emergencyContacts: [
                         { label: "Emergency", phone: "112" },

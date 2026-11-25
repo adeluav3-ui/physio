@@ -40,7 +40,7 @@ export class TriageController {
     @Roles("ADMIN")
     override(
         @CurrentUser() admin: SessionUser,
-        @Body(new ZodBody(triageOverrideSchema)) body: { intakeId: string; level: "GREEN" | "AMBER" | "RED"; reason: string },
+        @Body(new ZodBody(triageOverrideSchema)) body: { intakeId: string; level: "GREEN" | "FLAG" | "IN_PERSON_REQUIRED"; reason: string },
     ) {
         return this.triage.override(admin, body.intakeId, body.level, body.reason);
     }

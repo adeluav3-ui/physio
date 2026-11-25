@@ -36,79 +36,79 @@ describe("triage engine — pain_high boundary", () => {
     it("pain 7 does NOT trigger pain_high → GREEN", () => {
         const r = evaluate({ painScore: 7, redFlagAnswers: allFalse });
         expect(r.level).toBe("GREEN");
-        expect(r.ruleIds).not.toContain("amber.pain_high");
+        expect(r.ruleIds).not.toContain("flag.pain_high");
     });
 
-    it("pain 8 triggers pain_high → AMBER", () => {
+    it("pain 8 triggers pain_high → FLAG", () => {
         const r = evaluate({ painScore: 8, redFlagAnswers: allFalse });
-        expect(r.level).toBe("AMBER");
-        expect(r.ruleIds).toContain("amber.pain_high");
+        expect(r.level).toBe("FLAG");
+        expect(r.ruleIds).toContain("flag.pain_high");
     });
 
-    it("pain 10 triggers pain_high → AMBER", () => {
+    it("pain 10 triggers pain_high → FLAG", () => {
         const r = evaluate({ painScore: 10, redFlagAnswers: allFalse });
-        expect(r.level).toBe("AMBER");
+        expect(r.level).toBe("FLAG");
     });
 });
 
-describe("triage engine — AMBER cases", () => {
-    it("post_op_planned only → AMBER", () => {
+describe("triage engine — FLAG cases", () => {
+    it("post_op_planned only → FLAG", () => {
         const r = evaluate({ painScore: 3, redFlagAnswers: { ...allFalse, post_op_planned: true } });
-        expect(r.level).toBe("AMBER");
-        expect(r.ruleIds).toContain("amber.post_op_planned");
+        expect(r.level).toBe("FLAG");
+        expect(r.ruleIds).toContain("flag.post_op_planned");
     });
 
-    it("mobility_limited only → AMBER", () => {
+    it("mobility_limited only → FLAG", () => {
         const r = evaluate({ painScore: 3, redFlagAnswers: { ...allFalse, mobility_limited: true } });
-        expect(r.level).toBe("AMBER");
-        expect(r.ruleIds).toContain("amber.mobility_limited");
+        expect(r.level).toBe("FLAG");
+        expect(r.ruleIds).toContain("flag.mobility_limited");
     });
 
-    it("pain_high + AMBER flag → still AMBER (no RED)", () => {
+    it("pain_high + FLAG trigger → still FLAG (no IN_PERSON_REQUIRED)", () => {
         const r = evaluate({
             painScore: 9,
             redFlagAnswers: { ...allFalse, mobility_limited: true },
         });
-        expect(r.level).toBe("AMBER");
+        expect(r.level).toBe("FLAG");
     });
 });
 
-describe("triage engine — RED cases (one flag per test)", () => {
-    const redFlags: [string, string][] = [
-        ["major_trauma", "red.major_trauma"],
-        ["neuro_progressive_weakness", "red.neuro_progressive_weakness"],
-        ["neuro_bladder_bowel", "red.neuro_bladder_bowel"],
-        ["neuro_saddle_numbness", "red.neuro_saddle_numbness"],
-        ["cardioresp", "red.cardioresp"],
-        ["systemic", "red.systemic"],
-        ["post_op_complication", "red.post_op_complication"],
-        ["severe_worsening", "red.severe_worsening"],
+describe("triage engine — IN_PERSON_REQUIRED cases (one flag per test)", () => {
+    const inPersonFlags: [string, string][] = [
+        ["major_trauma", "in_person.major_trauma"],
+        ["neuro_progressive_weakness", "in_person.neuro_progressive_weakness"],
+        ["neuro_bladder_bowel", "in_person.neuro_bladder_bowel"],
+        ["neuro_saddle_numbness", "in_person.neuro_saddle_numbness"],
+        ["cardioresp", "in_person.cardioresp"],
+        ["systemic", "in_person.systemic"],
+        ["post_op_complication", "in_person.post_op_complication"],
+        ["severe_worsening", "in_person.severe_worsening"],
     ];
 
-    test.each(redFlags)("flag %s fires rule %s → RED", (flagId, ruleId) => {
+    test.each(inPersonFlags)("flag %s fires rule %s → IN_PERSON_REQUIRED", (flagId, ruleId) => {
         const r = evaluate({
             painScore: 3,
             redFlagAnswers: { ...allFalse, [flagId]: true },
         });
-        expect(r.level).toBe("RED");
+        expect(r.level).toBe("IN_PERSON_REQUIRED");
         expect(r.ruleIds).toContain(ruleId);
     });
 });
 
-describe("triage engine — RED wins over AMBER", () => {
-    it("RED + AMBER flags together → RED", () => {
+describe("triage engine — IN_PERSON_REQUIRED wins over FLAG", () => {
+    it("IN_PERSON_REQUIRED + FLAG flags together → IN_PERSON_REQUIRED", () => {
         const r = evaluate({
             painScore: 3,
             redFlagAnswers: { ...allFalse, major_trauma: true, post_op_planned: true },
         });
-        expect(r.level).toBe("RED");
+        expect(r.level).toBe("IN_PERSON_REQUIRED");
     });
 
-    it("RED flag + pain_high → RED", () => {
+    it("IN_PERSON_REQUIRED flag + pain_high → IN_PERSON_REQUIRED", () => {
         const r = evaluate({
             painScore: 9,
             redFlagAnswers: { ...allFalse, major_trauma: true },
         });
-        expect(r.level).toBe("RED");
+        expect(r.level).toBe("IN_PERSON_REQUIRED");
     });
 });

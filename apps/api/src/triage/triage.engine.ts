@@ -32,8 +32,8 @@ export function evaluate(input: TriageInput): TriageDecision {
         return { level: "GREEN", reasons: ["No red flags reported."], ruleIds: [] };
     }
 
-    const hasRed = fired.some((r) => r.level === "RED");
-    const level: TriageLevel = hasRed ? "RED" : "AMBER";
+    const hasRed = fired.some((r) => r.level === "IN_PERSON_REQUIRED");
+    const level: TriageLevel = hasRed ? "IN_PERSON_REQUIRED" : "FLAG";
 
     return {
         level,
