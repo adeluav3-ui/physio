@@ -104,8 +104,8 @@ export class PhysioController {
     @Roles("ADMIN")
     verify(
         @CurrentUser() admin: SessionUser,
-        @Body(new ZodBody(physioVerifySchema)) body: { userId: string; decision: "VERIFIED" | "REJECTED"; reason?: string },
+        @Body(new ZodBody(physioVerifySchema)) body: { userId: string; decision: "VERIFIED" | "REJECTED"; reason?: string; mrtbChecked?: boolean },
     ) {
-        return this.physio.verify(admin, body.userId, body.decision, body.reason);
+        return this.physio.verify(admin, body.userId, body.decision, body.reason, body.mrtbChecked);
     }
 }

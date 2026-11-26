@@ -191,6 +191,8 @@ export default function PhysioNotePage() {
 
             if (nextStep === "refer") {
                 router.push(`/pro/referrals?appointmentId=${params.id}`);
+            } else {
+                router.push(`/app/session/${params.id}/feedback?role=physio`);
             }
         } catch (e) {
             setError((e as Error).message);

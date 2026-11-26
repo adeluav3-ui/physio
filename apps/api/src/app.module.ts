@@ -26,6 +26,7 @@ import { MessagingModule } from "./messaging/messaging.module.js";
 import { ReviewsModule } from "./reviews/reviews.module.js";
 import { PackagesModule } from "./packages/packages.module.js";
 import { WalletModule } from "./wallet/wallet.module.js";
+import { FeedbackModule } from "./feedback/feedback.module.js";
 
 @Module({
     imports: [
@@ -60,6 +61,7 @@ import { WalletModule } from "./wallet/wallet.module.js";
         ReviewsModule,
         PackagesModule,
         WalletModule,
+        FeedbackModule,
     ],
     providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

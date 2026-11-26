@@ -163,7 +163,7 @@ export default function PatientSessionPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({}),
         }).catch(() => {});
-        router.push(`/app/appointments/${params.id}`);
+        router.push(`/app/session/${params.id}/feedback?role=patient`);
     }
 
     function statusChip(ok: boolean | null) {

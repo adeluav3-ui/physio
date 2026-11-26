@@ -83,14 +83,6 @@ export default function TriageResultPage() {
             reasons={reasons}
             {...(primaryAction ? { primaryAction } : {})}
             secondaryAction={secondaryAction}
-            {...(level === "IN_PERSON_REQUIRED"
-                ? {
-                    emergencyContacts: [
-                        { label: "Emergency", phone: "112" },
-                        { label: "Nearest hospital", phone: "+2348000000000" },
-                    ],
-                }
-                : {})}
         />
     );
 }

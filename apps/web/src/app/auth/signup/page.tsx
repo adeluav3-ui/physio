@@ -163,7 +163,19 @@ export default function SignupPage() {
                         </div>
                         <label style={{ display: "flex", gap: "10px", alignItems: "flex-start", font: "400 14px/1.4 'Figtree',sans-serif", margin: 0, cursor: "pointer" }}>
                             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ width: "20px", height: "20px", margin: 0, flexShrink: 0, marginTop: "1px" }} />
-                            I agree to the terms and privacy notice.
+                            <span>
+                                I have read and agree to the{" "}
+                                <Link href="/legal/terms" target="_blank" rel="noopener" style={{ color: "#076889" }}>Terms of Service</Link>
+                                {" "}and{" "}
+                                <Link href="/legal/privacy" target="_blank" rel="noopener" style={{ color: "#076889" }}>Privacy Notice</Link>
+                                {role === "pro" && (
+                                    <>
+                                        {", including the "}
+                                        <Link href="/legal/pilot-agreement" target="_blank" rel="noopener" style={{ color: "#076889" }}>Founding Specialist Pilot Agreement</Link>
+                                    </>
+                                )}
+                                .
+                            </span>
                         </label>
                         {error && <p style={{ color: "#8f1d1d", font: "400 14px 'Figtree',sans-serif", margin: 0 }}>{error}</p>}
                         <button type="submit" className="btn" disabled={loading} style={{ width: "100%", opacity: loading ? 0.7 : 1 }}>

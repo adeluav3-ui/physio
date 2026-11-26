@@ -26,6 +26,7 @@ export class PhysioService {
         photoUrl: string | null;
         languages: string[];
         sessionTypes: string[];
+        pilotParticipant: boolean;
         user: { id: string; name: string };
     }) {
         return {
@@ -39,6 +40,7 @@ export class PhysioService {
             photoUrl: p.photoUrl,
             languages: p.languages,
             sessionTypes: p.sessionTypes,
+            pilotParticipant: p.pilotParticipant,
             user: { id: p.user.id, name: p.user.name },
         };
     }
@@ -74,6 +76,7 @@ export class PhysioService {
                 languages: true,
                 sessionTypes: true,
                 sessionMinutes: true,
+                pilotParticipant: true,
                 user: { select: { id: true, name: true } },
             },
             orderBy: { createdAt: "desc" },
@@ -109,6 +112,7 @@ export class PhysioService {
                 photoUrl: true,
                 languages: true,
                 sessionTypes: true,
+                pilotParticipant: true,
                 user: { select: { id: true, name: true } },
             },
         });
@@ -315,7 +319,13 @@ export class PhysioService {
         });
     }
 
-    async verify(admin: SessionUser, userId: string, decision: "VERIFIED" | "REJECTED", reason?: string) {
+    async verify(
+        admin: SessionUser,
+        userId: string,
+        decision: "VERIFIED" | "REJECTED",
+        reason?: string,
+        mrtbChecked?: boolean,
+    ) {
         if (admin.role !== "ADMIN") {
             throw new ForbiddenException({ code: "FORBIDDEN", message: "Admin only" });
         }
@@ -332,6 +342,9 @@ export class PhysioService {
                 data: {
                     licenceStatus: decision,
                     verifiedAt: decision === "VERIFIED" ? new Date() : null,
+                    rejectedAt: decision === "REJECTED" ? new Date() : null,
+                    rejectionReason: decision === "REJECTED" ? (reason ?? null) : null,
+                    mrtbCheckedAt: decision === "VERIFIED" && mrtbChecked ? new Date() : undefined,
                 },
             });
         });

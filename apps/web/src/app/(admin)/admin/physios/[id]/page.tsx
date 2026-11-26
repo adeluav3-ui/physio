@@ -67,6 +67,7 @@ export default function AdminPhysioReviewPage() {
     const [fetching, setFetching] = useState(true);
     const [fetchErr, setFetchErr] = useState<string | null>(null);
     const [note, setNote] = useState("");
+    const [mrtbChecked, setMrtbChecked] = useState(false);
     const [deciding, setDeciding] = useState(false);
     const [decisionErr, setDecisionErr] = useState<string | null>(null);
 
@@ -79,12 +80,21 @@ export default function AdminPhysioReviewPage() {
     }, [params.id]);
 
     async function decide(decision: "VERIFIED" | "REJECTED") {
+        if (decision === "VERIFIED" && !mrtbChecked) {
+            setDecisionErr("Please confirm you have checked the MRTB register before approving.");
+            return;
+        }
         setDeciding(true); setDecisionErr(null);
         try {
             const res = await fetch("/api/proxy/physios/admin/verify", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: params.id, decision, reason: note || undefined }),
+                body: JSON.stringify({
+                    userId: params.id,
+                    decision,
+                    reason: note || undefined,
+                    mrtbChecked: decision === "VERIFIED" ? mrtbChecked : undefined,
+                }),
             });
             if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.message ?? "Action failed"); }
             router.push("/admin/physios");
@@ -189,8 +199,22 @@ export default function AdminPhysioReviewPage() {
                 <div className="card" style={{ flex: "1 1 280px" }}>
                     <h2 style={{ font: "700 18px 'Figtree',sans-serif", margin: 0 }}>Decision</h2>
                     <p className="muted" style={{ font: "400 13px/1.5 'Figtree',sans-serif", marginTop: "8px" }}>
-                        Confirm the licence number with the Medical Rehabilitation Therapists Board of Nigeria before approving. This action is recorded in the audit log.
+                        Confirm the licence number with MRTB before approving. This action is recorded in the audit log.
                     </p>
+
+                    {/* MRTB check — required before approval */}
+                    <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginTop: "16px", cursor: "pointer" }}>
+                        <input
+                            type="checkbox"
+                            checked={mrtbChecked}
+                            onChange={e => setMrtbChecked(e.target.checked)}
+                            style={{ marginTop: "2px", flexShrink: 0, width: "16px", height: "16px" }}
+                        />
+                        <span style={{ font: "500 13px/1.5 'Figtree',sans-serif" }}>
+                            I have checked the MRTB register and confirmed this licence number is valid and active.
+                        </span>
+                    </label>
+
                     <div style={{ marginTop: "18px" }}>
                         <label style={{ display: "block", font: "600 13px 'Figtree',sans-serif", marginBottom: "6px" }}>
                             Note <span style={{ font: "400 13px 'Figtree',sans-serif", color: "#4f6478" }}>(sent to professional if rejected)</span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { physioApplySchema, DISCIPLINE_LABELS, ID_TYPES, ID_TYPE_LABELS, type IdType } from "@physio/shared";
 import { FileUpload } from "@/components/file-upload";
 
@@ -72,6 +73,7 @@ export default function ProfessionalApplyPage() {
     const [bankName, setBankName] = useState("");
     const [accountNo, setAccountNo] = useState("");
 
+    const [agreedPilot, setAgreedPilot] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
@@ -114,6 +116,10 @@ export default function ProfessionalApplyPage() {
 
     async function submit() {
         setError(null);
+        if (!agreedPilot) {
+            setError("Please read and accept the Founding Specialist Pilot Agreement before submitting.");
+            return;
+        }
         const parsed = physioApplySchema.safeParse({
             discipline,
             licenceNo,
@@ -457,8 +463,24 @@ export default function ProfessionalApplyPage() {
                                     <ReviewRow label="Account number" value={accountNo} />
                                 </ReviewSection>
 
-                                <div style={{ marginTop: "16px", padding: "12px 14px", borderRadius: "12px", background: "#e6f4e1", border: "1px solid #c3d1de", font: "400 14px/1.5 'Figtree',sans-serif", color: "#0f5a08" }}>
-                                    By submitting, you confirm all documents are authentic and the details above are accurate.
+                                <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    <label style={{ display: "flex", gap: "10px", alignItems: "flex-start", font: "400 14px/1.5 'Figtree',sans-serif", cursor: "pointer" }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={agreedPilot}
+                                            onChange={e => setAgreedPilot(e.target.checked)}
+                                            style={{ width: "20px", height: "20px", flexShrink: 0, marginTop: "1px", accentColor: "#1b7d0e" }}
+                                        />
+                                        <span>
+                                            I have read and agree to the{" "}
+                                            <Link href="/legal/pilot-agreement" target="_blank" rel="noopener" style={{ color: "#076889" }}>Founding Specialist Pilot Agreement</Link>
+                                            {", "}
+                                            <Link href="/legal/terms" target="_blank" rel="noopener" style={{ color: "#076889" }}>Terms of Service</Link>
+                                            {" and "}
+                                            <Link href="/legal/privacy" target="_blank" rel="noopener" style={{ color: "#076889" }}>Privacy Notice</Link>
+                                            . I confirm all documents are authentic and the details above are accurate.
+                                        </span>
+                                    </label>
                                 </div>
                             </>
                         )}

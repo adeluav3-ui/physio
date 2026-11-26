@@ -7,6 +7,7 @@ import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
     { href: "/admin",                label: "Home" },
+    { href: "/admin/pilot",          label: "Pilot dashboard" },
     { href: "/admin/physios",        label: "Verification" },
     { href: "/admin/users",          label: "Users & professionals" },
     { href: "/admin/appointments",   label: "Appointments" },

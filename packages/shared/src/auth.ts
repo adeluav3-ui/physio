@@ -67,6 +67,7 @@ export const physioVerifySchema = z.object({
     userId: idSchema,
     decision: z.enum(["VERIFIED", "REJECTED"]),
     reason: z.string().optional(),
+    mrtbChecked: z.boolean().optional(),
 });
 
 export const setUserRoleSchema = z.object({

@@ -6,7 +6,7 @@ import type { TriageLevel } from "@physio/shared";
 
 const config: Record<
     TriageLevel,
-    { title: string; icon: string; tone: string; border: string }
+    { title: string; subtitle?: string; icon: string; tone: string; border: string }
 > = {
     GREEN: {
         title: "You're suitable for online care",
@@ -15,13 +15,15 @@ const config: Record<
         border: "border-success-500",
     },
     FLAG: {
-        title: "Start online — your specialist will review your case",
+        title: "Book now — your specialist will review your case",
+        subtitle: "Some of your answers need a clinical review. Book your first session and your specialist will assess them with you.",
         icon: "!",
         tone: "text-warning-700",
         border: "border-warning-500",
     },
     IN_PERSON_REQUIRED: {
-        title: "In-person care is required for your symptoms",
+        title: "Your condition needs an in-person assessment",
+        subtitle: "Based on your answers, an online session is not the safest first step. Our team has been notified and will follow up with you to help you find the right care.",
         icon: "⚠",
         tone: "text-danger-700",
         border: "border-danger-500",
@@ -33,13 +35,11 @@ export function TriageResultCard({
     reasons,
     primaryAction,
     secondaryAction,
-    emergencyContacts,
 }: {
     level: TriageLevel;
     reasons: string[];
     primaryAction?: { label: string; onClick: () => void };
     secondaryAction?: { label: string; onClick: () => void };
-    emergencyContacts?: { label: string; phone: string }[];
 }) {
     const c = config[level]!;
     return (
@@ -49,30 +49,19 @@ export function TriageResultCard({
                     {c.icon}
                 </div>
                 <h1 className="text-2xl font-semibold text-text">{c.title}</h1>
-                <ul className="mt-4 flex flex-col gap-2 text-base text-text-muted">
-                    {reasons.map((r, i) => (
-                        <li key={i} className="flex gap-2">
-                            <span aria-hidden>•</span>
-                            <span>{r}</span>
-                        </li>
-                    ))}
-                </ul>
 
-                {level === "IN_PERSON_REQUIRED" && emergencyContacts && (
-                    <div className="mt-6 rounded-md bg-danger-50 p-4">
-                        <p className="mb-2 text-sm font-semibold text-danger-700">
-                            Call emergency services now
-                        </p>
-                        <ul className="flex flex-col gap-1 text-base">
-                            {emergencyContacts.map((e) => (
-                                <li key={e.phone}>
-                                    <a className="font-medium text-danger-700 underline" href={`tel:${e.phone}`}>
-                                        {e.label}: {e.phone}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                {/* Subtitle overrides reason list for FLAG/IN_PERSON_REQUIRED */}
+                {c.subtitle ? (
+                    <p className="mt-4 text-base text-text-muted">{c.subtitle}</p>
+                ) : (
+                    <ul className="mt-4 flex flex-col gap-2 text-base text-text-muted">
+                        {reasons.map((r, i) => (
+                            <li key={i} className="flex gap-2">
+                                <span aria-hidden>•</span>
+                                <span>{r}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
 
                 <div className="mt-8 flex flex-col gap-3">

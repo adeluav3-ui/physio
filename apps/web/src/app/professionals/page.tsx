@@ -20,6 +20,7 @@ export type PublicProfessional = {
     photoUrl: string | null;
     languages: string[];
     sessionTypes: string[];
+    pilotParticipant: boolean;
     user: { id: string; name: string };
 };
 

@@ -444,6 +444,124 @@ export class AdminController {
         return this.prisma.client.fallbackCase.update({ where: { id }, data });
     }
 
+    // ── Pilot dashboard ───────────────────────────────────────────────────────
+
+    @Get("pilot-dashboard")
+    async pilotDashboard() {
+        const settings = await this.prisma.client.pilotSettings.findUnique({ where: { id: 1 } });
+        const target = settings?.sessionTarget ?? 200;
+
+        const [
+            completedSessions,
+            pilotSpecialists,
+            videoSessionData,
+        ] = await Promise.all([
+            this.prisma.client.appointment.count({
+                where: { status: "COMPLETED" },
+            }),
+            this.prisma.client.physioProfile.count({
+                where: { pilotParticipant: true, licenceStatus: "VERIFIED" },
+            }),
+            this.prisma.client.videoSession.findMany({
+                where: { startedAt: { not: null }, endedAt: { not: null } },
+                select: { startedAt: true, endedAt: true },
+            }),
+        ]);
+
+        const totalMinutes = videoSessionData.reduce((sum, s) => {
+            const ms = s.endedAt!.getTime() - s.startedAt!.getTime();
+            return sum + ms / 60_000;
+        }, 0);
+
+        return {
+            pilotActive: settings?.pilotModeEnabled ?? false,
+            pilotStart: settings?.pilotStartDate ?? null,
+            pilotEnd: settings?.pilotEndDate ?? null,
+            sessionTarget: target,
+            completedSessions,
+            progressPct: Math.round((completedSessions / target) * 100),
+            pilotSpecialists,
+            totalVideoMinutes: Math.round(totalMinutes),
+            commissionBps: settings?.commissionBps ?? 1000,
+            serviceFeeBps: settings?.serviceFeeBps ?? 500,
+            freeIntroVideoSessions: settings?.freeIntroVideoSessions ?? 2,
+            videoAddonKobo: settings?.videoAddonKobo ?? 50000,
+        };
+    }
+
+    // ── Pilot participant flag ────────────────────────────────────────────────
+
+    @Patch("physios/:id/pilot")
+    async setPilotParticipant(
+        @Param("id") id: string,
+        @Body() body: { pilotParticipant: boolean },
+    ) {
+        const profile = await this.prisma.client.physioProfile.findUnique({ where: { userId: id } });
+        if (!profile) throw new NotFoundException({ code: "NOT_FOUND", message: "Physio not found" });
+        return this.prisma.client.physioProfile.update({
+            where: { userId: id },
+            data: { pilotParticipant: body.pilotParticipant },
+            select: { userId: true, pilotParticipant: true },
+        });
+    }
+
+    // ── Pilot settings ────────────────────────────────────────────────────────
+
+    @Get("pilot-settings")
+    async getPilotSettings() {
+        const settings = await this.prisma.client.pilotSettings.findUnique({ where: { id: 1 } });
+        return settings ?? {
+            id: 1,
+            pilotModeEnabled: false,
+            pilotStartDate: new Date("2026-12-01"),
+            pilotEndDate: new Date("2027-03-01"),
+            commissionBps: 1000,
+            serviceFeeBps: 500,
+            serviceFeeCapKobo: 50000,
+            freeIntroVideoSessions: 2,
+            videoAddonKobo: 50000,
+            sessionTarget: 200,
+            updatedBy: null,
+        };
+    }
+
+    @Put("pilot-settings")
+    async upsertPilotSettings(
+        @Body() body: {
+            pilotModeEnabled?: boolean;
+            pilotStartDate?: string;
+            pilotEndDate?: string;
+            commissionBps?: number;
+            serviceFeeBps?: number;
+            serviceFeeCapKobo?: number;
+            freeIntroVideoSessions?: number;
+            videoAddonKobo?: number;
+            sessionTarget?: number;
+        },
+        @CurrentUser() caller: SessionUser,
+    ) {
+        if (body.commissionBps !== undefined && body.commissionBps > 1000) {
+            throw new BadRequestException({ code: "COMMISSION_CEILING", message: "commissionBps cannot exceed 1000 bps (10%)" });
+        }
+        const data = {
+            ...(body.pilotModeEnabled !== undefined && { pilotModeEnabled: body.pilotModeEnabled }),
+            ...(body.pilotStartDate && { pilotStartDate: new Date(body.pilotStartDate) }),
+            ...(body.pilotEndDate && { pilotEndDate: new Date(body.pilotEndDate) }),
+            ...(body.commissionBps !== undefined && { commissionBps: body.commissionBps }),
+            ...(body.serviceFeeBps !== undefined && { serviceFeeBps: body.serviceFeeBps }),
+            ...(body.serviceFeeCapKobo !== undefined && { serviceFeeCapKobo: body.serviceFeeCapKobo }),
+            ...(body.freeIntroVideoSessions !== undefined && { freeIntroVideoSessions: body.freeIntroVideoSessions }),
+            ...(body.videoAddonKobo !== undefined && { videoAddonKobo: body.videoAddonKobo }),
+            ...(body.sessionTarget !== undefined && { sessionTarget: body.sessionTarget }),
+            updatedBy: caller.id,
+        };
+        return this.prisma.client.pilotSettings.upsert({
+            where: { id: 1 },
+            update: data,
+            create: { id: 1, ...data },
+        });
+    }
+
     // ── Payments ledger ───────────────────────────────────────────────────────
 
     @Get("payments/ledger")

@@ -62,6 +62,11 @@ export default async function PublicProfilePage({ params }: Props) {
                                 <div className="muted" style={{ font: "500 17px 'Figtree',sans-serif", marginTop: "4px" }}>{discipline}</div>
                                 <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "8px", marginTop: "12px" }}>
                                     {p.verified && <span className="chip-sm ok">Licence verified</span>}
+                                    {p.pilotParticipant && (
+                                        <span className="chip-sm" style={{ background: "#fff7e6", color: "#b45309", border: "1px solid #fcd34d" }}>
+                                            ⭐ Founding Specialist
+                                        </span>
+                                    )}
                                     {(p.languages ?? []).map(l => <span key={l} className="chip-sm">{l}</span>)}
                                     {(p.sessionTypes ?? []).map(s => <span key={s} className="chip-sm">{s}</span>)}
                                 </div>

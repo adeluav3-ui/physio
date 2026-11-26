@@ -140,6 +140,13 @@ enum HomeVisitStatus {
   CANCELLED
 }
 
+enum FeedbackFormType {
+  PATIENT_SESSION      // submitted by patient after each session
+  SPECIALIST_SESSION   // submitted by specialist after each session
+  PATIENT_END_OF_PILOT // submitted by patient at pilot end
+  SPECIALIST_END_OF_PILOT // submitted by specialist at pilot end
+}
+
 enum NotificationChannel {
   EMAIL
   PUSH
@@ -168,6 +175,7 @@ model User {
   sentMessages    Message[]  @relation("sender")
   patientThreads  Thread[]   @relation("patient")
   physioThreads   Thread[]   @relation("physio")
+  feedback        SessionFeedback[]
 
   @@index([role, status])
 }
@@ -203,7 +211,10 @@ model PhysioProfile {
   sessionTypes      String[]      @default([])
   sessionMinutes    Int           @default(45)
   bufferMinutes     Int           @default(15)
-  acceptingPatients Boolean       @default(true)
+  acceptingPatients  Boolean       @default(true)
+  pilotParticipant   Boolean       @default(false)
+  // Set when an admin explicitly confirms they cross-checked with MRTB before approving.
+  mrtbCheckedAt      DateTime?
 
   // Identity & credential documents (URLs from Vercel Blob)
   licenceDocUrl     String?
@@ -382,6 +393,7 @@ model Appointment {
   patientSummary     PatientSummary?
   packageSession     PackageSession?
   sessionExercises   SessionExercise[]
+  feedback           SessionFeedback[]
 
   @@index([patientId, startsAt])
   @@index([physioId, startsAt])
@@ -390,21 +402,44 @@ model Appointment {
   @@index([intakeId])
 }
 
+// ── Pilot settings (singleton — id always = 1) ───────────────────────────────
+model PilotSettings {
+  id                     Int      @id @default(1)
+  pilotModeEnabled       Boolean  @default(false)
+  pilotStartDate         DateTime @default(dbgenerated("'2026-12-01 00:00:00'::timestamp"))
+  pilotEndDate           DateTime @default(dbgenerated("'2027-03-01 00:00:00'::timestamp"))
+  commissionBps          Int      @default(1000)
+  serviceFeeBps          Int      @default(500)
+  serviceFeeCapKobo      Int      @default(50000)
+  freeIntroVideoSessions Int      @default(2)
+  videoAddonKobo         Int      @default(50000)
+  sessionTarget          Int      @default(200)
+  updatedAt              DateTime @updatedAt
+  updatedBy              String?
+
+  @@map("pilot_settings")
+}
+
 // ── Payments ─────────────────────────────
 model Payment {
-  id               String        @id @default(uuid())
-  appointmentId    String        @unique
-  amountKobo       Int
-  walletAmountKobo Int           @default(0) // wallet portion reserved at booking
-  currency         String        @default("NGN")
-  status           PaymentStatus @default(PENDING)
-  providerRef      String?
-  payoutRef        String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                    String        @id @default(uuid())
+  appointmentId         String        @unique
+  amountKobo            Int
+  walletAmountKobo      Int           @default(0)
+  currency              String        @default("NGN")
+  status                PaymentStatus @default(PENDING)
+  providerRef           String?
+  payoutRef             String?
+  // Rate snapshot — values in effect at the moment of booking; never change after payment.
+  commissionBpsPaid     Int?
+  serviceFeeBpsPaid     Int?
+  serviceFeeCapKoboPaid Int?
+  videoAddonKoboPaid    Int?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
-  appointment      Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  entries          LedgerEntry[]
+  appointment           Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  entries               LedgerEntry[]
 
   @@index([status])
 }
@@ -925,4 +960,32 @@ model FallbackCase {
 
   @@index([status, createdAt])
   @@index([patientId])
+}
+
+// ── Session feedback ─────────────────────────────────────────────────────────
+// No patient names in exports — only appointment IDs and anonymised scores.
+model SessionFeedback {
+  id              String           @id @default(uuid())
+  formType        FeedbackFormType
+  appointmentId   String?          // null for end-of-pilot forms
+  submittedById   String           // userId of patient or specialist
+  // Session-level outcome measures (1–10)
+  painScore       Int?
+  functionScore   Int?
+  // Ratings (1–5 stars)
+  overallRating   Int?
+  communicationRating Int?
+  // Free-text — never logged, never in URLs
+  whatWentWell    String?
+  whatCouldImprove String?
+  // End-of-pilot: would recommend?
+  wouldRecommend  Boolean?
+  createdAt       DateTime         @default(now())
+
+  appointment     Appointment?     @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  submittedBy     User             @relation(fields: [submittedById], references: [id], onDelete: Cascade)
+
+  @@index([formType, createdAt])
+  @@index([appointmentId])
+  @@index([submittedById])
 }

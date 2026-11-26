@@ -5,7 +5,17 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { type BookAppointmentInput, type SessionUser, PATIENT_CANCEL_FREE_HOURS, FIRST_CONSULT_PRICE_KOBO, FOLLOW_UP_PRICE_KOBO, calcServiceFee, HOME_VISITS_ENABLED } from "@physio/shared";
+import {
+    type BookAppointmentInput,
+    type SessionUser,
+    type FeeRates,
+    PATIENT_CANCEL_FREE_HOURS,
+    FIRST_CONSULT_PRICE_KOBO,
+    FOLLOW_UP_PRICE_KOBO,
+    STANDARD_RATES,
+    calcFeeBreakdownWithRates,
+    HOME_VISITS_ENABLED,
+} from "@physio/shared";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { SlotService } from "./slot.service.js";
@@ -29,6 +39,21 @@ export class BookingService {
         private readonly wallet: WalletService,
         private readonly reminders: RemindersService,
     ) { }
+
+    /** Returns the rate bundle currently in effect (pilot or standard). */
+    private async activeRates(): Promise<FeeRates> {
+        const settings = await this.prisma.client.pilotSettings.findUnique({ where: { id: 1 } });
+        if (!settings || !settings.pilotModeEnabled) return STANDARD_RATES;
+        const now = new Date();
+        const active = now >= settings.pilotStartDate && now <= settings.pilotEndDate;
+        if (!active) return STANDARD_RATES;
+        return {
+            commissionBps: settings.commissionBps,
+            serviceFeeBps: settings.serviceFeeBps,
+            serviceFeeCapKobo: settings.serviceFeeCapKobo,
+            videoAddonKobo: settings.videoAddonKobo,
+        };
+    }
 
     async listForPatient(user: SessionUser) {
         return this.prisma.client.appointment.findMany({
@@ -172,7 +197,9 @@ export class BookingService {
 
         const endsAt = new Date(startsAt.getTime() + input.durationMinutes * 60_000);
         const baseAmountKobo = input.type === "ASSESSMENT" ? FIRST_CONSULT_PRICE_KOBO : FOLLOW_UP_PRICE_KOBO;
-        const amountKobo = baseAmountKobo + calcServiceFee(baseAmountKobo);
+        const rates = await this.activeRates();
+        const feeBreakdown = calcFeeBreakdownWithRates(baseAmountKobo, rates);
+        const amountKobo = feeBreakdown.patientTotal;
 
         const reference = `appt-${randomUUID()}`;
 
@@ -206,6 +233,10 @@ export class BookingService {
                         walletAmountKobo: amountKobo,
                         status: "HELD",
                         providerRef: reference,
+                        commissionBpsPaid: rates.commissionBps,
+                        serviceFeeBpsPaid: rates.serviceFeeBps,
+                        serviceFeeCapKoboPaid: rates.serviceFeeCapKobo,
+                        videoAddonKoboPaid: rates.videoAddonKobo,
                     },
                 });
                 return appt;
@@ -257,6 +288,10 @@ export class BookingService {
                     walletAmountKobo: walletPortion,
                     status: "PENDING",
                     providerRef: reference,
+                    commissionBpsPaid: rates.commissionBps,
+                    serviceFeeBpsPaid: rates.serviceFeeBps,
+                    serviceFeeCapKoboPaid: rates.serviceFeeCapKobo,
+                    videoAddonKoboPaid: rates.videoAddonKobo,
                 },
             });
             return { appointment };
@@ -341,7 +376,9 @@ export class BookingService {
         const startsAt = new Date(now.getTime() - 60_000);
         const endsAt = new Date(now.getTime() + 89 * 60_000);
         const baseAmountKobo = FIRST_CONSULT_PRICE_KOBO;
-        const amountKobo = baseAmountKobo + calcServiceFee(baseAmountKobo);
+        const expressRates = await this.activeRates();
+        const expressFeeBreakdown = calcFeeBreakdownWithRates(baseAmountKobo, expressRates);
+        const amountKobo = expressFeeBreakdown.patientTotal;
         const reference = `appt-${randomUUID()}`;
 
         const walletBalance = await this.wallet.getBalanceInternal(user.id);
@@ -368,6 +405,10 @@ export class BookingService {
                         walletAmountKobo: amountKobo,
                         status: "HELD",
                         providerRef: reference,
+                        commissionBpsPaid: expressRates.commissionBps,
+                        serviceFeeBpsPaid: expressRates.serviceFeeBps,
+                        serviceFeeCapKoboPaid: expressRates.serviceFeeCapKobo,
+                        videoAddonKoboPaid: expressRates.videoAddonKobo,
                     },
                 });
                 return appt;
@@ -400,6 +441,10 @@ export class BookingService {
                     walletAmountKobo: walletPortion,
                     status: "PENDING",
                     providerRef: reference,
+                    commissionBpsPaid: expressRates.commissionBps,
+                    serviceFeeBpsPaid: expressRates.serviceFeeBps,
+                    serviceFeeCapKoboPaid: expressRates.serviceFeeCapKobo,
+                    videoAddonKoboPaid: expressRates.videoAddonKobo,
                 },
             });
             return appt;

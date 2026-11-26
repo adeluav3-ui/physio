@@ -110,7 +110,7 @@ export function calcCommission(priceKobo: number): number {
 export const PARTNER_CLINIC_SERVICE_FEE_BPS = 1000;
 
 /**
- * Full fee breakdown for a session charge.
+ * Full fee breakdown for a session charge using the standard (non-pilot) rates.
  * Returns all amounts in kobo (integers).
  *
  * @param priceKobo   Base session price (e.g. FIRST_CONSULT_PRICE_KOBO)
@@ -133,17 +133,77 @@ export function calcFeeBreakdown(priceKobo: number, videoAddon = false): {
     return { serviceFeeKobo, commissionKobo, videoAddonKobo, physioPayout, platformRevenue, patientTotal };
 }
 
+/** Explicit rate bundle passed to calcFeeBreakdownWithRates. */
+export type FeeRates = {
+    commissionBps: number;
+    serviceFeeBps: number;
+    serviceFeeCapKobo: number;
+    videoAddonKobo: number;
+};
+
+/**
+ * Fee breakdown using explicitly provided rate values.
+ * Used by the booking service so it can pass either standard or pilot rates
+ * (read from PilotSettings at booking time) and snapshot them into Payment.
+ */
+export function calcFeeBreakdownWithRates(
+    priceKobo: number,
+    rates: FeeRates,
+    videoAddon = false,
+): {
+    serviceFeeKobo: number;
+    commissionKobo: number;
+    videoAddonKobo: number;
+    physioPayout: number;
+    platformRevenue: number;
+    patientTotal: number;
+} {
+    const serviceFeeKobo = Math.min(
+        Math.round((priceKobo * rates.serviceFeeBps) / 10_000),
+        rates.serviceFeeCapKobo,
+    );
+    const commissionKobo = Math.round((priceKobo * rates.commissionBps) / 10_000);
+    const videoAddonKobo = videoAddon ? rates.videoAddonKobo : 0;
+    const physioPayout = priceKobo - commissionKobo;
+    const platformRevenue = commissionKobo + serviceFeeKobo + videoAddonKobo;
+    const patientTotal = priceKobo + serviceFeeKobo + videoAddonKobo;
+    return { serviceFeeKobo, commissionKobo, videoAddonKobo, physioPayout, platformRevenue, patientTotal };
+}
+
 /**
  * Price of a video add-on when bundled with a text/chat consultation. ₦500.
- * Placeholder value for launch — to be confirmed.
+ * Standard (non-pilot) rate.
  */
 export const VIDEO_ADDON_KOBO = 50_000;
 
 /**
  * Number of free introductory video sessions per new patient.
- * Placeholder for launch — not yet enforced in booking logic.
+ * Standard (non-pilot) value.
  */
 export const FREE_INTRO_VIDEO_SESSIONS = 2;
+
+// ── Pilot pricing defaults ────────────────────────────────────────────────────
+// These are the seed values in PilotSettings; admin can override them in the DB.
+
+/** Pilot commission rate: 500 bps = 5% (vs 10% standard). */
+export const PILOT_COMMISSION_BPS = 500;
+
+/** Pilot service fee rate: 250 bps = 2.5% (vs 5% standard). */
+export const PILOT_SERVICE_FEE_BPS = 250;
+
+/** Pilot video add-on price: ₦250 per session (vs ₦500 standard). */
+export const PILOT_VIDEO_ADDON_KOBO = 25_000;
+
+/** Free video sessions per new patient during the pilot (vs 2 standard). */
+export const PILOT_FREE_INTRO_VIDEO_SESSIONS = 10;
+
+/** Standard rate bundle — used as fallback when pilot is inactive. */
+export const STANDARD_RATES: FeeRates = {
+    commissionBps: COMMISSION_BPS,
+    serviceFeeBps: SERVICE_FEE_BPS,
+    serviceFeeCapKobo: SERVICE_FEE_CAP_KOBO,
+    videoAddonKobo: VIDEO_ADDON_KOBO,
+};
 
 /**
  * Price of a chat (messaging) session. Same as a follow-up at launch.
