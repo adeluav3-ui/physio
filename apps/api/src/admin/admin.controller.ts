@@ -409,7 +409,7 @@ export class AdminController {
     @Get("fallback-cases")
     async listFallbackCases(@Query("status") status?: string) {
         return this.prisma.client.fallbackCase.findMany({
-            where: status ? { status: status as "OPEN" | "CONTACTED" | "RESOLVED" | "CLOSED" } : undefined,
+            ...(status ? { where: { status: status as "OPEN" | "CONTACTED" | "RESOLVED" | "CLOSED" } } : {}),
             include: {
                 intake: {
                     select: {

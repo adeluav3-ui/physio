@@ -344,7 +344,7 @@ export class PhysioService {
                     verifiedAt: decision === "VERIFIED" ? new Date() : null,
                     rejectedAt: decision === "REJECTED" ? new Date() : null,
                     rejectionReason: decision === "REJECTED" ? (reason ?? null) : null,
-                    mrtbCheckedAt: decision === "VERIFIED" && mrtbChecked ? new Date() : undefined,
+                    ...(decision === "VERIFIED" && mrtbChecked ? { mrtbCheckedAt: new Date() } : {}),
                 },
             });
         });
