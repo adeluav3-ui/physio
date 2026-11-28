@@ -22,6 +22,7 @@ export default function FallbackCaseActions({
     if (!next) return <span className="text-xs text-text-muted">Closed</span>;
 
     async function advance() {
+        if (!next) return;
         setLoading(true);
         try {
             await fetch(`/api/proxy/admin/fallback-cases/${id}`, {
